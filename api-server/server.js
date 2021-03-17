@@ -1,18 +1,19 @@
 'use strict';
 
-// basic setup for a node.js app from: https://nodejs.org/en/docs/guides/nodejs-docker-webapp/#dockerignore-file
-
 const express = require('express');
+const getUserRoute = require('./routes/user');
+const getPortfolioRoute = require('./routes/portfolio');
+const getStocksRoute = require('./routes/stocks');
 
 // Constants
-const PORT = 8080;
+const PORT = 3000;
 const HOST = '0.0.0.0';
 
-// App
 const app = express();
-app.get('/', (req, res) => {
-  res.send('Hello World');
-});
+
+app.use('/user', getUserRoute);
+app.use('/portfolio', getPortfolioRoute);
+app.use('/stocks', getStocksRoute);
 
 app.listen(PORT, HOST);
 console.log(`Running on http://${HOST}:${PORT}`);
