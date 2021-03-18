@@ -1,9 +1,12 @@
 'use strict';
 const express = require('express');
+const passport = require('passport');
+const genToken= require('../auth/auth');
+
 const router = express.Router();
 
 // register
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
 
     // req: { mail, pwd }
 
@@ -11,6 +14,9 @@ router.post('/register', (req, res) => {
     // bestetzte email: test@getmilou.de -> 409
     // alle anderen -> 201
 
+    res.json({
+        message: 'Signup success'
+    });
 });
 
 router.post('/register/confirm', (req, res) => {
@@ -24,26 +30,41 @@ router.post('/register/confirm', (req, res) => {
 });
 
 // login
-router.post('/login', (req, res) => {
-
+router.post('/login',async (req, res, next) => {
     // todo: implement the following authorization: http://www.passportjs.org/docs/username-password/
     // req:
     // mail, pwd
 
+
     // res:
     // case match (mail: test@getmilou.de, pwd: 123456):
-        // JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
-        //      eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.
-        //      SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+    // JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+    //      eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.
+    //      SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
 
     // case (any other): 401
-
+    passport.authenticate('local', {session: false}, (err, user, info) => {
+        if (err || !user) {
+            return res.status(400).json({
+                message: 'Something is not right',
+                user   : user
+            });
+        }
+        req.login(user, {session: false}, (err) => {
+            if (err) {
+                res.send(err);
+            }
+            // generate a signed son web token with the contents of user object and return it in the response
+            const token = genToken(user);
+            return res.json({user, token});
+        });
+    })(req, res);
 });
 
 // logout wont be needed, since frontend will delete token for logout and passportjs's encoder specifies the time, in which its token will be valid
 
 // profile
-router.get('/profile', (req, res) => {
+router.get('/profile', passport.authenticate('jwt',{session: false}),  (req, res) => {
     // todo: implement the following authorization: http://www.passportjs.org/docs/username-password/
 
     // req: just a token, that needs to be decoded (for testtoken sould work)
@@ -51,6 +72,7 @@ router.get('/profile', (req, res) => {
     // res: {mail,name,pwd}
     // case testtoken: 200
     // case anyothe: 40*
+    res.json({firstName:'test',user: req.user});
 
 });
 
