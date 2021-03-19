@@ -37,8 +37,9 @@ router.get('/list', (req, res) => {
         "positionCount": 1,
         "value": 3465,
         "score": 1,
-        "modified": 1
+        "modified": 1616086585
     };
+
     var response = { "portfolios": [pf1, pf2] };
     res.json(response);
 });
@@ -65,7 +66,7 @@ router.get('/modifications/:id', (req, res) => {
         response.modifications = [];
         res.json(response);
     } else if (id == 1) {
-        response.modifications = [1];
+        response.modifications = [1616086585];
         res.json(response);
     } else {
         response.error = "PORTFOLIO_ID_INVALID"
@@ -73,7 +74,7 @@ router.get('/modifications/:id', (req, res) => {
     }
 });
 
-router.get('/positions/:id', (req, res) => {
+router.get('/positions/:id/', (req, res) => {
     // request: {"time" : time}
     var id = req.params.id;
     var time = req.body.time;
@@ -122,11 +123,11 @@ router.post('/create', (req, res) => {
         response.id = 2;
         res.json(response);
     }
-    
+
 
 });
 
-router.delete('/:id', (req, res) => {
+router.post('/delete/:id', (req, res) => {
     var id = req.params.id;
     var response = {};
     if (id != 0 && id != 1) {
@@ -135,7 +136,7 @@ router.delete('/:id', (req, res) => {
     } else {
         res.json(response);
     }
-    
+
 });
 
 router.put('/rename/:id', (req, res) => {
@@ -155,7 +156,7 @@ router.put('/rename/:id', (req, res) => {
     } else {
         res.json(response);
     }
-    
+
 });
 
 router.put('/modify/:id', (req, res) => {
@@ -174,7 +175,7 @@ router.put('/modify/:id', (req, res) => {
     } else {
         res.json(response);
     }
-    
+
 });
 
 router.post('/duplicate/:id', (req, res) => {
@@ -195,7 +196,7 @@ router.post('/duplicate/:id', (req, res) => {
         response.id = 2;
         res.json(response);
     }
-    
+
 });
 
 router.post('/import', (req, res) => {
