@@ -17,7 +17,7 @@ const HOST = '0.0.0.0';
 const app = express();
 
 app.use(bodyParser.json());
-// app.use(cors());
+app.use(cors());
 
 app.use('/user', getUserRoute);
 app.use('/portfolio', getPortfolioRoute);
