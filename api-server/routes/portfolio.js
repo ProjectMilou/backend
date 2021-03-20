@@ -127,7 +127,7 @@ router.post('/create', (req, res) => {
 
 });
 
-router.post('/delete/:id', (req, res) => {
+router.delete('/:id', (req, res) => {
     var id = req.params.id;
     var response = {};
     if (id != 0 && id != 1) {
