@@ -8,39 +8,54 @@ const router = express.Router();
 // register
 router.post('/register', async (req, res) => {
 
-    // req: { mail, pwd }
+    // req: { email, pwd }
 
-    // res:
-    // bestetzte email: test@getmilou.de -> 409
-    // alle anderen -> 201
+    // already used email: test@getmilou.de -> 409
+    if(req.body.email === "test@getmilou.de") {
+        res.statusCode = 409;
+        res.json({
+            message: 'Signup failed - mail has got an account already'
+        });
+    }
 
-    res.json({
-        message: 'Signup success'
-    });
+    // any other mail -> 201
+    else {
+        res.statusCode = 201;
+        res.json({
+            message: 'Signup success'
+        });
+    }
 });
 
 router.post('/register/confirm', (req, res) => {
 
     // we generate a uuid and send it to the mail. (8e733aeb-8bf8-485c-92b7-62ca4463db3c)
     // the uuid will be passed back to us in the body of this request (json)
+    if(req.body.uuid === "8e733aeb-8bf8-485c-92b7-62ca4463db3c") {
+        res.statusCode = 200;
+        res.json({
+            message: 'mail confirmed'
+        });
+    }
 
     // case 8e733aeb-8bf8-485c-92b7-62ca4463db3c: 200, body: mail of the assigned user
     // case token not found: 404
-
+    else {
+        res.statusCode = 404;
+        res.json({
+            message: 'failed'
+        });
+    }
 });
 
 // login
 router.post('/login',async (req, res, next) => {
-    // todo: implement the following authorization: http://www.passportjs.org/docs/username-password/
-    // req:
-    // mail, pwd
+    // documentation: http://www.passportjs.org/docs/username-password/
 
+    // request contains mail and password, the lib is used to authentificate and generate a JWT token.
 
     // res:
     // case match (mail: test@getmilou.de, pwd: 123456):
-    // JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
-    //      eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.
-    //      SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
 
     // case (any other): 401
     passport.authenticate('local', {session: false}, (err, user, info) => {
@@ -65,89 +80,106 @@ router.post('/login',async (req, res, next) => {
 
 // profile
 router.get('/profile', passport.authenticate('jwt',{session: false}),  (req, res) => {
-    // todo: implement the following authorization: http://www.passportjs.org/docs/username-password/
+    // http://www.passportjs.org/docs/username-password/
 
-    // req: just a token, that needs to be decoded (for testtoken sould work)
-
-    // res: {mail,name,pwd}
-    // case testtoken: 200
-    // case anyothe: 40*
+    // request just contains an JWT token in its header, that will be checked by passport automaticaly. If unathorized, 401 will be sent back.
     res.json({firstName:'test',user: req.user});
-
 });
 
 // forgot password
 router.post('/forgot', (req, res) => {
 
     // req: mail
+    // case mail in db (test@getmilou.de): 200 | send token to mail
+    if(req.body.email === "test@getmilou.de") {
+        res.statusCode = 202;
+        res.json({
+            message: 'mail not found'
+        });
+    }
 
-    // res:
-        // case mail in db (test@getmilou.de): 200 | send token to mail
-        // case anyother: 404
-
-
+    // case anyother: 404
+    else {
+        res.statusCode = 404;
+        res.json({
+            message: 'token sent to mail'
+        });
+    }
 });
 
 router.post('/reset/confirm', (req, res) => {
 
     // req: body { token: c31d350f-dfdb-4887-b7cf-b69520be26ec, pwd: ***** }
 
-    // res:
-        // case 'c31d350f-dfdb-4887-b7cf-b69520be26ec': 200
-        // case 'any other': 404
+    // we generate a uuid and send it to the mail. (c31d350f-dfdb-4887-b7cf-b69520be26ec)
+    // the uuid will be passed back to us in the body of this request (json)
+    if(req.body.uuid === "8e733aeb-8bf8-485c-92b7-62ca4463db3c") {
+        res.statusCode = 200;
+        res.json({
+            message: 'mail confirmed'
+        });
+    }
 
+    // case 8e733aeb-8bf8-485c-92b7-62ca4463db3c: 200, body: mail of the assigned user
+    // case token not found: 404
+    else {
+        res.statusCode = 404;
+        res.json({
+            message: 'failed'
+        });
+    }
 });
 
 // edit profile
-router.put('/edit', (req, res) => {
-    // todo: implement the following authorization: http://www.passportjs.org/docs/username-password/
+
+// fixme: passport option {session = true or false} ?
+router.put('/edit', passport.authenticate('jwt', {session: false}),  (req, res) => {
+    // implement the following authorization: http://www.passportjs.org/docs/username-password/
 
     // req: {?firstname, ?lastname}
 
     // process: update all sent data
 
     // res: 200
-
+    res.statusCode = 200;
+    res.send("edited");
 });
 
 // delete profile
-router.delete('/profile', (req, res) => {
-
+router.delete('/profile', passport.authenticate('jwt', {session: false}),  (req, res) => {
+    // implement the following authorization: http://www.passportjs.org/docs/username-password/
     // req: token in header
 
     // res: 200
-
+    res.send("deleted");
 });
 
 // search for a bank
 router.get('/bank', (req,res) => {
 
-    /*
-    req:
-        query: Searchstring
+//    req: query: Searchstring
 
-
-    res:
-        ids, banknames, locations
-        mock:
+    res.statusCode = 200;
+    res.json({
         banks: [{
             id: 277672,
             name: "FinAPI Test Bank",
             location: "DE",
             city: "München",
         }]
-
-     */
+    });
 })
 
 // add a bank
 router.post('/bank_connection', (req, res) => {
-
+    res.statusCode = 200;
+    res.send("bank added")
 });
 
 // delete a bank connection
 router.delete('/bank_connection/:id', (req, res) => {
-
+    res.statusCode = 200;
+    res.send("bank deleted");
 });
 
 module.exports = router
