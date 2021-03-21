@@ -9,37 +9,71 @@ var stock = {
     "symbol": "GME",
     "name": "GameStop",
     "price": 173.25,
+    "perf7d": 15.87,
+    "perf1y": 19.50,
     "country": "USA",
-    "industry": "don't know"
+    "industry": "don't know",
+    "score": 0
 }
 var position = {
     "stock": stock,
     "qty": 20
 }
 
-// todo implement all routes under 'portfolio/...' like in user the way your front end team has specified them in the contract definition
-// todo fill in mocks
+var pf1 = {
+    "id": 0,
+    "name": "test1",
+    "virtual": true,
+    "positionCount": 0,
+    "value": 0,
+    "score": 0,
+    "perf7d": 14.75,
+    "perf1y": 17.15,
+    "modified": 0
+};
+var pf2 = {
+    "id": 1,
+    "name": "test2",
+    "virtual": true,
+    "positionCount": 1,
+    "value": 3465,
+    "score": 1,
+    "perf7d": 18.75,
+    "perf1y": 16.15,
+    "modified": 1616086585
+};
+
+var risk1 = {
+    "count": 4,
+    "score": 0,
+    "warnings": ["warning1", "warning2"]
+}
+
+var keyFigures = {
+    "year": 2021,
+    "pte": 15.00,
+    "ptv": 1.00,
+    "ptg": 0.85,
+    "eps": 99,
+    "div": 10
+}
+
+var riskAnalysis = {
+    "countries": risk1,
+    "segments": risk1,
+    "currency": risk1
+}
+
+var pf1details = {
+    "overview": pf1,
+    "positions": [position],
+    "risk": riskAnalysis,
+    "keyFigures": [keyFigures],
+    "nextDividend": 1616086585,
+    "dividendPayoutRatio": 41
+}
 
 router.get('/list', (req, res) => {
-    var pf1 = {
-        "id": 0,
-        "name": "test1",
-        "virtual": true,
-        "positionCount": 0,
-        "value": 0,
-        "score": 0,
-        "modified": 0
-    };
-    var pf2 = {
-        "id": 1,
-        "name": "test2",
-        "virtual": true,
-        "positionCount": 1,
-        "value": 3465,
-        "score": 1,
-        "modified": 1616086585
-    };
-
     var response = { "portfolios": [pf1, pf2] };
     res.json(response);
 });
@@ -48,10 +82,10 @@ router.get('/details/:id', (req, res) => {
     var id = req.params.id;
     var response = {};
     if (id == 0) {
-        response.positions = [];
+        response.details = [];
         res.json(response);
     } else if (id == 1) {
-        response.positions = [position]
+        response.details = [pf1details]
         res.json(response);
     } else {
         response.error = "PORTFOLIO_ID_INVALID"
@@ -91,22 +125,23 @@ router.get('/positions/:id/', (req, res) => {
     }
 });
 
-router.get('/chart/:id', (req, res) => {
+// was changed from chart 
+router.get('/performance/:id', (req, res) => {
     // request: {?} 
     // I think this should be implemented by the analyzer team
     var id = req.params.id;
+    var range = req.body.range;
     var response = {};
-    if (id == 0) {
-        response.chart = []
-        res.json(response);
-    } else if (id == 1) {
+    if (id == 1 && range == 1) {
         response.chart = [0, 1, 2, 3, 4];
         res.json(response);
-    } else {
+    } else if (id != 1) {
         response.error = "PORTFOLIO_ID_INVALID";
         res.status(404).json(response);
+    } else {
+        response.error = "RANGE_INVALID";
+        res.status(404).json(response);
     }
-
 });
 
 router.post('/create', (req, res) => {
@@ -123,8 +158,6 @@ router.post('/create', (req, res) => {
         response.id = 2;
         res.json(response);
     }
-
-
 });
 
 router.delete('/:id', (req, res) => {
@@ -163,7 +196,7 @@ router.put('/modify/:id', (req, res) => {
     // request: {"isin" : isin,
     //            "qty": qty} 
     var id = req.params.id;
-    var isin = req.body.isin;
+    var isin = req.body.isin + "";
     var qty = req.body.qty;
     var response = {};
     if (id != 1 && id != 0) {
@@ -171,6 +204,9 @@ router.put('/modify/:id', (req, res) => {
         res.status(404).json(response);
     } else if (qty <= 0) {
         response.error = "QTY_INVALID"
+        res.status(400).json(response);
+    } else if (isin.length != 12) {
+        response.error = "ISIN_INVALID"
         res.status(400).json(response);
     } else {
         res.json(response);
