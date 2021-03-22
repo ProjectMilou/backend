@@ -23,5 +23,5 @@ app.use('/user', getUserRoute);
 app.use('/portfolio', getPortfolioRoute);
 app.use('/stocks', getStocksRoute);
 
-app.listen(PORT, HOST);
+app.listen(process.env.PORT || 3000);
 console.log(`Running on http://${HOST}:${PORT}`);
