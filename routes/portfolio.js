@@ -82,10 +82,9 @@ router.get('/details/:id', (req, res) => {
     var id = req.params.id;
     var response = {};
     if (id == 0) {
-        response.details = [];
         res.json(response);
     } else if (id == 1) {
-        response.details = [pf1details]
+        response = pf1details
         res.json(response);
     } else {
         response.error = "PORTFOLIO_ID_INVALID"
@@ -93,6 +92,7 @@ router.get('/details/:id', (req, res) => {
     }
 });
 
+// deprecated
 router.get('/modifications/:id', (req, res) => {
     var id = req.params.id;
     var response = {};
@@ -108,6 +108,7 @@ router.get('/modifications/:id', (req, res) => {
     }
 });
 
+// deprecated
 router.get('/positions/:id/', (req, res) => {
     // request: {"time" : time}
     var id = req.params.id;
@@ -127,12 +128,13 @@ router.get('/positions/:id/', (req, res) => {
 
 // was changed from chart 
 router.get('/performance/:id', (req, res) => {
-    // request: {?} 
+    // request: {"range" : range}
+    // range can be any of:  "7D", "1M", "6M", "YTD", "1J", "5J", "MAX"
     // I think this should be implemented by the analyzer team
     var id = req.params.id;
     var range = req.body.range;
     var response = {};
-    if (id == 1 && range == 1) {
+    if (id == 1 && range == "7D") {
         response.chart = [0, 1, 2, 3, 4];
         res.json(response);
     } else if (id != 1) {
@@ -140,7 +142,7 @@ router.get('/performance/:id', (req, res) => {
         res.status(404).json(response);
     } else {
         response.error = "RANGE_INVALID";
-        res.status(404).json(response);
+        res.status(400).json(response);
     }
 });
 
@@ -164,7 +166,7 @@ router.delete('/:id', (req, res) => {
     var id = req.params.id;
     var response = {};
     if (id != 0 && id != 1) {
-        response.error = "PORTFOLIO_NOT_EXISTS"
+        response.error = "PORTFOLIO_ID_INVALID"
         res.status(400).json(response);
     } else {
         res.json(response);
@@ -193,8 +195,9 @@ router.put('/rename/:id', (req, res) => {
 });
 
 router.put('/modify/:id', (req, res) => {
-    // request: {"isin" : isin,
-    //            "qty": qty} 
+    // request: {"modifications": 
+    //                  [{"isin": "string",
+    //                  "qty": 0}]}
     var id = req.params.id;
     var isin = req.body.isin + "";
     var qty = req.body.qty;
@@ -235,6 +238,7 @@ router.post('/duplicate/:id', (req, res) => {
 
 });
 
+// is not in the documentation any more
 router.post('/import', (req, res) => {
     res.json({});
 });
