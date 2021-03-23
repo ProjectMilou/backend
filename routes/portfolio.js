@@ -73,6 +73,18 @@ var pf1details = {
     "dividendPayoutRatio": 41
 }
 
+/**
+ * @swagger
+ * /portfolio/list/:
+ *  get:
+ *   description: Returns a list of portfolios of a user.
+ *   tags:
+ *    - portfolio
+ *   responses:
+ *    '200':
+ *      description: Accepted.
+ */
+
 router.get('/list', (req, res) => {
     var response = { "portfolios": [pf1, pf2] };
     res.json(response);

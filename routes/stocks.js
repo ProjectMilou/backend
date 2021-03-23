@@ -124,6 +124,18 @@ const morganStanleyStockDetails = {
     "assembly": "2021-05-19"
 }
 
+/**
+ * @swagger
+ * /stocks/:
+ *  get:
+ *   description: Returns a list of all stocks.
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Users email was accepted, an email with the an registration token will be sent to the users email.
+ */
+
 router.get('/', (req, res) => {
     var response = { "stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock] };
     res.json(response);
