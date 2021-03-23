@@ -29,6 +29,7 @@ const swaggerOptions = {
         './routes/portfolio.js',
         './routes/stocks.js',
         './routes/user.js',
+        './routes/swagger.js',
         'server.js'
     ]
 };
