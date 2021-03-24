@@ -33,8 +33,6 @@ const swaggerOptions = {
     ]
 };
 
-
-
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
@@ -42,10 +40,6 @@ app.get('/', (req, res) => {
     res.statusCode = 200;
     res.send('visit ' + req.protocol + '://' + req.get('host') + req.originalUrl + 'api-docs for documentation.')
 })
-
-
-
-
 
 app.use(bodyParser.json());
 // app.use(cors());
