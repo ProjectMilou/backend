@@ -128,18 +128,51 @@ const morganStanleyStockDetails = {
  * @swagger
  * /stocks/:
  *  get:
+ *   summary: Returns a list of all stocks.
  *   description: Returns a list of all stocks.
+ *   produces:
+ *     - application/json
  *   tags:
  *    - stocks
  *   responses:
  *    '200':
- *      description: Users email was accepted, an email with the an registration token will be sent to the users email.
+ *      description: Successful operation
+ *      schema:
+ *          $ref: '#/definitions/stockks'
+ *    '400':
+ *      description: Invalid
  */
 
 router.get('/', (req, res) => {
     var response = { "stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock] };
     res.json(response);
 });
+
+
+/**
+ * @swagger
+ * /stocks/{id}: 
+ *  get:
+ *   summary: Returns a stock with given id.
+ *   description: Returns a stock with given id.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: ID of stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *          $ref: '#/definitions/stockk'
+ *    '400':
+ *      description: Invalid
+ */
 
 router.get('/:id', (req, res) => {
     var id = req.params.id;
@@ -161,6 +194,32 @@ router.get('/:id', (req, res) => {
         res.status(404).json(response);
     }
 });
+
+
+/**
+ * @swagger
+ * /stocks/{id}/details:
+ *  get:
+ *   summary: Returns details of a stock with given id.
+ *   description: Returns details of a stock with given id.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: ID of stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *          $ref: '#/definitions/stockDetails'
+ *    '400':
+ *      description: Invalid
+ */
 
 router.get('/:id/details', (req, res) => {
     var id = req.params.id;
