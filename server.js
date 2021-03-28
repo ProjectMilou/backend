@@ -11,6 +11,9 @@ const getPortfolioRoute = require('./routes/portfolio');
 const getStocksRoute = require('./routes/stocks');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+//const db = require('./db/index.js');
+
+
 require('./auth/auth');
 
 
@@ -39,7 +42,7 @@ const swaggerOptions = {
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
+require( "./db/index.js" )( app );
 app.get('/', (req, res) => {
     res.statusCode = 200;
     res.send('visit ' + req.protocol + '://' + req.get('host') + req.originalUrl + 'api-docs for documentation.')
@@ -54,3 +57,5 @@ app.use('/stocks', getStocksRoute);
 
 app.listen(process.env.PORT || 3000);
 console.log(`Running on http://${HOST}:${PORT}`);
+
+//db()
