@@ -55,6 +55,66 @@
  *        type: string
  *      score: 
  *        type: number
+ *  stockk: 
+ *    type: object
+ *    properties: 
+ *      symbol:
+ *        type: string
+ *      ISIN:
+ *        type: string
+ *      WKN:
+ *        type: string
+ *      name:
+ *        type: number
+ *      price:
+ *        type: number
+ *      1d: 
+ *        type: number
+ *      7d:
+ *        type: string
+ *      30d:
+ *        type: string
+ *      marketCapitalization: 
+ *        type: number
+ *      analystTargetPrice: 
+ *        type: number
+ *      valuation: 
+ *        type: number
+ *      growth: 
+ *        type: number
+ *      div: 
+ *        type: number
+ *      currency: 
+ *        type: number
+ *      country: 
+ *        type: number
+ *      industry: 
+ *        type: number
+ *      picture: 
+ *        type: number
+ *      date: 
+ *        type: number
+ *  stockks: 
+ *        type: array
+ *        items: 
+ *          $ref: '#/definitions/stockk'
+ *  stockDetails:
+ *      type: object
+ *      properties:
+ *          symbol:
+ *              type: string
+ *          intro:
+ *              type: string
+ *          founded:
+ *              type: string
+ *          website:
+ *              type: string
+ *          fullTimeEmployees:
+ *              type: string
+ *          address:
+ *              type: string
+ *          assembly:
+ *              type: string
  *  portfolioOverview:
  *    type: object
  *    properties:
