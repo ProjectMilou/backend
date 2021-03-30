@@ -201,24 +201,24 @@
  *        type: number
  *
  * /portfolio/list:
- * get:
- *  tags:
- *  - portfolio
- *  summary: Get all portfolios of the current user
- *  description: Gets all portfolios of the current user with basic information to display in the portfolio dashboard.
- *  operationId: getPortfolios
- *  produces:
- *  - application/json
- *  parameters: []
- *  responses:
- *    200:
- *      description: successful operation
- *      schema:
- *        type: array
- *        items:
- *          $ref: '#/definitions/portfolioOverview'
- *  security:
- *  - api_key: [] 
+ *  get:
+ *    tags:
+ *    - portfolio
+ *    summary: Get all portfolios of the current user
+ *    description: Gets all portfolios of the current user with basic information to display in the portfolio dashboard.
+ *    operationId: getPortfolios
+ *    produces:
+ *    - application/json
+ *    parameters: []
+ *    responses:
+ *      200:
+ *        description: successful operation
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/portfolioOverview'
+ *    security:
+ *    - api_key: [] 
  *
  * /portfolio/details/{portfolioId}:
  *   get:
@@ -347,7 +347,7 @@
  *         schema:
  *           $ref: '#/definitions/error'
  *
- *   /portfolio/rename/{portfolioId}:
+ * /portfolio/rename/{portfolioId}:
  *   put:
  *     tags:
  *     - portfolio
