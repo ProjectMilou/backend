@@ -65,35 +65,35 @@
  *      WKN:
  *        type: string
  *      name:
- *        type: number
+ *        type: string
  *      price:
- *        type: number
+ *        type: string
  *      1d: 
- *        type: number
+ *        type: string
  *      7d:
  *        type: string
  *      30d:
  *        type: string
  *      marketCapitalization: 
- *        type: number
+ *        type: string
  *      analystTargetPrice: 
- *        type: number
+ *        type: string
  *      valuation: 
- *        type: number
+ *        type: string
  *      growth: 
- *        type: number
+ *        type: string
  *      div: 
- *        type: number
+ *        type: string
  *      currency: 
- *        type: number
+ *        type: string
  *      country: 
- *        type: number
+ *        type: string
  *      industry: 
- *        type: number
+ *        type: string
  *      picture: 
- *        type: number
+ *        type: string
  *      date: 
- *        type: number
+ *        type: string
  *  stockks: 
  *        type: array
  *        items: 
