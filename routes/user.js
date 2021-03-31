@@ -7,19 +7,7 @@ const genToken= require('../auth/auth');
 const router = express.Router();
 
 
-/**
- * @swagger
- * /user/register:
- *  post:
- *   description: Register a new user by passing the users email and password.
- *   tags:
- *    - user
- *   responses:
- *    '201':
- *      description: Users email was accepted, an email with the an registration token will be sent to the users email.
- *    '409':
- *      description: Users email was rejected because the email was already taken.
- */
+
 
 router.post('/register', async (req, res) => {
 
@@ -43,19 +31,7 @@ router.post('/register', async (req, res) => {
 });
 
 
-/**
- * @swagger
- * /user/register:
- *  post:
- *   description: Confirms, that the token is correct, which has been sent to users email address.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Token was accepted. Users account is now registered.
- *    '404':
- *      description: Token was not accepted.
- */
+
 
 router.post('/register/confirm', (req, res) => {
 
@@ -78,19 +54,7 @@ router.post('/register/confirm', (req, res) => {
     }
 });
 
-/**
- * @swagger
- * /user/login:
- *  post:
- *   description: Checks if email and password are correct. sends back a token that needs to be passed in the header of each user-relevant request.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Password accepted.
- *    '401':
- *      description: Password is not correct or email is not registered.
- */
+
 
 // login
 router.post('/login',async (req, res, next) => {
@@ -123,19 +87,7 @@ router.post('/login',async (req, res, next) => {
 // todo logout is needed! what if the user decides to log out?
 // logout wont be needed, since frontend will delete token for logout and passportjs's encoder specifies the time, in which its token will be valid
 
-/**
- * @swagger
- * /user/profile:
- *  get:
- *   description: Sends back account information about user profile.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Accepted.
- *    '401':
- *      description: Unauthorized. Token not valid.
- */
+
 
 // profile
 router.get('/profile', passport.authenticate('jwt',{session: false}),  (req, res) => {
@@ -145,19 +97,7 @@ router.get('/profile', passport.authenticate('jwt',{session: false}),  (req, res
     res.json({firstName:'test',user: req.user});
 });
 
-/**
- * @swagger
- * /user/forgot:
- *  post:
- *   description: If user has forgotten password, a token will be sent to email, that has to be confirmed.
- *   tags:
- *    - user
- *   responses:
- *    '202':
- *      description: Email exists, token will be sent.
- *    '401':
- *      description: Not foundMail was not found.
- */
+
 
 // forgot password
 router.post('/forgot', (req, res) => {
@@ -180,19 +120,7 @@ router.post('/forgot', (req, res) => {
     }
 });
 
-/**
- * @swagger
- * /user/reset/confirm:
- *  post:
- *   description: Confirms token that was sent to user-email, when a user has forgotten the password to his account.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Token was correct, password can now be reset.
- *    '404':
- *      description: Not found. Token was not found.
- */
+
 
 router.post('/reset/confirm', (req, res) => {
 
@@ -219,19 +147,7 @@ router.post('/reset/confirm', (req, res) => {
 
 // edit profile
 
-/**
- * @swagger
- * /user/edit:
- *  put:
- *   description: Edit user account information.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Token was correct, user-account will be edited as specified.
- *    '404':
- *      description: Not found, Token was not found.
- */
+
 
 // fixme: passport option {session = true or false} ?
 router.put('/edit', passport.authenticate('jwt', {session: false}),  (req, res) => {
@@ -246,19 +162,7 @@ router.put('/edit', passport.authenticate('jwt', {session: false}),  (req, res) 
     res.send("edited");
 });
 
-/**
- * @swagger
- * /user/delete:
- *  delete:
- *   description: Delete user-account.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Accepted, user-account will be deleted.
- *    '404':
- *      description: Not found, Token was not found.
- */
+
 
 // delete profile
 router.delete('/profile', passport.authenticate('jwt', {session: false}),  (req, res) => {
@@ -269,19 +173,7 @@ router.delete('/profile', passport.authenticate('jwt', {session: false}),  (req,
     res.send("deleted");
 });
 
-/**
- * @swagger
- * /user/bank -------- fixme should to be accessed from portfolio, not from user -------- :
- *  get:
- *   description: Sends back banks, that fit the passed String.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Accepted.
- */
 
-// todo should to be accessed from portfolio, not from user.
 
 // search for a bank
 router.get('/bank', (req,res) => {
@@ -299,37 +191,12 @@ router.get('/bank', (req,res) => {
     });
 })
 
-/**
- * @swagger
- * /user/bank -------- fixme should to be accessed from portfolio, not from user -------- :
- *  post:
- *   description: adds a bank-connection.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Accepted, bank-connection added.
- *    '404':
- *      description: Rejected, Token was not found.
- */
-
 // add a bank
 router.post('/bank_connection', (req, res) => {
     res.statusCode = 200;
     res.send("bank added")
 });
 
-/**
- * @swagger
- * /user/bank -------- fixme should to be accessed from portfolio, not from user -------- :
- *  delete:
- *   description: bank-connection with id will be deleted.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Accepted, bank-connection deleted.
- */
 
 // delete a bank connection
 router.delete('/bank_connection/:id', (req, res) => {
