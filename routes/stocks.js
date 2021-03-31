@@ -2,15 +2,20 @@
 const express = require('express');
 const router = express.Router();
 
+
+const stockModel = require("../models/stock");
+
+// todo implement all routes under 'stocks/...' like in user the way your front end team has specified them in the contract definition
+// todo fill in mocks
 const ibmStock = {
     "symbol": "IBM",
     "ISIN": "US4592001014",
     "WKN": "851399",
     "name": "International Business Machines Corporation",
     "price": "175.29",
-    "1d": "2.25",
-    "7d": "1.52",
-    "30d": "0.92",
+    "_1d": "2.25",
+    "_7d": "1.52",
+    "_30d": "0.92",
     "marketCapitalization": "114263867392",
     "analystTargetPrice": "137",
     "valuation": "20.6803",
@@ -28,9 +33,9 @@ const appleStock = {
     "WKN": "865985",
     "name": "Apple Inc",
     "price": "252.19",
-    "1d": "1.79",
-    "7d": "1.52",
-    "30d": "0.92",
+    "_1d": "1.79",
+    "_7d": "1.52",
+    "_30d": "0.92",
     "marketCapitalization": "172637867392",
     "analystTargetPrice": "290.24",
     "valuation": "27.6803",
@@ -48,9 +53,9 @@ const microsoftStock = {
     "WKN": "358331",
     "name": "Microsoft Corporation",
     "price": "278.19",
-    "1d": "3.29",
-    "7d": "1.12",
-    "30d": "1.02",
+    "_1d": "3.29",
+    "_7d": "1.12",
+    "_30d": "1.02",
     "marketCapitalization": "282737867392",
     "analystTargetPrice": "290.24",
     "valuation": "33.6803",
@@ -68,9 +73,9 @@ const morganStanleyStock = {
     "WKN": "871985",
     "name": "Morgan Stanley",
     "price": "97.22",
-    "1d": "1.19",
-    "7d": "1.22",
-    "30d": "0.75",
+    "_1d": "1.19",
+    "_7d": "1.22",
+    "_30d": "0.75",
     "marketCapitalization": "23137867392",
     "analystTargetPrice": "150.34",
     "valuation": "33.2203",
@@ -122,9 +127,29 @@ const morganStanleyStockDetails = {
     "assembly": "2021-05-19"
 }
 
-router.get('/', (req, res) => {
-    var response = { "stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock] };
-    res.json(response);
+/**
+ * @swagger
+ * /stocks/:
+ *  get:
+ *   summary: Returns a list of all stocks.
+ *   description: Returns a list of all stocks.
+ *   produces:
+ *     - application/json
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *          $ref: '#/definitions/stockks'
+ *    '400':
+ *      description: Invalid
+ */
+
+router.get('/', async (req, res) => {
+    const stocks = await stockModel.find({});
+
+    res.send(stocks);
 });
 
 router.get('/:id', (req, res) => {
