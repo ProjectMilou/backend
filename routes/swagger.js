@@ -812,7 +812,7 @@
  *   responses:
  *      '200':
  *          description: Success.
- * /analytics/debtEquity/portfolioId:
+ * /analytics/debtEquity/{portfolioId}:
  *  get:
  *   description: Calculates the weighted average of debt/equity of a portfolio and returns also the debt/equity per stock
  *   summary: Calculates the weighted average of debt/equity of a portfolio and returns also the debt/equity per stock
