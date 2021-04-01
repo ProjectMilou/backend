@@ -32,7 +32,7 @@ const swaggerOptions = {
     },
     definition: {},
     apis: [
-        'server.js'
+        './routes/swagger.js'
     ]
 };
 
