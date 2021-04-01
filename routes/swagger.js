@@ -535,18 +535,6 @@
  *
  * /user/register:
  *  post:
- *   description: Register a new user by passing the users email and password.
- *   summary: Register a new user
- *   tags:
- *    - user
- *   responses:
- *    '201':
- *      description: Users email was accepted, an email with the an registration token will be sent to the users email.
- *    '409':
- *      description: Users email was rejected because the email was already taken.
- *
- * /user/register:
- *  post:
  *   description: Confirms, that the token is correct, which has been sent to users email address.
  *   summary:
  *   tags:
@@ -638,8 +626,6 @@
  *   responses:
  *    '200':
  *      description: Accepted.
- *
- * /user/bank:
  *  post:
  *   description: adds a bank-connection.
  *   summary:
@@ -650,8 +636,6 @@
  *      description: Accepted, bank-connection added.
  *    '404':
  *      description: Rejected, Token was not found.
- *
- * /user/bank:
  *  delete:
  *   description: bank-connection with id will be deleted.
  *   summary:
