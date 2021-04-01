@@ -55,7 +55,7 @@
  *        type: string
  *      score: 
  *        type: number
- *  stockk: 
+ *  stockk:
  *    type: object
  *    properties: 
  *      symbol:
@@ -470,4 +470,178 @@
  *         description: PORTFOLIO_NAME_DUPLICATE/PORTFOLIO_NAME_INVALID
  *         schema:
  *           $ref: '#/definitions/error'
+ *
+ * /stocks/:
+ *  get:
+ *   summary: Returns a list of all stocks.
+ *   description: Returns a list of all stocks.
+ *   produces:
+ *     - application/json
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *          $ref: '#/definitions/stockks'
+ *    '400':
+ *      description: Invalid
+ *
+ *
+ * /stocks/{id}:
+ *  get:
+ *   summary: Returns a stock with given id.
+ *   description: Returns a stock with given id.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: ID of stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *          $ref: '#/definitions/stockk'
+ *    '400':
+ *      description: Invalid
+ *
+ * /stocks/{id}/details:
+ *  get:
+ *   summary: Returns details of a stock with given id.
+ *   description: Returns details of a stock with given id.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: ID of stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *          $ref: '#/definitions/stockDetails'
+ *    '400':
+ *      description: Invalid
+ *
+ *
+ * /user/register:
+ *  post:
+ *   description: Confirms, that the token is correct, which has been sent to users email address.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '200':
+ *      description: Token was accepted. Users account is now registered.
+ *    '404':
+ *      description: Token was not accepted.
+ *
+ * /user/login:
+ *  post:
+ *   description: Checks if email and password are correct. sends back a token that needs to be passed in the header of each user-relevant request.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '200':
+ *      description: Password accepted.
+ *    '401':
+ *      description: Password is not correct or email is not registered.
+ *
+ * /user/profile:
+ *  get:
+ *   description: Sends back account information about user profile.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '200':
+ *      description: Accepted.
+ *    '401':
+ *      description: Unauthorized. Token not valid.
+ *
+ * /user/forgot:
+ *  post:
+ *   description: If user has forgotten password, a token will be sent to email, that has to be confirmed.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '202':
+ *      description: Email exists, token will be sent.
+ *    '401':
+ *      description: Not foundMail was not found.
+ *
+ * /user/reset/confirm:
+ *  post:
+ *   description: Confirms token that was sent to user-email, when a user has forgotten the password to his account.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '200':
+ *      description: Token was correct, password can now be reset.
+ *    '404':
+ *      description: Not found. Token was not found.
+ *
+ * /user/edit:
+ *  put:
+ *   description: Edit user account information.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '200':
+ *      description: Token was correct, user-account will be edited as specified.
+ *    '404':
+ *      description: Not found, Token was not found.
+ *
+ * /user/delete:
+ *  delete:
+ *   description: Delete user-account.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '200':
+ *      description: Accepted, user-account will be deleted.
+ *    '404':
+ *      description: Not found, Token was not found.
+ *
+ * /user/bank:
+ *  get:
+ *   description: Sends back banks, that fit the passed String.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '200':
+ *      description: Accepted.
+ *  post:
+ *   description: adds a bank-connection.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '200':
+ *      description: Accepted, bank-connection added.
+ *    '404':
+ *      description: Rejected, Token was not found.
+ *  delete:
+ *   description: bank-connection with id will be deleted.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '200':
+ *      description: Accepted, bank-connection deleted.
  */

@@ -33,17 +33,14 @@ const swaggerOptions = {
     },
     definition: {},
     apis: [
-        './routes/portfolio.js',
-        './routes/stocks.js',
-        './routes/user.js',
-        './routes/swagger.js',
-        'server.js'
+        './routes/swagger.js'
     ]
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 require( "./db/index.js" )( app );
+
 app.get('/', (req, res) => {
     res.statusCode = 200;
     res.send('visit ' + req.protocol + '://' + req.get('host') + req.originalUrl + 'api-docs for documentation.')
