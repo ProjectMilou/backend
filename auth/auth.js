@@ -38,7 +38,6 @@ passport.use('local', new LocalStrategy({
     }
 ));
 
-// todo: write a function that checks wether a user is in the database and returns the user object
 passport.use('jwt',
     new JWTStrategy({
         jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),

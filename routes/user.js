@@ -3,11 +3,7 @@ const express = require('express');
 const passport = require('passport');
 const genToken= require('../auth/auth');
 
-
 const router = express.Router();
-
-
-
 
 router.post('/register', async (req, res) => {
 
