@@ -17,7 +17,9 @@ var stock = {
 }
 var position = {
     "stock": stock,
-    "qty": 20
+    "qty": 20,
+    "totalReturn" : 0,
+    "totalReturnPercent":0
 }
 
 var pf1 = {
@@ -55,7 +57,8 @@ var keyFigures = {
     "ptv": 1.00,
     "ptg": 0.85,
     "eps": 99,
-    "div": 10
+    "div": 10,
+    "dividendPayoutRatio":2.3
 }
 
 var riskAnalysis = {
@@ -70,7 +73,9 @@ var pf1details = {
     "risk": riskAnalysis,
     "keyFigures": [keyFigures],
     "nextDividend": 1616086585,
-    "dividendPayoutRatio": 41
+    "dividendPayoutRatio": 41,
+    "totalReturn" : 0,
+    "totalReturnPercent":0
 }
 
 router.get('/list', (req, res) => {

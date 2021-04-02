@@ -144,6 +144,26 @@
  *        $ref: '#/definitions/stock'
  *      qty:
  *        type: number
+ *      totalReturn:
+ *        type: number
+ *      totalReturnPercent:
+ *          type: number
+ *  portfolioQty:
+ *      type: object
+ *      properties:
+ *          id:
+ *              type: string
+ *          qty: 
+ *              type: number
+ *  portfolioStock:
+ *      type: object
+ *      properties:
+ *          id:
+ *              type: string
+ *          name:
+ *              type: string
+ *          qty: 
+ *              type: number
  *  risk:
  *    type: object
  *    properties:
@@ -179,6 +199,8 @@
  *        type: number
  *      div:
  *        type: number
+ *      dividendPayoutRatio:
+ *        type: number
  *  portfolioDetails:
  *    type: object
  *    properties:
@@ -199,6 +221,10 @@
  *        format: UNIX timestamp
  *      dividendPayoutRatio:
  *        type: number
+ *      totalReturn:
+ *          type: number
+ *      totalReturnPercent:
+ *          type: number
  *
  * /portfolio/list:
  *  get:
