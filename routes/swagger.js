@@ -536,7 +536,7 @@
  * /user/register:
  *  post:
  *   description: Confirms, that the token is correct, which has been sent to users email address.
- *   summary:
+ *   summary: Confirmation of token.
  *   tags:
  *    - user
  *   responses:
@@ -548,7 +548,7 @@
  * /user/login:
  *  post:
  *   description: Checks if email and password are correct. sends back a token that needs to be passed in the header of each user-relevant request.
- *   summary:
+ *   summary: Confirming email and password.
  *   tags:
  *    - user
  *   responses:
@@ -560,7 +560,7 @@
  * /user/profile:
  *  get:
  *   description: Sends back account information about user profile.
- *   summary:
+ *   summary: Sends account information.
  *   tags:
  *    - user
  *   responses:
@@ -572,7 +572,7 @@
  * /user/forgot:
  *  post:
  *   description: If user has forgotten password, a token will be sent to email, that has to be confirmed.
- *   summary:
+ *   summary: Requesting token when password was forgotten.
  *   tags:
  *    - user
  *   responses:
@@ -584,7 +584,7 @@
  * /user/reset/confirm:
  *  post:
  *   description: Confirms token that was sent to user-email, when a user has forgotten the password to his account.
- *   summary:
+ *   summary: Confirming forgotten password token.
  *   tags:
  *    - user
  *   responses:
@@ -596,7 +596,7 @@
  * /user/edit:
  *  put:
  *   description: Edit user account information.
- *   summary:
+ *   summary: Edit user account information.
  *   tags:
  *    - user
  *   responses:
@@ -608,7 +608,7 @@
  * /user/delete:
  *  delete:
  *   description: Delete user-account.
- *   summary:
+ *   summary: Delete user-account.
  *   tags:
  *    - user
  *   responses:
@@ -620,7 +620,7 @@
  * /user/bank:
  *  get:
  *   description: Sends back banks, that fit the passed String.
- *   summary:
+ *   summary: Sends back banks, that fit the passed String.
  *   tags:
  *    - user
  *   responses:
@@ -628,7 +628,7 @@
  *      description: Accepted.
  *  post:
  *   description: adds a bank-connection.
- *   summary:
+ *   summary: Adding a bank-connection.
  *   tags:
  *    - user
  *   responses:
@@ -638,7 +638,7 @@
  *      description: Rejected, Token was not found.
  *  delete:
  *   description: bank-connection with id will be deleted.
- *   summary:
+ *   summary: Deleting  bank-connection.
  *   tags:
  *    - user
  *   responses:
