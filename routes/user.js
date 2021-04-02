@@ -4,27 +4,37 @@ const passport = require('passport');
 const genToken = require('../auth/auth');
 const {encrypt, decrypt, hash} = require('../encryption/encryption');
 const userModel = require("../models/user");
+const userTokenModel = require("../models/userToken");
 const User = require("../models/user");
-
 const router = express.Router();
 
 router.post('/register', async (req, res) => {
 
-    // req: { email, pwd }
-
-    // check if email is already in database
-    if (await userModel.find({email:req.body.email}) !== []){
+    // is mail already registered?
+    if(await userModel.exists({email: req.body.email})){
         res.statusCode = 409;
         res.json({
             message: 'Signup failed - mail has got an account already'
         });
-    } else {
-        let newUser = new User({
-            "email":req.body.email,
-            "password": encrypt(req.body.password)
+    }
+
+    // create account with mail and hash, (todo) send a mail with token or url
+    else {
+        await userModel.create({
+            email: req.body.email,
+            lastName: "",
+            firstName: "",
+            password: hash(req.body.password),
+            confirmed: false
         });
-        newUser.save(err => console.log(err));
-        res.send("success");
+        res.statusCode = 201;
+
+        // todo: send mail with confirmation token
+
+        res.statusCode = 201;
+        res.json({
+            message: 'Signup success - token sent to mail'
+        });
     }
 
     /*
@@ -46,11 +56,14 @@ router.post('/register', async (req, res) => {
      */
 });
 
-
-
-
 router.post('/register/confirm', (req, res) => {
 
+    // get token from db
+
+
+
+
+    /*
     // we generate a uuid and send it to the mail. (8e733aeb-8bf8-485c-92b7-62ca4463db3c)
     // the uuid will be passed back to us in the body of this request (json)
     if(req.body.uuid === "8e733aeb-8bf8-485c-92b7-62ca4463db3c") {
@@ -68,6 +81,7 @@ router.post('/register/confirm', (req, res) => {
             message: 'failed'
         });
     }
+     */
 });
 
 
