@@ -2,6 +2,7 @@
 const express = require('express');
 const passport = require('passport');
 const genToken= require('../auth/auth');
+const {encrypt, decrypt} = require('../encryption/encryption');
 
 const router = express.Router();
 
