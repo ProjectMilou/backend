@@ -1,8 +1,10 @@
 'use strict';
 const express = require('express');
 const passport = require('passport');
-const genToken= require('../auth/auth');
-const {encrypt, decrypt} = require('../encryption/encryption');
+const genToken = require('../auth/auth');
+const {encrypt, decrypt, hash} = require('../encryption/encryption');
+const userModel = require("../models/user");
+const User = require("../models/user");
 
 const router = express.Router();
 
@@ -10,6 +12,22 @@ router.post('/register', async (req, res) => {
 
     // req: { email, pwd }
 
+    // check if email is already in database
+    if (await userModel.find({email:req.body.email}) !== []){
+        res.statusCode = 409;
+        res.json({
+            message: 'Signup failed - mail has got an account already'
+        });
+    } else {
+        let newUser = new User({
+            "email":req.body.email,
+            "password": encrypt(req.body.password)
+        });
+        newUser.save(err => console.log(err));
+        res.send("success");
+    }
+
+    /*
     // already used email: test@getmilou.de -> 409
     if(req.body.email === "test@getmilou.de") {
         res.statusCode = 409;
@@ -25,6 +43,7 @@ router.post('/register', async (req, res) => {
             message: 'Signup success'
         });
     }
+     */
 });
 
 
@@ -200,5 +219,7 @@ router.delete('/bank_connection/:id', (req, res) => {
     res.statusCode = 200;
     res.send("bank deleted");
 });
+
+
 
 module.exports = router

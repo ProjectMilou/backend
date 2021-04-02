@@ -7,7 +7,6 @@ dotenv.config();
 let key;
 if (process.env.NODE_ENV == 'development') {
     key = process.env.encryption_key
-
 } else {
     // Load the AWS SDK
     var AWS = require('aws-sdk'),
@@ -42,8 +41,9 @@ if (process.env.NODE_ENV == 'development') {
         }
     });
 }
-// adapted from: https://gist.github.com/vlucas/2bd40f62d20c1d49237a109d491974eb
 
+
+// adapted from: https://gist.github.com/vlucas/2bd40f62d20c1d49237a109d491974eb
 const encrypt = (text) => {
     let iv = crypto.randomBytes(12);
     let cipher = crypto.createCipheriv('aes-256-gcm', Buffer.from(key), iv);
@@ -66,5 +66,9 @@ const decrypt = (text) => {
     return decrypted.toString();
 }
 
-module.exports = { encrypt, decrypt }
+const hash = (text) => {
+    return crypto.createHash('sha256').update(text).digest("hex");
+}
+
+module.exports = { encrypt, decrypt, hash }
 

@@ -8,12 +8,12 @@ const UserSchema = new mongoose.Schema({
     },
     lastName: {
         type: String,
-        required: true,
+        required: false,
         trim: true
     },
     firstName: {
         type: String,
-        required: true,
+        required: false,
         trim: true
     },
     password: {
@@ -24,4 +24,4 @@ const UserSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", UserSchema);
 
-module.exports = Stock;
+module.exports = User;

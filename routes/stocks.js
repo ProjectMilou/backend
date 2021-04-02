@@ -144,8 +144,6 @@ const morganStanleyStockDetails = {
  *      description: Invalid
  */
 
-// fixme: stocks from database are reformated wrongly
-
 router.get('/', async (req, res) => {
     //const stocks = await stockModel.find({});
     const stocks = { "stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock] };
