@@ -24,6 +24,15 @@
  *        - QTY_INVALID
  *        - RANGE_INVALID
  *        - REAL_PORTFOLIO_MODIFICATION
+ *  error2:
+ *    type: object
+ *    properties:
+ *      error:
+ *        type: string
+ *        enum:
+ *        - DATABASE_ERROR
+ *      message:
+ *          type: string
  *  range: 
  *    type: string
  *    enum:
@@ -118,8 +127,8 @@
  *  portfolioOverview:
  *    type: object
  *    properties:
- *      id:
- *        type: integer
+ *      _id:
+ *        type: string
  *      name:
  *        type: string
  *      virtual:
@@ -217,6 +226,13 @@
  *          type: array
  *          items:
  *            $ref: '#/definitions/portfolioOverview'
+ *      500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
+ * 
  *    security:
  *    - api_key: [] 
  *
@@ -244,6 +260,12 @@
  *         description: PORTFOLIO_ID_INVALID
  *         schema:
  *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
  *
  * /portfolio/performance/{portfolioId}:
  *   get:
@@ -322,6 +344,12 @@
  *         description: PORTFOLIO_NAME_DUPLICATE/PORTFOLIO_NAME_INVALID
  *         schema:
  *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
  *
  * /portfolio/{portfolioId}:
  *   delete:
@@ -346,6 +374,12 @@
  *         description: PORTFOLIO_NOT_EXISTS
  *         schema:
  *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
  *
  * /portfolio/rename/{portfolioId}:
  *   put:
