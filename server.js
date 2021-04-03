@@ -6,6 +6,7 @@ require('./auth/auth');
 
 const cors = require('cors');
 
+const getAnalyticsRoute = require('./routes/analyticsRoutes')
 const getUserRoute = require('./routes/user');
 const getPortfolioRoute = require('./routes/portfolio');
 const getStocksRoute = require('./routes/stocks');
@@ -51,6 +52,7 @@ app.use(cors());
 app.use('/user', getUserRoute);
 app.use('/portfolio', getPortfolioRoute);
 app.use('/stocks', getStocksRoute);
+app.use('/analytics', getAnalyticsRoute);
 
 app.listen(process.env.PORT || 3000);
 console.log(`Running on http://${HOST}:${PORT}`);
