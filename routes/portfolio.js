@@ -147,9 +147,9 @@ router.get('/performance/:id', (req, res) => {
     var response = {};
     if (id == "1" && range == "7D") {
         response.chart = [
-            [0, "2021-01-15T21:26:17Z"],
-            [1, "2020-10-15T21:26:17Z"],
-            [2, "2020-09-15T21:26:17Z"]
+            [1327359600000, 0],
+            [1327359700000, 1],
+            [1327359800000, 2]
         ];
         res.json(response);
     } else if (id != "1") {
