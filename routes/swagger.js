@@ -306,7 +306,13 @@
  *             chart:
  *               type: array
  *               items:
- *                 type: number
+ *                 type: object
+ *                 properties:
+ *                      timestamp:
+ *                          type: integer
+ *                          format: UNIX timestamp
+ *                      value:
+ *                          type: integer
  *       404:
  *         description: PORTFOLIO_ID_INVALID
  *         schema:
@@ -316,7 +322,7 @@
  *         schema:
  *           $ref: '#/definitions/error'
  *
- * /portfolio/stock/:
+ * /portfolio/stock:
  *   get:
  *     tags:
  *     - portfolio
@@ -333,17 +339,59 @@
  *         description: ISIN of the specified stock
  *         required: true
  *         schema:
- *           type: object
- *           properties:
- *             portfolios:
- *               $ref: '#/definitions/portfolioStock'
+ *            type: object
+ *            properties:
+ *              isin:
+ *                type: string
  *     responses:
  *       200: 
  *         description: successful operation
  *         schema:
- *             $ref: '#/definitions/portfolioStock'
+ *              type: array
+ *              items:
+ *                  $ref: '#/definitions/portfolioStock'
  *       400:
  *         description: ISIN_INVALID
+ *         schema:
+ *           $ref: '#/definitions/error'
+ *   put:
+ *     tags:
+ *     - portfolio
+ *     summary: Modify stock quantity 
+ *     description: Modifies a stock's quantity within multiple portfolios simultaneously.
+ *     
+ *      If the specified quantity for a portfolio is 0, the position in the specified portfolio is deleted if it exists.
+ *      If there is no position in the specified portfolio, a new position with the specified quantity is created.
+ *      Otherwise, the position in the specified portfolio is updated to match the specified quantity.
+ * 
+ *      Positions not included in the request remain unchanged.
+ *     operationId: modifyStocks
+ *     produces:
+ *     - application/json
+ *     consumes:
+ *     - application/json
+ *     parameters:
+ *     - in: body
+ *       name: isin and modifications
+ *       description: ISIN of the specified stock
+ *       schema:
+ *         type: object
+ *         properties:
+ *           isin:
+ *             type: string
+ *           modifications:
+ *             type: array
+ *             items:
+ *               $ref: '#/definitions/portfolioQty'
+ *     responses:
+ *       200: 
+ *         description: successful operation
+ *       404:
+ *         description: PORTFOLIO_ID_INVALID
+ *         schema:
+ *           $ref: '#/definitions/error'
+ *       400:
+ *         description: QTY_INVALID/ISIN_INVALID/REAL_PORTFOLIO_MODIFICATION
  *         schema:
  *           $ref: '#/definitions/error'
  * 
@@ -486,54 +534,6 @@
  *         schema:
  *           $ref: '#/definitions/error'
  *
- * /portfolio/stock:
- *   put:
- *     tags:
- *     - portfolio
- *     summary: Modify stock quantity 
- *     description: Modifies a stock's quantity within multiple portfolios simultaneously.
- *     
- *      If the specified quantity for a portfolio is 0, the position in the specified portfolio is deleted if it exists.
- *      If there is no position in the specified portfolio, a new position with the specified quantity is created.
- *      Otherwise, the position in the specified portfolio is updated to match the specified quantity.
- * 
- *      Positions not included in the request remain unchanged.
- *     operationId: modifyStocks
- *     produces:
- *     - application/json
- *     consumes:
- *     - application/json
- *     parameters:
- *     - in: body
- *       name: isin
- *       description: ISIN of the specified stock
- *       schema:
- *         type: object
- *         properties:
- *           isin:
- *             type: string
- *     - in: body
- *       name: modifications
- *       description: modifications to the stocks
- *       schema:
- *         type: object
- *         properties:
- *           modifications:
- *             type: array
- *             items:
- *               $ref: '#/definitions/portfolioQty'
- *     responses:
- *       200: 
- *         description: successful operation
- *       404:
- *         description: PORTFOLIO_ID_INVALID
- *         schema:
- *           $ref: '#/definitions/error'
- *       400:
- *         description: QTY_INVALID/ISIN_INVALID/REAL_PORTFOLIO_MODIFICATION
- *         schema:
- *           $ref: '#/definitions/error'
- * 
  * /portfolio/duplicate/{portfolioId}:
  *   post:
  *     tags:

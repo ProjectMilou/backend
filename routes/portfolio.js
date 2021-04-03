@@ -248,7 +248,7 @@ router.put('/stock', (req, res) => {
     // request: {"modifications": 
     //                  [{"isin": "string",
     //                  "qty": 0}]}
-    var isin = req.params.isin;
+    var isin = req.body.isin;
     var response = {};
     if (isin.replace("-", "").length != 12) {
         response.error = "ISIN_INVALID"
