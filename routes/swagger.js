@@ -119,7 +119,7 @@
  *    type: object
  *    properties:
  *      id:
- *        type: integer
+ *        type: string
  *      name:
  *        type: string
  *      virtual:
@@ -144,6 +144,26 @@
  *        $ref: '#/definitions/stock'
  *      qty:
  *        type: number
+ *      totalReturn:
+ *        type: number
+ *      totalReturnPercent:
+ *          type: number
+ *  portfolioQty:
+ *      type: object
+ *      properties:
+ *          id:
+ *              type: string
+ *          qty: 
+ *              type: number
+ *  portfolioStock:
+ *      type: object
+ *      properties:
+ *          id:
+ *              type: string
+ *          name:
+ *              type: string
+ *          qty: 
+ *              type: number
  *  risk:
  *    type: object
  *    properties:
@@ -179,6 +199,8 @@
  *        type: number
  *      div:
  *        type: number
+ *      dividendPayoutRatio:
+ *        type: number
  *  portfolioDetails:
  *    type: object
  *    properties:
@@ -199,6 +221,10 @@
  *        format: UNIX timestamp
  *      dividendPayoutRatio:
  *        type: number
+ *      totalReturn:
+ *          type: number
+ *      totalReturnPercent:
+ *          type: number
  * 
  *  bestYear:
  *      properties:
@@ -282,7 +308,7 @@
  *       in: path
  *       description: ID of portfolio that needs to be fetched
  *       required: true
- *       type: integer
+ *       type: string
  *     responses:
  *       200:
  *         description: successful operation
@@ -318,7 +344,7 @@
  *         in: path
  *         description: ID of the portfolio to get its data points
  *         required: true
- *         type: integer
+ *         type: string
  *     responses:
  *       200: 
  *         description: successful operation
@@ -328,7 +354,11 @@
  *             chart:
  *               type: array
  *               items:
- *                 type: number
+ *                  type: array
+ *                  items: 
+ *                      type: number
+ *                  minItems: 2
+ *                  maxItems: 2
  *       404:
  *         description: PORTFOLIO_ID_INVALID
  *         schema:
@@ -338,6 +368,79 @@
  *         schema:
  *           $ref: '#/definitions/error'
  *
+ * /portfolio/stock:
+ *   get:
+ *     tags:
+ *     - portfolio
+ *     summary: Gets the portfolio name and quantity of a specified stock for all portfolios of the current user. 
+ *     description: This information is displayed to the user when adding a stock to his portfolios.
+ *     operationId: portfolioStock
+ *     produces:
+ *     - application/json
+ *     consumes:
+ *     - application/json
+ *     parameters:
+ *       - in: body
+ *         name: isin
+ *         description: ISIN of the specified stock
+ *         required: true
+ *         schema:
+ *            type: object
+ *            properties:
+ *              isin:
+ *                type: string
+ *     responses:
+ *       200: 
+ *         description: successful operation
+ *         schema:
+ *              type: array
+ *              items:
+ *                  $ref: '#/definitions/portfolioStock'
+ *       400:
+ *         description: ISIN_INVALID
+ *         schema:
+ *           $ref: '#/definitions/error'
+ *   put:
+ *     tags:
+ *     - portfolio
+ *     summary: Modify stock quantity 
+ *     description: Modifies a stock's quantity within multiple portfolios simultaneously.
+ *     
+ *      If the specified quantity for a portfolio is 0, the position in the specified portfolio is deleted if it exists.
+ *      If there is no position in the specified portfolio, a new position with the specified quantity is created.
+ *      Otherwise, the position in the specified portfolio is updated to match the specified quantity.
+ * 
+ *      Positions not included in the request remain unchanged.
+ *     operationId: modifyStocks
+ *     produces:
+ *     - application/json
+ *     consumes:
+ *     - application/json
+ *     parameters:
+ *     - in: body
+ *       name: isin and modifications
+ *       description: ISIN of the specified stock
+ *       schema:
+ *         type: object
+ *         properties:
+ *           isin:
+ *             type: string
+ *           modifications:
+ *             type: array
+ *             items:
+ *               $ref: '#/definitions/portfolioQty'
+ *     responses:
+ *       200: 
+ *         description: successful operation
+ *       404:
+ *         description: PORTFOLIO_ID_INVALID
+ *         schema:
+ *           $ref: '#/definitions/error'
+ *       400:
+ *         description: QTY_INVALID/ISIN_INVALID/REAL_PORTFOLIO_MODIFICATION
+ *         schema:
+ *           $ref: '#/definitions/error'
+ * 
  * /portfolio/create:
  *   post: 
  *     tags:
@@ -386,7 +489,7 @@
  *       in: path
  *       description: ID of the portfolio that needs to be deleted
  *       required: true
- *       type: integer
+ *       type: string
  *     responses:
  *       200: 
  *         description: successful operation
@@ -419,7 +522,7 @@
  *       in: path
  *       description: ID of the portfolio that needs to be renamed
  *       required: true
- *       type: integer
+ *       type: string
  *     responses:
  *       200: 
  *         description: successful operation
@@ -439,10 +542,10 @@
  *     summary: Modify positions of a portfolio
  *     description: Modifies the positions of a portfolio and saves the timestamp of the modification in the portfolio's history.
  *     
- *       If the specified quantity of a position is 0, the position of the specified stock is deleted if it exists.
- *       If there is no position of the specified stock, a new position with the specified quantity is created.
- *       Otherwise, the position of the specified stock is updated to match the specified quantity.
- *       
+ *       If the specified quantity for a portfolio is 0, the position in the specified portfolio is deleted if it exists.
+ *       If there is no position in the specified portfolio, a new position with the specified quantity is created.
+ *       Otherwise, the position in the specified portfolio is updated to match the specified quantity.
+ *
  *       Positions not included in the request remain unchanged.
  *     operationId: modifyPortfolio
  *     produces:
@@ -464,7 +567,7 @@
  *       in: path
  *       description: ID of the portfolio that needs to be modified
  *       required: true
- *       type: integer
+ *       type: string
  *     responses:
  *       200: 
  *         description: successful operation
@@ -501,7 +604,7 @@
  *       in: path
  *       description: ID of the portfolio that needs to be duplicated
  *       required: true
- *       type: integer
+ *       type: string
  *     responses:
  *       200: 
  *         description: successful operation
