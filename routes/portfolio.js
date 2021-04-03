@@ -23,13 +23,13 @@ var position = {
 }
 
 var portfolioStock = {
-    "_id": "1",
+    "id": "1",
     "name": "pfName",
     "qty": 10
 }
 
 var pf1 = {
-    "_id": "0",
+    "id": "0",
     "name": "test1",
     "virtual": true,
     "positionCount": 0,
@@ -40,7 +40,7 @@ var pf1 = {
     "modified": 0
 };
 var pf2 = {
-    "_id": "1",
+    "id": "1",
     "name": "test2",
     "virtual": true,
     "positionCount": 1,
