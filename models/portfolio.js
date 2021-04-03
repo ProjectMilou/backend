@@ -5,9 +5,9 @@ const portfolioOverviewSchema = new mongoose.Schema({
     virtual: Boolean,
     positionCount: Number,
     value: Number,
-    score: Number,
-    perf7d: Number,
-    perf1y: Number,
+    score: Number,//?
+    perf7d: Number,//?
+    perf1y: Number,//?
     modified: Number
 });
 
@@ -18,22 +18,32 @@ const portfolioSchema = new mongoose.Schema({
         positions: [
             {
                 stock: {
+                    //id: Number?
+                    //accountId?
                     isin: String,
+                    //wkn?
                     symbol: String,
                     name: String,
-                    price: Number,
-                    perf7d: Number,
-                    perf1y: Number,
+                    price: Number,//=marketValue?
+                    //marketValueCurrency:String,
+                    //quote?
+                    //price/quoteCurrency:String,
+                    //quoteDate: Date/string,
+                    //entryQuote:Number,
+                    //entryQuoteCurrency: Number,
+                    perf7d: Number,//?
+                    perf1y: Number,//?
                     country: String,
                     industry: String,
-                    score: Number
+                    score: Number//?
                 },
-                qty: Number,
-                totalReturn: Number,
-                totalReturnPercent: Number
+                qty: Number,// = quantityNominal?
+                //quantityNominalType?:String,
+                totalReturn: Number, //=profitOrLoss?
+                totalReturnPercent: Number//=?
             }
         ],
-        risk: {
+        risk: {//?
             countries: {
                 count: Number,
                 score: Number,
@@ -56,7 +66,7 @@ const portfolioSchema = new mongoose.Schema({
                 ]
             }
         },
-        keyFigures: [
+        keyFigures: [//?
             {
                 year: Number,
                 pte: Number,
@@ -67,8 +77,8 @@ const portfolioSchema = new mongoose.Schema({
                 dividendPayoutRatio: Number
             }
         ],
-        nextDividend: Number,
-        dividendPayoutRatio: Number,
+        nextDividend: Number,//?
+        dividendPayoutRatio: Number,//?
         totalReturn: Number,
         totalReturnPercent: Number
     }

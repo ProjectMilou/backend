@@ -109,9 +109,9 @@ router.get('/details/:id', (req, res) => {
             response.error = "PORTFOLIO_ID_INVALID"
             res.status(404).json(response);
         } else {
-            response = portf.portfolio; 
+            response = portf.portfolio;
             res.json(response);
-            
+
         }
     });
 
@@ -256,7 +256,7 @@ router.post('/create', (req, res) => {
                         } else {
                             console.log("portfolio saved successfully")
 
-                            
+
                             response.id = testPortfolio["_id"];
                             res.json(response);
                         }
@@ -312,7 +312,7 @@ router.put('/rename/:id', (req, res) => {
                 res.status(400).json(response);
             } else {
                 //update name
-                Portfolio.findOneAndUpdate({ "_id": id, "userId": userId }, { "name": name }, (err, portf) => {
+                Portfolio.findOneAndUpdate({ "_id": id, "userId": userId }, { "portfolio.overview.name": name }, (err, portf) => {
                     if (err) {
                         response.error = "DATABASE_ERROR"
                         response.message = "error: " + err
@@ -358,7 +358,67 @@ router.post('/duplicate/:id', (req, res) => {
     // request: {"name" : name} 
     var id = req.params.id;
     var name = req.body.name;
-    var response = {};
+    var response = {}
+    if (!name) {
+        response.error = "PORTFOLIO_NAME_INVALID";
+        res.status(400).json(response);
+    } else {
+        var portfolioId = new mongoose.Types.ObjectId();
+        Portfolio.findOne({ "userId": userId, "portfolio.overview.name": name }).exec((err, result) => {
+            if (err) {
+                response.error = "DATABASE_ERROR"
+                response.message = err
+                console.log(err)
+                res.status(500).json(response);
+            } else if (!result) {
+                isDuplicate = false
+            }
+            var response = {};
+            if (isDuplicate) {
+                response.error = "PORTFOLIO_NAME_DUPLICATE";
+                res.status(400).json(response);
+            } else {
+                //var testPortfolioOverview = new PortfolioOverview();
+                var portfolio;
+                Portfolio.findOne({ "_id": id, "userId": userId }, (err, portf) => {
+                    if (err) {
+                        response.error = "DATABASE_ERROR"
+                        response.message = "error: " + err
+                        console.log(err)
+                        res.status(500).json(response);
+                    } else if (!portf) {
+                        response.error = "PORTFOLIO_ID_INVALID"
+                        res.status(404).json(response);
+                    } else {
+                        portf["_id"] = portfolioId
+                        portf.portfolio.overview["_id"] = portfolioId
+                        portf.portfolio.overview.virtual = true;
+
+                        res.json(response);
+                    }
+                    var portfolio = new Portfolio(portf)
+                    portfolio.save(
+                        function (err, portfolio) {
+                            if (err) {
+                                response.error = "DATABASE_ERROR"
+                                response.message = err
+                                console.log(err)
+                                res.status(500).json(response);
+                            } else {
+                                console.log("portfolio saved successfully")
+
+
+                                response.id = portfolio["_id"];
+                                res.json(response);
+                            }
+                        }
+                    )
+                })
+
+
+            }
+        })
+    }
     if (id != 1 && id != 0) {
         response.error = "PORTFOLIO_ID_INVALID"
         res.status(404).json(response);
