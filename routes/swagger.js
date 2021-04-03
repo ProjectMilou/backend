@@ -354,13 +354,11 @@
  *             chart:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                      timestamp:
- *                          type: integer
- *                          format: UNIX timestamp
- *                      value:
- *                          type: integer
+ *                  type: array
+ *                  items: 
+ *                      type: number
+ *                  minItems: 2
+ *                  maxItems: 2
  *       404:
  *         description: PORTFOLIO_ID_INVALID
  *         schema:
