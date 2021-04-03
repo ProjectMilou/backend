@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 
 const portfolioOverviewSchema = new mongoose.Schema({
+    id: ObjectId,//TODO change _id to id in code
     name: String,
     virtual: Boolean,
     positionCount: Number,
@@ -12,6 +13,7 @@ const portfolioOverviewSchema = new mongoose.Schema({
 });
 
 const portfolioSchema = new mongoose.Schema({
+    id: ObjectId,
     userId: mongoose.ObjectId,
     portfolio: {
         overview: portfolioOverviewSchema,
@@ -25,12 +27,12 @@ const portfolioSchema = new mongoose.Schema({
                     symbol: String,
                     name: String,
                     price: Number,//=marketValue?
-                    //marketValueCurrency:String,
-                    //quote?
-                    //price/quoteCurrency:String,
-                    //quoteDate: Date/string,
-                    //entryQuote:Number,
-                    //entryQuoteCurrency: Number,
+                    marketValueCurrency:String,
+                    quote:Number,
+                    quoteCurrency:String,
+                    quoteDate: Date/string,
+                    entryQuote:Number,
+                    entryQuoteCurrency: Number,
                     perf7d: Number,//?
                     perf1y: Number,//?
                     country: String,
@@ -38,7 +40,7 @@ const portfolioSchema = new mongoose.Schema({
                     score: Number//?
                 },
                 qty: Number,// = quantityNominal?
-                //quantityNominalType?:String,
+                quantityNominalType:String,
                 totalReturn: Number, //=profitOrLoss?
                 totalReturnPercent: Number//=?
             }
@@ -66,7 +68,7 @@ const portfolioSchema = new mongoose.Schema({
                 ]
             }
         },
-        keyFigures: [//?
+        keyFigures: [//no data
             {
                 year: Number,
                 pte: Number,
@@ -77,13 +79,13 @@ const portfolioSchema = new mongoose.Schema({
                 dividendPayoutRatio: Number
             }
         ],
-        nextDividend: Number,//?
+        nextDividend: Number,//no data, maybe Alpha Vantage
         dividendPayoutRatio: Number,//?
         totalReturn: Number,
         totalReturnPercent: Number
     }
 });
-
+//method for analytics
 
 
 const Portfolio = mongoose.model('Portfolio', portfolioSchema)

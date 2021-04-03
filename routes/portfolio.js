@@ -160,7 +160,7 @@ router.get('/performance/:id', function (req, res) {
     var range = req.body.range;
     var response = {};
     if (id == 1 && range == "7D") {
-        response.chart = [0, 1, 2, 3, 4];
+        response.chart = [0, 1, 2, 3, 4];//TODO: change to new format
         res.json(response);
     } else if (id != 1) {
         response.error = "PORTFOLIO_ID_INVALID";
@@ -170,6 +170,8 @@ router.get('/performance/:id', function (req, res) {
         res.status(400).json(response);
     }
 });
+
+//TODO: new routes
 
 //creates new portfolio with the given name and gives the id as a response
 router.post('/create', (req, res) => {
