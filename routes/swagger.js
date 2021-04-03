@@ -225,6 +225,54 @@
  *          type: number
  *      totalReturnPercent:
  *          type: number
+ * 
+ *  bestYear:
+ *      properties:
+ *          changeBest:
+ *              type: number
+ *          yearBest:
+ *              type: string
+ *          growthRateBest:
+ *              type: number
+ * 
+ *  worstYear:
+ *      properties:
+ *          changeWorst:
+ *              type: number
+ *          yearBest:
+ *              type: string
+ *          growthRateWorst:
+ *              type: number
+ * 
+ *  backtestResult:
+ *      type: object
+ *      properties:
+ *           MDDMaxToMin:
+ *              type: number
+ *           MDDInitialToMin":
+ *              type: number
+ *           dateMax:
+ *              type: string
+ *           dateMin: 
+ *              type: string
+ *           maxValue: 
+ *              type: number
+ *           minValue: 
+ *              type: number
+ *           initialValue: 
+ *              type: number
+ *           bestYear:
+ *               $ref: '#/definitions/bestYear'
+ *           worstYear:
+ *               $ref: '#/definitions/worstYear'
+ *           finalPortfolioBalance: 
+ *              type: number
+ *           CAGR:
+ *              type: number
+ *           standardDeviation:
+ *              type: number
+ *           sharpeRatio: 
+ *              type: number
  *
  * /portfolio/list:
  *  get:
@@ -641,7 +689,7 @@
  * /user/register:
  *  post:
  *   description: Confirms, that the token is correct, which has been sent to users email address.
- *   summary:
+ *   summary: Confirmation of token.
  *   tags:
  *    - user
  *   responses:
@@ -653,7 +701,7 @@
  * /user/login:
  *  post:
  *   description: Checks if email and password are correct. sends back a token that needs to be passed in the header of each user-relevant request.
- *   summary:
+ *   summary: Confirming email and password.
  *   tags:
  *    - user
  *   responses:
@@ -665,7 +713,7 @@
  * /user/profile:
  *  get:
  *   description: Sends back account information about user profile.
- *   summary:
+ *   summary: Sends account information.
  *   tags:
  *    - user
  *   responses:
@@ -677,7 +725,7 @@
  * /user/forgot:
  *  post:
  *   description: If user has forgotten password, a token will be sent to email, that has to be confirmed.
- *   summary:
+ *   summary: Requesting token when password was forgotten.
  *   tags:
  *    - user
  *   responses:
@@ -689,7 +737,7 @@
  * /user/reset/confirm:
  *  post:
  *   description: Confirms token that was sent to user-email, when a user has forgotten the password to his account.
- *   summary:
+ *   summary: Confirming forgotten password token.
  *   tags:
  *    - user
  *   responses:
@@ -701,7 +749,7 @@
  * /user/edit:
  *  put:
  *   description: Edit user account information.
- *   summary:
+ *   summary: Edit user account information.
  *   tags:
  *    - user
  *   responses:
@@ -713,7 +761,7 @@
  * /user/delete:
  *  delete:
  *   description: Delete user-account.
- *   summary:
+ *   summary: Delete user-account.
  *   tags:
  *    - user
  *   responses:
@@ -725,7 +773,7 @@
  * /user/bank:
  *  get:
  *   description: Sends back banks, that fit the passed String.
- *   summary:
+ *   summary: Sends back banks, that fit the passed String.
  *   tags:
  *    - user
  *   responses:
@@ -733,7 +781,7 @@
  *      description: Accepted.
  *  post:
  *   description: adds a bank-connection.
- *   summary:
+ *   summary: Adding a bank-connection.
  *   tags:
  *    - user
  *   responses:
@@ -743,10 +791,147 @@
  *      description: Rejected, Token was not found.
  *  delete:
  *   description: bank-connection with id will be deleted.
- *   summary:
+ *   summary: Deleting  bank-connection.
  *   tags:
  *    - user
  *   responses:
  *    '200':
  *      description: Accepted, bank-connection deleted.
- */
+ * 
+ * /analytics/backtest:
+ *  get:
+ *   description: Backtests a real or a virtual portfolio for a given period of time
+ *   summary: Backtests a real or a virtual portfolio for a given period of time
+ *   produces:
+ *      - application/json  
+ *   tags:
+ *    - analytics
+ *   requestbody:
+ *        portfolioId: The id of the Portfolio
+ *        startDate: The start date for the backtest
+ *        endDate: The end date for the backtest    
+ *   responses:
+ *      '200':
+ *          description: Success.
+ *          schema:
+ *              $ref: '#/definitions/backtestResult'
+ * /analytics/diversification/{portfolioId}:
+ *  get:
+ *   description: Calculates the weighted distribution of stocks in a portfolio among different criterion
+ *   summary: Calculates the weighted distribution of stocks in a portfolio among different criterion
+ *   produces:
+ *      - application/json
+ *   tags:
+ *    - analytics
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: ID of portfolio
+ *       required: true
+ *       type: number
+ *   responses:
+ *      '200':
+ *          description: Success. 
+ * /analytics/dividends/{portfolioId}:
+ *  get:
+ *   description: Calculates the weighted average dividend and also returns the dividends per stock
+ *   summary: Calculates the weighted average dividend and also returns the dividends per stock
+ *   produces:
+ *      - application/json
+ *   tags:
+ *    - analytics
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: ID of portfolio
+ *       required: true
+ *       type: number
+ *   responses:
+ *      '200':
+ *          description: Success.
+ * /analytics/peratios/{portfolioId}:
+ *  get:
+ *   description: Calculates the weighted average of PERatio of a portfolio and returns also the PERatios per stock
+ *   summary: Calculates the weighted average of PERatio of a portfolio and returns also the PERatios per stock
+ *   produces:
+ *      - application/json
+ *   tags:
+ *    - analytics
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: ID of portfolio
+ *       required: true
+ *       type: number
+ *   responses:
+ *      '200':
+ *          description: Success.
+ * /analytics/gainLoss/{portfolioId}:
+ *  get:
+ *   description: Calculates the weighted average of Gain or Loss of a portfolio and returns also the gain or loss per stock
+ *   summary: Calculates the weighted average of Gain or Loss of a portfolio and returns also the gain or loss per stock
+ *   produces:
+ *      - application/json
+ *   tags:
+ *    - analytics
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: ID of portfolio
+ *       required: true
+ *       type: number
+ *   responses:
+ *      '200':
+ *          description: Success.
+ * /analytics/volatilityCorrelation/{portfolioId}:
+ *  get:
+ *   description: Calculates the volatility and correlation of stocks within a portfolio
+ *   summary: Calculates the volatility and correlation of stocks within a portfolio
+ *   produces:
+ *      - application/json
+ *   tags:
+ *    - analytics
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: ID of portfolio
+ *       required: true
+ *       type: number
+ *   responses:
+ *      '200':
+ *          description: Success.
+* /analytics/sharpeRatio/{portfolioId}:
+ *  get:
+ *   description: Calculates the sharpe ratio of stocks within a portfolio
+ *   summary: Calculates the sharpe ratio of stocks within a portfolio
+ *   produces:
+ *      - application/json
+ *   tags:
+ *    - analytics
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: ID of portfolio
+ *       required: true
+ *       type: number
+ *   responses:
+ *      '200':
+ *          description: Success.
+ * /analytics/debtEquity/{portfolioId}:
+ *  get:
+ *   description: Calculates the weighted average of debt/equity of a portfolio and returns also the debt/equity per stock
+ *   summary: Calculates the weighted average of debt/equity of a portfolio and returns also the debt/equity per stock
+ *   produces:
+ *      - application/json
+ *   tags:
+ *    - analytics
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: ID of portfolio
+ *       required: true
+ *       type: number
+ *   responses:
+ *      '200':
+ *          description: Success.
+*/
