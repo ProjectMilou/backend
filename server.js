@@ -17,8 +17,6 @@ require( "./db/index.js" )( app );
 const { PORT = 3000 } = process.env;
 const HOST = '0.0.0.0';
 
-
-
 const swaggerOptions = {
     encoding: "utf-8",
     swaggerDefinition: {
@@ -51,5 +49,3 @@ app.use('/stocks', getStocksRoute);
 
 app.listen(process.env.PORT || 3000);
 console.log(`Running on http://${HOST}:${PORT}`);
-
-//db()
