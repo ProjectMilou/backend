@@ -3,11 +3,13 @@ const express = require('express');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 
-const genToken = require('../auth/auth2');
+const genToken = require('../auth/auth');
 const UserModel = require("../models/user");
-const userTokenModel = require("../models/userToken");
+const UserTokenModel = require ("../models/userToken")
 
 const router = express.Router();
+
+// logout wont be needed, since frontend will delete token for logout and passportjs's encoder specifies the time, in which its token will be valid
 
 router.post(
     '/register',
@@ -20,7 +22,7 @@ router.post(
 
 router.post('/register/confirm', (req, res) => {
 
-    // get token from db
+    // todo
 
     /*
     // we generate a uuid and send it to the mail. (8e733aeb-8bf8-485c-92b7-62ca4463db3c)
@@ -77,55 +79,13 @@ router.post(
     }
 );
 
-/*
-
-// login
-router.post('/login',async (req, res, next) => {
-    // documentation: http://www.passportjs.org/docs/username-password/
-
-    // request contains mail and password, the lib is used to authentificate and generate a JWT token.
-
-    // res:
-    // case match (mail: test@getmilou.de, pwd: 123456):
-
-    // case (any other): 401
-    passport.authenticate('local', {session: false}, (err, user, info) => {
-        if (err || !user) {
-            return res.status(400).json({
-                message: 'Something is not right',
-                user   : user
-            });
-        }
-        req.login(user, {session: false}, (err) => {
-            if (err) {
-                res.send(err);
-            }
-            // generate a signed son web token with the contents of user object and return it in the response
-            const token = genToken(user);
-            return res.json({user, token});
-        });
-    })(req, res);
-});
- */
-
-// todo logout is needed! what if the user decides to log out?
-// logout wont be needed, since frontend will delete token for logout and passportjs's encoder specifies the time, in which its token will be valid
-
-
-
 // profile
 router.get('/profile', passport.authenticate('jwt',{session: false}), async (req, res) => {
     // http://www.passportjs.org/docs/username-password/
 
     // request just contains an JWT token in its header, that will be checked by passport automaticaly. If unathorized, 401 will be sent back.
     try{
-        const user = await UserModel.findOne({_id: req.user.id})
-        res.json({user: {
-            email: user.email,
-            lastName: user.lastName,
-            firstName: user.firstName,
-            confirmed: user.confirmed
-        }});
+        res.json({user: req.user});
     } catch(err){
         console.log(err);
         res.json("error occured");
@@ -133,30 +93,22 @@ router.get('/profile', passport.authenticate('jwt',{session: false}), async (req
 
 });
 
-
-
 // forgot password
-router.post('/forgot', (req, res) => {
+router.post('/forgot', async (req, res) => {
 
-    // req: mail
-    // case mail in db (test@getmilou.de): 200 | send token to mail
-    if(req.body.email === "test@getmilou.de") {
-        res.statusCode = 404;
-        res.json({
-            message: 'mail not found'
-        });
+    // if user exists: send token to mail and store it at userTokens
+    if(await UserModel.exists({email: req.body.email})){
+        res.status(202).json({message: "confirm your email to proceed"});
+
+        // todo generate token, store in userTokenSchema and send it to email
+
     }
 
-    // case anyother: 404
-    else {
-        res.statusCode = 202;
-        res.json({
-            message: 'token sent to mail'
-        });
+    // if user does not exist: 404
+    else{
+        res.status(404).json({message: "mail not found"});
     }
 });
-
-
 
 router.post('/reset/confirm', (req, res) => {
 
@@ -182,31 +134,53 @@ router.post('/reset/confirm', (req, res) => {
 });
 
 // edit profile
-
-
-
-// fixme: passport option {session = true or false} ?
-router.put('/edit', passport.authenticate('jwt', {session: false}),  (req, res) => {
+router.put('/edit', passport.authenticate('jwt', {session: false}), async (req, res) => {
     // implement the following authorization: http://www.passportjs.org/docs/username-password/
-
     // req: {?firstname, ?lastname}
+    // todo extra token authentication via mail needed?
 
-    // process: update all sent data
+    let changes = {};
+    if(req.body.firstName){
+        changes.firstName = req.body.firstName;
+    }
+    if(req.body.lastName){
+        changes.lastName = req.body.lastName;
+    }
 
-    // res: 200
-    res.statusCode = 200;
-    res.send("edited");
+    try{
+        await UserModel.updateOne({_id: req.user.id},changes,null);
+        const user = await UserModel.findOne({_id: req.user.id});
+        res.json({user: {
+                email: user.email,
+                lastName: user.lastName,
+                firstName: user.firstName,
+                confirmed: user.confirmed
+            }});
+    } catch(err){
+        console.log(err);
+        res.json("error occured");
+    }
 });
 
 
-
 // delete profile
-router.delete('/profile', passport.authenticate('jwt', {session: false}),  (req, res) => {
+router.delete('/profile', passport.authenticate('jwt', {session: false}),  async (req, res) => {
     // implement the following authorization: http://www.passportjs.org/docs/username-password/
     // req: token in header
 
-    // res: 200
-    res.send("deleted");
+    // todo extra token authentication via mail needed?
+    // todo: delete user from finAPI
+    // todo: delete portfolios
+
+    try{
+        const user = await UserModel.findOne({_id: req.user.id});
+        await UserModel.deleteOne({_id: req.user.id});
+        await UserTokenModel.deleteMany({email: user.email});
+        res.json("successfully deleted user").status(200);
+    } catch(err){
+        console.log(err);
+        res.json("error occured");
+    }
 });
 
 

@@ -2,25 +2,23 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
-require('./auth/auth');
-
 const cors = require('cors');
-
 const getUserRoute = require('./routes/user');
 const getPortfolioRoute = require('./routes/portfolio');
 const getStocksRoute = require('./routes/stocks');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-//const db = require('./db/index.js');
-
-
 require('./auth/auth');
 
+const app = express();
+require( "./db/index.js" )( app );
 
 // Constants
 const { PORT = 3000 } = process.env;
 const HOST = '0.0.0.0';
-const app = express();
+
+
+
 const swaggerOptions = {
     encoding: "utf-8",
     swaggerDefinition: {
@@ -38,11 +36,10 @@ const swaggerOptions = {
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-require( "./db/index.js" )( app );
 
 app.get('/', (req, res) => {
     res.statusCode = 200;
-    res.send('visit ' + req.protocol + '://' + req.get('host') + req.originalUrl + 'api-docs for documentation.')
+    res.redirect(req.protocol + '://' + req.get('host') + req.originalUrl + 'api-docs');
 })
 
 app.use(bodyParser.json());
