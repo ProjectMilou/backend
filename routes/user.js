@@ -1,67 +1,26 @@
 'use strict';
 const express = require('express');
 const passport = require('passport');
-const genToken = require('../auth/auth');
-const {encrypt, decrypt, hash} = require('../encryption/encryption');
-const userModel = require("../models/user");
+const jwt = require('jsonwebtoken');
+
+const genToken = require('../auth/auth2');
+const UserModel = require("../models/user");
 const userTokenModel = require("../models/userToken");
-const User = require("../models/user");
+
 const router = express.Router();
 
-router.post('/register', async (req, res) => {
-
-    // is mail already registered?
-    if(await userModel.exists({email: req.body.email})){
-        res.statusCode = 409;
-        res.json({
-            message: 'Signup failed - mail has got an account already'
-        });
+router.post(
+    '/register',
+    passport.authenticate('register', { session: false }),
+    async (req, res) => {
+        res.statusCode = req.user.statusCode
+        res.json(req.user.response);
     }
-
-    // create account with mail and hash, (todo) send a mail with token or url
-    else {
-        await userModel.create({
-            email: req.body.email,
-            lastName: "",
-            firstName: "",
-            password: hash(req.body.password),
-            confirmed: false
-        });
-        res.statusCode = 201;
-
-        // todo: send mail with confirmation token
-
-        res.statusCode = 201;
-        res.json({
-            message: 'Signup success - token sent to mail'
-        });
-    }
-
-    /*
-    // already used email: test@getmilou.de -> 409
-    if(req.body.email === "test@getmilou.de") {
-        res.statusCode = 409;
-        res.json({
-            message: 'Signup failed - mail has got an account already'
-        });
-    }
-
-    // any other mail -> 201
-    else {
-        res.statusCode = 201;
-        res.json({
-            message: 'Signup success'
-        });
-    }
-     */
-});
+);
 
 router.post('/register/confirm', (req, res) => {
 
     // get token from db
-
-
-
 
     /*
     // we generate a uuid and send it to the mail. (8e733aeb-8bf8-485c-92b7-62ca4463db3c)
@@ -84,7 +43,41 @@ router.post('/register/confirm', (req, res) => {
      */
 });
 
+router.post(
+    '/login',
+    async (req, res, next) => {
+        passport.authenticate(
+            'login',
+            async (err, user, info) => {
+                try {
+                    if (err || !user) {
+                        return res.status(400).json({
+                            // todo: should be specified if wrong pwd or wrong mail ???
+                            message: info
+                        });
+                    }
 
+                    req.login(
+                        user,
+                        { session: false },
+                        async (error) => {
+                            if (error) return next(error);
+
+                            const body = {id: user._id, email: user.email };
+                            const token = genToken(body); //jwt.sign({ user: body }, 'TOP_SECRET');
+
+                            return res.json({ token });
+                        }
+                    );
+                } catch (error) {
+                    return next(error);
+                }
+            }
+        )(req, res, next);
+    }
+);
+
+/*
 
 // login
 router.post('/login',async (req, res, next) => {
@@ -113,6 +106,7 @@ router.post('/login',async (req, res, next) => {
         });
     })(req, res);
 });
+ */
 
 // todo logout is needed! what if the user decides to log out?
 // logout wont be needed, since frontend will delete token for logout and passportjs's encoder specifies the time, in which its token will be valid
@@ -120,11 +114,23 @@ router.post('/login',async (req, res, next) => {
 
 
 // profile
-router.get('/profile', passport.authenticate('jwt',{session: false}),  (req, res) => {
+router.get('/profile', passport.authenticate('jwt',{session: false}), async (req, res) => {
     // http://www.passportjs.org/docs/username-password/
 
     // request just contains an JWT token in its header, that will be checked by passport automaticaly. If unathorized, 401 will be sent back.
-    res.json({firstName:'test',user: req.user});
+    try{
+        const user = await UserModel.findOne({_id: req.user.id})
+        res.json({user: {
+            email: user.email,
+            lastName: user.lastName,
+            firstName: user.firstName,
+            confirmed: user.confirmed
+        }});
+    } catch(err){
+        console.log(err);
+        res.json("error occured");
+    }
+
 });
 
 

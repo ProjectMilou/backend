@@ -17,6 +17,8 @@ const genToken = user => {
     }, jwtSecret);
 }
 
+
+
 passport.use('local', new LocalStrategy({
         usernameField: 'email',
         passwordField: 'password'

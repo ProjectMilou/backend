@@ -125,25 +125,6 @@ const morganStanleyStockDetails = {
     "assembly": "2021-05-19"
 }
 
-/**
- * @swagger
- * /stocks/:
- *  get:
- *   summary: Returns a list of all stocks.
- *   description: Returns a list of all stocks.
- *   produces:
- *     - application/json
- *   tags:
- *    - stocks
- *   responses:
- *    '200':
- *      description: Successful operation
- *      schema:
- *          $ref: '#/definitions/stockks'
- *    '400':
- *      description: Invalid
- */
-
 router.get('/', async (req, res) => {
     //const stocks = await stockModel.find({});
     const stocks = { "stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock] };

@@ -4,7 +4,6 @@ const UserTokenSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        trim: true
     },
     token: {
         type: String,

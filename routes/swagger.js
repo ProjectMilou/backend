@@ -471,7 +471,7 @@
  *         schema:
  *           $ref: '#/definitions/error'
  *
- * /stocks/:
+ * /stocks:
  *  get:
  *   summary: Returns a list of all stocks.
  *   description: Returns a list of all stocks.
@@ -483,7 +483,7 @@
  *    '200':
  *      description: Successful operation
  *      schema:
- *          $ref: '#/definitions/stockks'
+ *          $ref: '#/definitions/stocks'
  *    '400':
  *      description: Invalid
  *
