@@ -148,7 +148,6 @@ const morganStanleyStockDetails = {
 
 // fixme: stocks from database are reformated wrongly
 
-
 // router.get('/list', async (req, res) => {
 //     //const stocks = await stockModel.find({});
 //     const stocks = {"stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock]};
@@ -216,7 +215,6 @@ router.get('/search', async (req, res) => {
     !isError && res.json(response);
     isError && res.status(404).json(response);
 });
-
 
 // router.get('/search', async (req, res) => {
 //     let response;
@@ -307,15 +305,15 @@ router.get('/search', async (req, res) => {
 
 router.get('/details/search', (req, res) => {
     let isError = false;
-    let input = req.query.input;
+    let id = req.query.input;
     let response;
-    if (input === "IBM") {
+    if (id === "IBM") {
         response = ibmStockDetails;
-    } else if (input === "AAPL") {
+    } else if (id === "AAPL") {
         response = appleStockDetails;
-    } else if (input === "MSFT") {
+    } else if (id === "MSFT") {
         response = microsoftStockDetails;
-    } else if (input === "MS") {
+    } else if (id === "MS") {
         response = morganStanleyStockDetails;
     } else {
         isError = true;
@@ -448,7 +446,6 @@ const keyFiguresMore = {
         keyFigure11, keyFigure12, keyFigure13, keyFigure14, keyFigure15,
         keyFigure16, keyFigure17, keyFigure18, keyFigure19, keyFigure20]
 };
-
 
 router.get('/charts/key_figures/search', (req, res) => {
     let isError = false;
