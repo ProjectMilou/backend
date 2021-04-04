@@ -42,7 +42,7 @@ passport.use(
                 try {
 
                     // new user is stored in db
-                    await UserModel.create({
+                    const user = await UserModel.create({
                         email,
                         password,
                         lastName : "",
@@ -53,7 +53,7 @@ passport.use(
                     // todo: generate token and send it to mail!
                     // token and mail are stored usertokens
                     await UserTokenModel.create({
-                        email:email,
+                        userID: user.id,
                         token:"token12345"
                     });
 

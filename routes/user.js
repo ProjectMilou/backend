@@ -20,9 +20,26 @@ router.post(
     }
 );
 
-router.post('/register/confirm', (req, res) => {
+// todo fix in swagger !
+router.post('/confirm/:id/:token', async (req, res) => {
 
-    // todo
+    const token = req.params.token;
+    const id = req.params.id;
+
+    try{
+        const userToken = await UserTokenModel.findOne({userID: id})
+        if(userToken.expirationDate < Date.now()) {
+            res.status(404).send("token has already expired")
+        } else if(userToken.token !== token){
+            res.send("failed");
+        } else {
+            await UserModel.updateOne({_id: id}, {confirmed: true})
+            await UserTokenModel.deleteOne({userID: id})
+            res.status(200).send("account successfully confirmed");
+        }
+    } catch(err) {
+        res.status(404).send("failed");
+    }
 
     /*
     // we generate a uuid and send it to the mail. (8e733aeb-8bf8-485c-92b7-62ca4463db3c)
@@ -55,7 +72,7 @@ router.post(
                     if (err || !user) {
                         return res.status(400).json({
                             // todo: should be specified if wrong pwd or wrong mail ???
-                            message: info
+                            message: info.message
                         });
                     }
 
@@ -65,10 +82,18 @@ router.post(
                         async (error) => {
                             if (error) return next(error);
 
-                            const body = {id: user._id, email: user.email };
+                            const body = {id: user._id};
                             const token = genToken(body); //jwt.sign({ user: body }, 'TOP_SECRET');
 
-                            return res.json({ token });
+                            return res.json({
+                                user: {
+                                    email: user.email,
+                                    lastName: user.lastName,
+                                    firstName: user.firstName,
+                                    confirmed: user.confirmed
+                                },
+                                token: token
+                            });
                         }
                     );
                 } catch (error) {
@@ -85,7 +110,14 @@ router.get('/profile', passport.authenticate('jwt',{session: false}), async (req
 
     // request just contains an JWT token in its header, that will be checked by passport automaticaly. If unathorized, 401 will be sent back.
     try{
-        res.json({user: req.user});
+        res.json({
+            user : {
+                email: req.user.email,
+                lastName: req.user.lastName,
+                firstName: req.user.firstName,
+                confirmed: req.user.confirmed
+            }
+        });
     } catch(err){
         console.log(err);
         res.json("error occured");
