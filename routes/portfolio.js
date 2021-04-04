@@ -164,9 +164,8 @@ router.get('/performance/:id', (req, res) => {
 router.get('/stock', (req, res) => {
     var isin = req.body.isin + "";
     var response = {};
-    if (isin.replace("-", "").length != 12) {
+    if (isin.replace(/-/g, "").length != 12) {
         response.error = "ISIN_INVALID";
-        console.log(isin.replace("-", ""));
         res.status(400).json(response);
     } else {
         response.portfolios = [portfolioStock];
@@ -232,10 +231,10 @@ router.put('/modify/:id', (req, res) => {
     if (id != "1" && id != "0") {
         response.error = "PORTFOLIO_ID_INVALID"
         res.status(404).json(response);
-    } else if (qty <= 0) {
+    } else if (req.body.modifications[0].qty < 0) {
         response.error = "QTY_INVALID"
         res.status(400).json(response);
-    } else if (isin.replace("-", "").length != 12) {
+    } else if (req.body.modifications[0].isin.replace(/-/g, "").length != 12) {
         response.error = "ISIN_INVALID"
         res.status(400).json(response);
     } else {
@@ -246,12 +245,19 @@ router.put('/modify/:id', (req, res) => {
 
 router.put('/stock', (req, res) => {
     // request: {"modifications": 
-    //                  [{"isin": "string",
-    //                  "qty": 0}]}
+    //                  [{"id": "1",
+    //                  "qty": 0}],
+    //                  isin     }
     var isin = req.body.isin;
     var response = {};
-    if (isin.replace("-", "").length != 12) {
-        response.error = "ISIN_INVALID"
+    if (isin.replace(/-/g, "").length != 12) {
+        response.error = "ISIN_INVALID";
+        res.status(400).json(response);
+    } else if (req.body.modifications[0].id != "0" && req.body.modifications[0].id != "1") {
+        response.error = "PORTFOLIO_ID_INVALID";
+        res.status(400).json(response);
+    } else if (req.body.modifications[0].qty < 0) {
+        response.error = "QTY_INVALID";
         res.status(400).json(response);
     } else {
         res.json(response);
