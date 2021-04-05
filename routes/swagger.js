@@ -60,19 +60,21 @@
  *    properties: 
  *      symbol:
  *        type: string
- *      ISIN:
+ *      isin:
  *        type: string
- *      WKN:
+ *      wkn:
  *        type: string
  *      name:
  *        type: string
  *      price:
  *        type: string
- *      1d: 
+ *      per1d:
  *        type: string
- *      7d:
+ *      per7d:
  *        type: string
- *      30d:
+ *      per30d:
+ *        type: string
+ *      per365d:
  *        type: string
  *      marketCapitalization: 
  *        type: string
@@ -115,6 +117,64 @@
  *              type: string
  *          assembly:
  *              type: string
+ *  dataPoint:
+ *    type: object
+ *    properties:
+ *      date:
+ *        type: string
+ *      close:
+ *        type: string
+ *  dataPoints:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/dataPoint'
+ *  keyFigureee:
+ *    type: object
+ *    properties:
+ *      date:
+ *        type: string
+ *      pte:
+ *        type: string
+ *      ptb:
+ *        type: string
+ *      ptg:
+ *        type: string
+ *      eps:
+ *        type: string
+ *  keyFigureees:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/keyFigureee'
+ *
+ *  dataPointtt:
+ *    type: object
+ *    properties:
+ *      date:
+ *        type: string
+ *      div:
+ *        type: string
+ *  dataPointtts:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/dataPointtt'
+ *
+ *  rating:
+ *    type: object
+ *    properties:
+ *      date:
+ *        type: string
+ *      goal:
+ *        type: string
+ *      strategy:
+ *        type: string
+ *      source:
+ *        type: string
+ *
+ *  ratings:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/rating'
+ *
  *  portfolioOverview:
  *    type: object
  *    properties:
@@ -622,24 +682,47 @@
  *         schema:
  *           $ref: '#/definitions/error'
  *
- * /stocks/:
+ * /stocks/list?{country}&{currency}&{industry}&{mc}:
  *  get:
- *   summary: Returns a list of all stocks.
- *   description: Returns a list of all stocks.
+ *   summary: Returns a stock list according to filter.
+ *   description: Returns a stock list according to filter.
  *   produces:
  *     - application/json
+ *   parameters:
+ *     - name: country
+ *       in: path
+ *       description: country of stock
+ *       required: false
+ *       type: string
+ *     - name: currency
+ *       in: path
+ *       description: currency of stock
+ *       required: false
+ *       type: string
+ *     - name: industry
+ *       in: path
+ *       description: industry of stock
+ *       required: false
+ *       type: string
+ *     - name: mc
+ *       in: path
+ *       description: market capitalization of stock
+ *       required: false
+ *       type: string
  *   tags:
  *    - stocks
  *   responses:
  *    '200':
  *      description: Successful operation
  *      schema:
- *          $ref: '#/definitions/stockks'
+ *       type: object
+ *       properties:
+ *        stocks:
+ *         $ref: '#/definitions/stockks'
  *    '400':
  *      description: Invalid
  *
- *
- * /stocks/{id}:
+ * /stocks/search?{id}:
  *  get:
  *   summary: Returns a stock with given id.
  *   description: Returns a stock with given id.
@@ -648,7 +731,7 @@
  *   parameters:
  *     - name: id
  *       in: path
- *       description: ID of stock
+ *       description: can be name, isin, wkn, symbol of a stock
  *       required: true
  *       type: string
  *   tags:
@@ -657,11 +740,14 @@
  *    '200':
  *      description: Successful operation
  *      schema:
- *          $ref: '#/definitions/stockk'
+ *       type: object
+ *       properties:
+ *        stocks:
+ *         $ref: '#/definitions/stockks'
  *    '400':
  *      description: Invalid
  *
- * /stocks/{id}/details:
+ * /stocks/details/search?{id}:
  *  get:
  *   summary: Returns details of a stock with given id.
  *   description: Returns details of a stock with given id.
@@ -670,7 +756,7 @@
  *   parameters:
  *     - name: id
  *       in: path
- *       description: ID of stock
+ *       description: symbol of a stock
  *       required: true
  *       type: string
  *   tags:
@@ -680,6 +766,127 @@
  *      description: Successful operation
  *      schema:
  *          $ref: '#/definitions/stockDetails'
+ *    '400':
+ *      description: Invalid
+ *
+ * /stocks/charts/historic/search?{id}&{max}:
+ *  get:
+ *   summary: Get the performance of the stock from beginning or last 5 years.
+ *   description: Get the performance of the stock from beginning or last 5 years.
+ *   produces:
+ *    - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: symbol of a stock
+ *       required: true
+ *       type: string
+ *     - name: max
+ *       in: path
+ *       description: all data points if true, else only last 5 years
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *       type : object
+ *       properties:
+ *        dataPoints:
+ *         $ref: '#/definitions/dataPoints'
+ *    '400':
+ *      description: Invalid
+ *
+ * /stocks/charts/key_figures/search?{id}&{max}:
+ *  get:
+ *   summary: Get the key figures of the stock from beginning or last 5 years.
+ *   description: Get the key figures of the stock from beginning or last 5 years.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: symbol of a stock
+ *       required: true
+ *       type: string
+ *     - name: max
+ *       in: path
+ *       description: all data points if true, else only last 5 years
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *       type: object
+ *       properties:
+ *        keyFigures:
+ *         $ref: '#/definitions/keyFigureees'
+ *    '400':
+ *      description: Invalid
+ *
+ * /stocks/charts/dividend/search?{id}&{max}:
+ *  get:
+ *   summary: Get the key figures of the stock from beginning or last 5 years.
+ *   description: Get the key figures of the stock from beginning or last 5 years.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: symbol of a stock
+ *       required: true
+ *       type: string
+ *     - name: max
+ *       in: path
+ *       description: all data points if true, else only last 5 years
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *       type : object
+ *       properties:
+ *        dataPoints:
+ *         $ref: '#/definitions/dataPointtts'
+ *        date:
+ *         type : string
+ *        quota:
+ *         type : string
+ *    '400':
+ *      description: Invalid
+ *
+ * stocks/charts/analysts/search?{id}:
+ *  get:
+ *   summary: Get the analysts recommendation.
+ *   description: Get the analysts recommendation.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: symbol of a stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *          type: object
+ *          properties:
+ *              ratings:
+ *                  $ref: '#/definitions/ratings'
+ *              averageGoal:
+ *                  type: string
  *    '400':
  *      description: Invalid
  *

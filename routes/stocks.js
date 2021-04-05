@@ -127,32 +127,26 @@ const morganStanleyStockDetails = {
     "assembly": "2021-05-19"
 }
 
-/**
- * @swagger
- * /stocks/:
- *  get:
- *   summary: Returns a list of all stocks.
- *   description: Returns a list of all stocks.
- *   produces:
- *     - application/json
- *   tags:
- *    - stocks
- *   responses:
- *    '200':
- *      description: Successful operation
- *      schema:
- *          $ref: '#/definitions/stockks'
- *    '400':
- *      description: Invalid
- */
+// /**
+//  * @swagger
+//  * /stocks/:
+//  *  get:
+//  *   summary: Returnsb a list of all stocks.
+//  *   description: Returns a list of all stocks.
+//  *   produces:
+//  *     - application/json
+//  *   tags:
+//  *    - stocks
+//  *   responses:
+//  *    '200':
+//  *      description: Successful operation
+//  *      schema:
+//  *          $ref: '#/definitions/stockks'
+//  *    '400':
+//  *      description: Invalid
+//  */
 
 // fixme: stocks from database are reformated wrongly
-
-// router.get('/list', async (req, res) => {
-//     //const stocks = await stockModel.find({});
-//     const stocks = {"stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock]};
-//     res.json(stocks);
-// });
 
 router.get('/list', async (req, res) => {
     let response;
@@ -215,93 +209,6 @@ router.get('/search', async (req, res) => {
     !isError && res.json(response);
     isError && res.status(404).json(response);
 });
-
-// router.get('/search', async (req, res) => {
-//     let response;
-//     let isError = false;
-//
-//     let input = req.query.input;
-//     let currency = req.query.currency;
-//     let country = req.query.country;
-//     let industry = req.query.industry;
-//
-//     if (input !== undefined) {
-//         if (input === "IBM" || input === "International Business Machines Corporation" || input === "US4592001014" || input === "851399") {
-//             response = {"stocks": [ibmStock]};
-//         } else if (input === "AAPL" || input === "Apple Inc" || input === "US0378331005" || input === "865985") {
-//             response = {"stocks": [appleStock]};
-//         } else if (input === "MSFT" || input === "Microsoft Corporation" || input === "US9278331005" || input === "358331") {
-//             response = {"stocks": [microsoftStock]};
-//         } else if (input === "MS" || input === "Morgan Stanley" || input === "US9383331005" || input === "871985") {
-//             response = {"stocks": [morganStanleyStock]};
-//         } else {
-//             isError = true;
-//             response = {"error": "STOCK_ID_INVALID"}
-//         }
-//     } else {
-//         if (currency === "USD") {   // currency
-//             response = {"stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock]};
-//         } else if (country === "USA") { // country
-//             response = {"stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock]};
-//         } else if ("Consumer Electronics".includes(industry)) { //industry
-//             response = {"stocks": [ibmStock]};
-//         } else if ("Information Technology Services".includes(industry)) {
-//             response = {"stocks": [appleStock]};
-//         } else if ("Software-Infrastructure".includes(industry)) {
-//             response = {"stocks": [microsoftStock]};
-//         } else if ("Capital Markets".includes(industry)) {
-//             response = {"stocks": [morganStanleyStock]};
-//         } else {
-//             isError = true;
-//             response = {"error": "STOCK_ID_INVALID"}
-//         }
-//     }
-//     !isError && res.json(response);
-//     isError && res.status(404).json(response);
-// });
-
-// router.get('/:id', (req, res) => {
-//     var id = req.params.id;
-//     let response;
-//     if (id === "IBM") {
-//         response = ibmStock;
-//         res.json(response);
-//     } else if (id === "AAPL") {
-//         response = appleStock;
-//         res.json(response);
-//     } else if (id === "MSFT") {
-//         response = microsoftStock;
-//         res.json(response);
-//     } else if (id === "MS") {
-//         response = morganStanleyStock;
-//         res.json(response);
-//     } else {
-//         response = {"error": "STOCK_ID_INVALID"}
-//         res.status(404).json(response);
-//     }
-// });
-
-
-// router.get('/:id/details', (req, res) => {
-//     var id = req.params.id;
-//     let response;
-//     if (id === "IBM") {
-//         response = ibmStockDetails;
-//         res.json(response);
-//     } else if (id === "AAPL") {
-//         response = appleStockDetails;
-//         res.json(response);
-//     } else if (id === "MSFT") {
-//         response = microsoftStockDetails;
-//         res.json(response);
-//     } else if (id === "MS") {
-//         response = morganStanleyStockDetails;
-//         res.json(response);
-//     } else {
-//         response = {"error": "STOCK_ID_INVALID"}
-//         res.status(404).json(response);
-//     }
-// });
 
 router.get('/details/search', (req, res) => {
     let isError = false;
@@ -408,23 +315,11 @@ const keyFigure2 = {"date": "2021-01-20", "pte": "1.678", "PriceToBookRatio": "5
 const keyFigure3 = {"date": "2021-01-21", "pte": "1.786", "PriceToBookRatio": "5.789", "ptg": "1.7897", "eps": "1.97"}
 const keyFigure4 = {"date": "2021-01-22", "pte": "1.543", "PriceToBookRatio": "5.34", "ptg": "1.798", "eps": "1.678"}
 const keyFigure5 = {"date": "2021-01-23", "pte": "1.687", "PriceToBookRatio": "5.435", "ptg": "1.978", "eps": "1.6798"}
-const keyFigure6 = {
-    "date": "2021-01-24",
-    "pte": "1.45654",
-    "PriceToBookRatio": "5.345",
-    "ptg": "1.789",
-    "eps": "1.6798"
-}
+const keyFigure6 = {"date": "2021-01-24", "pte": "1.45654", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6798"}
 const keyFigure7 = {"date": "2021-01-25", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6789"}
 const keyFigure8 = {"date": "2021-01-26", "pte": "1.456", "PriceToBookRatio": "5.435", "ptg": "1.97", "eps": "1.6789"}
 const keyFigure9 = {"date": "2021-01-27", "pte": "1.54", "PriceToBookRatio": "5.45", "ptg": "1.978", "eps": "1.956"}
-const keyFigure10 = {
-    "date": "2021-01-28",
-    "pte": "1.45654",
-    "PriceToBookRatio": "5.786",
-    "ptg": "1.789",
-    "eps": "1.769"
-}
+const keyFigure10 = {"date": "2021-01-28", "pte": "1.45654", "PriceToBookRatio": "5.786", "ptg": "1.789", "eps": "1.769"}
 const keyFigure11 = {"date": "2021-01-29", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.7698"}
 const keyFigure12 = {"date": "2021-01-30", "pte": "1.687", "PriceToBookRatio": "5.45", "ptg": "1.997", "eps": "1.67"}
 const keyFigure13 = {"date": "2021-01-31", "pte": "1.546", "PriceToBookRatio": "5.645", "ptg": "1.798", "eps": "1.6789"}
@@ -610,9 +505,9 @@ router.get('/charts/analysts/search', (req, res) => {
         response = {"error": "STOCK_ID_INVALID"}
     }
 
-
     !isError && res.json(response);
     isError && res.status(404).json(response);
 
 });
+
 module.exports = router
