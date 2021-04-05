@@ -1,41 +1,37 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
-// Load the AWS SDK
-var AWS = require('aws-sdk'),
-    region = "eu-central-1",
-    secretName = "backend-secrets",
-    secret,
-    decodedBinarySecret;
-
-// Create a Secrets Manager client
-var client = new AWS.SecretsManager({
-    region: region
-});
-
 // In this sample we only handle the specific exceptions for the 'GetSecretValue' API.
 // See https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
 // We rethrow the exception by default.
 
-const getSecrets = () => {
-    let secrets = {
-        "db_admin_pw": "",
-        "finAPI_client_id": "",
-        "finAPI_client_secret": "",
-        "auth_jwt_secret": "",
-        "alpha_ventage_key": "",
-        "finnhub_key": "",
-        "aws_access_id": ""
-    };
+module.exports = function() {
+
     if (process.env.NODE_ENV == 'development') {
-        secrets.db_admin_pw = process.env.db_admin_pw;
-        secrets.finAPI_client_id = process.env.finAPI_client_id;
-        secrets.finAPI_client_secret = process.env.finAPI_client_secret;
-        secrets.auth_jwt_secret = process.env.auth_jwt_secret;
-        secrets.alpha_ventage_key = process.env.alpha_ventage_key;
-        secrets.finnhub_key = process.env.finnhub_key;
-        secrets.aws_access_id = process.env.aws_access_id;
+        return 4;
+        return secrets =  {
+            db_admin_pw: process.env.db_admin_pw,
+            finAPI_client_id: process.env.finAPI_client_id,
+            finAPI_client_secret: process.env.finAPI_client_secret,
+            auth_jwt_secret : process.env.auth_jwt_secret,
+            alpha_ventage_key : process.env.alpha_ventage_key,
+            finnhub_key : process.env.finnhub_key,
+            aws_access_id : process.env.aws_access_id
+        }
     } else {
+
+        // Load the AWS SDK
+        var AWS = require('aws-sdk'),
+            region = "eu-central-1",
+            secretName = "backend-secrets",
+            secret,
+            decodedBinarySecret;
+
+        // Create a Secrets Manager client
+        var client = new AWS.SecretsManager({
+            region: region
+        });
+
         client.getSecretValue({SecretId: secretName}, function (err, data) {
             if (err) {
                 if (err.code === 'DecryptionFailureException')
@@ -67,17 +63,16 @@ const getSecrets = () => {
                     let buff = new Buffer(data.SecretBinary, 'base64');
                     decodedBinarySecret = buff.toString('ascii');
                 }
-                secrets.db_admin_pw = JSON.parse(data.SecretString).db_admin_pw;
-                secrets.finAPI_client_id = JSON.parse(data.SecretString).finAPI_client_id;
-                secrets.finAPI_client_secret = JSON.parse(data.SecretString).finAPI_client_secret;
-                secrets.auth_jwt_secret = JSON.parse(data.SecretString).auth_jwt_secret;
-                secrets.alpha_ventage_key = JSON.parse(data.SecretString).alpha_ventage_key;
-                secrets.finnhub_key = JSON.parse(data.SecretString).finnhub_key;
-                secrets.aws_access_id = JSON.parse(data.SecretString).aws_access_id;
+                secrets = ({
+                    db_admin_pw : JSON.parse(data.SecretString).db_admin_pw,
+                    finAPI_client_id : JSON.parse(data.SecretString).finAPI_client_id,
+                    finAPI_client_secret : JSON.parse(data.SecretString).finAPI_client_secret,
+                    auth_jwt_secret : JSON.parse(data.SecretString).auth_jwt_secret,
+                    alpha_ventage_key : JSON.parse(data.SecretString).alpha_ventage_key,
+                    finnhub_key : JSON.parse(data.SecretString).finnhub_key,
+                    aws_access_id : JSON.parse(data.SecretString).aws_access_id
+                });
             }
         });
     }
-    return secrets;
 }
-
-exports.secret = getSecrets();
