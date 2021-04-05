@@ -305,7 +305,7 @@ router.get('/search', async (req, res) => {
 
 router.get('/details/search', (req, res) => {
     let isError = false;
-    let id = req.query.input;
+    let id = req.query.id;
     let response;
     if (id === "IBM") {
         response = ibmStockDetails;
@@ -358,33 +358,33 @@ const dataPointsMore = {
 
 router.get('/charts/historic/search', (req, res) => {
     let isError = false;
-    let input = req.query.input;
+    let id = req.query.id;
     let max = req.query.max;
     let response;
 
-    if (input !== undefined && max !== undefined) {
+    if (id !== undefined && max !== undefined) {
 
         if (max === "false") {
-            if (input === "IBM") {
+            if (id === "IBM") {
                 response = dataPointsLess;
-            } else if (input === "AAPL") {
+            } else if (id === "AAPL") {
                 response = dataPointsLess;
-            } else if (input === "MSFT") {
+            } else if (id === "MSFT") {
                 response = dataPointsLess;
-            } else if (input === "MS") {
+            } else if (id === "MS") {
                 response = dataPointsLess;
             } else {
                 isError = true;
                 response = {"error": "STOCK_ID_INVALID"}
             }
         } else if (max === "true") {
-            if (input === "IBM") {
+            if (id === "IBM") {
                 response = dataPointsMore;
-            } else if (input === "AAPL") {
+            } else if (id === "AAPL") {
                 response = dataPointsMore;
-            } else if (input === "MSFT") {
+            } else if (id === "MSFT") {
                 response = dataPointsMore;
-            } else if (input === "MS") {
+            } else if (id === "MS") {
                 response = dataPointsMore;
             } else {
                 isError = true;
@@ -449,33 +449,33 @@ const keyFiguresMore = {
 
 router.get('/charts/key_figures/search', (req, res) => {
     let isError = false;
-    let input = req.query.input;
+    let id = req.query.id;
     let max = req.query.max;
     let response;
 
-    if (input !== undefined && max !== undefined) {
+    if (id !== undefined && max !== undefined) {
 
         if (max === "false") {
-            if (input === "IBM") {
+            if (id === "IBM") {
                 response = keyFiguresLess;
-            } else if (input === "AAPL") {
+            } else if (id === "AAPL") {
                 response = keyFiguresLess;
-            } else if (input === "MSFT") {
+            } else if (id === "MSFT") {
                 response = keyFiguresLess;
-            } else if (input === "MS") {
+            } else if (id === "MS") {
                 response = keyFiguresLess;
             } else {
                 isError = true;
                 response = {"error": "STOCK_ID_INVALID"}
             }
         } else if (max === "true") {
-            if (input === "IBM") {
+            if (id === "IBM") {
                 response = keyFiguresMore;
-            } else if (input === "AAPL") {
+            } else if (id === "AAPL") {
                 response = keyFiguresMore;
-            } else if (input === "MSFT") {
+            } else if (id === "MSFT") {
                 response = keyFiguresMore;
-            } else if (input === "MS") {
+            } else if (id === "MS") {
                 response = keyFiguresMore;
             } else {
                 isError = true;
@@ -523,33 +523,33 @@ const dpMore = [dp1, dp2, dp3, dp4, dp5, dp6, dp7, dp8, dp9, dp10, dp11,
 
 router.get('/charts/dividend/search', (req, res) => {
     let isError = false;
-    let input = req.query.input;
+    let id = req.query.id;
     let max = req.query.max;
     let response;
 
-    if (input !== undefined && max !== undefined) {
+    if (id !== undefined && max !== undefined) {
 
         if (max === "false") {
-            if (input === "IBM") {
+            if (id === "IBM") {
                 response = {"dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03"};
-            } else if (input === "AAPL") {
+            } else if (id === "AAPL") {
                 response = {"dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03"};
-            } else if (input === "MSFT") {
+            } else if (id === "MSFT") {
                 response = {"dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03"};
-            } else if (input === "MS") {
+            } else if (id === "MS") {
                 response = {"dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03"};
             } else {
                 isError = true;
                 response = {"error": "STOCK_ID_INVALID"}
             }
         } else if (max === "true") {
-            if (input === "IBM") {
+            if (id === "IBM") {
                 response = {"dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03"};
-            } else if (input === "AAPL") {
+            } else if (id === "AAPL") {
                 response = {"dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03"};
-            } else if (input === "MSFT") {
+            } else if (id === "MSFT") {
                 response = {"dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03"};
-            } else if (input === "MS") {
+            } else if (id === "MS") {
                 response = {"dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03"};
             } else {
                 isError = true;
@@ -594,16 +594,16 @@ const ratings = [rating1, rating2, rating3, rating4, rating5, rating6, rating7, 
 
 router.get('/charts/analysts/search', (req, res) => {
     let isError = false;
-    let input = req.query.input;
+    let id = req.query.id;
     let response;
 
-    if (input === "IBM") {
+    if (id === "IBM") {
         response = {"ratings": ratings, "averageGoal": "345961"};
-    } else if (input === "AAPL") {
+    } else if (id === "AAPL") {
         response = {"ratings": ratings, "averageGoal": "345961"};
-    } else if (input === "MSFT") {
+    } else if (id === "MSFT") {
         response = {"ratings": ratings, "averageGoal": "345961"};
-    } else if (input === "MS") {
+    } else if (id === "MS") {
         response = {"ratings": ratings, "averageGoal": "345961"};
     } else {
         isError = true;
