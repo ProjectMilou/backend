@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const portfolioOverviewSchema = new mongoose.Schema({
-    id: ObjectId,//TODO change _id to id in code
+    id: mongoose.ObjectId,//TODO change _id to id in code
     name: String,
     virtual: Boolean,
     positionCount: Number,
@@ -13,7 +13,7 @@ const portfolioOverviewSchema = new mongoose.Schema({
 });
 
 const portfolioSchema = new mongoose.Schema({
-    id: ObjectId,
+    id: mongoose.ObjectId,
     userId: mongoose.ObjectId,
     portfolio: {
         overview: portfolioOverviewSchema,
@@ -30,7 +30,7 @@ const portfolioSchema = new mongoose.Schema({
                     marketValueCurrency:String,
                     quote:Number,
                     quoteCurrency:String,
-                    quoteDate: Date/string,
+                    quoteDate: String,
                     entryQuote:Number,
                     entryQuoteCurrency: Number,
                     perf7d: Number,//?
