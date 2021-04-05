@@ -12,7 +12,7 @@ const getPortfolioRoute = require('./routes/portfolio');
 const getStocksRoute = require('./routes/stocks');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-//const db = require('./db/index.js');
+const secrets = require('./secret/secret');
 
 
 require('./auth/auth');
@@ -36,6 +36,8 @@ const swaggerOptions = {
         './routes/swagger.js'
     ]
 };
+
+console.log(secrets);
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
