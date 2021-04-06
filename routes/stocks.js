@@ -192,6 +192,10 @@ router.get('/list', async (req, res) => {
     } else {
         if (country === 'Germany' && currency === 'EUR') {
             response = { "stocks": [sapStock] };
+        } else if (country === 'Germany') {
+            response = { "stocks": [sapStock] };
+        } else if (currency === 'EUR') {
+            response = { "stocks": [sapStock] };
         } else if (currency === "USD") {   // currency
             response = { "stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock] };
         } else if (country === "USA") { // country
