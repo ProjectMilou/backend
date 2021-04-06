@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const portfolioOverviewSchema = new mongoose.Schema({
-    id: mongoose.ObjectId,//TODO change _id to id in code
+    id: mongoose.ObjectId,
     name: String,
     virtual: Boolean,
     positionCount: Number,
@@ -14,7 +14,7 @@ const portfolioOverviewSchema = new mongoose.Schema({
 
 const portfolioSchema = new mongoose.Schema({
     id: mongoose.ObjectId,
-    userId: mongoose.ObjectId,
+    userId: mongoose.ObjectId,//String!
     portfolio: {
         overview: portfolioOverviewSchema,
         positions: [
@@ -37,7 +37,7 @@ const portfolioSchema = new mongoose.Schema({
                     perf1y: Number,//?
                     country: String,
                     industry: String,
-                    score: Number//?
+                    score: Number//? -> finnHub reccomendation trends, for 10 biggest position, average of score multiplied with value, sum divided with total amount of reccomendations
                 },
                 qty: Number,// = quantityNominal?
                 quantityNominalType:String,
