@@ -3,10 +3,13 @@ const LocalStrategy = require('passport-local').Strategy;
 
 const UserModel = require('../models/user');
 const UserTokenModel = require('../models/userToken')
+const email = require('../auth/email')
 
 const jwt = require('jsonwebtoken');
 const JWTstrategy = require('passport-jwt').Strategy;
 const ExtractJWT = require('passport-jwt').ExtractJwt;
+const {hash} = require('../encryption/encryption');
+
 
 // adapted from https://www.digitalocean.com/community/tutorials/api-authentication-with-json-web-tokensjwt-and-passport
 
@@ -50,12 +53,18 @@ passport.use(
                         confirmed : false
                     });
 
+                    const token = hash(email);
                     // todo: generate token and send it to mail!
                     // token and mail are stored usertokens
                     await UserTokenModel.create({
                         userID: user.id,
-                        token:"token12345"
+                        token: token
                     });
+
+
+
+                    const confEmail = await email.sendConfirmationEmail( email,user.id, token);
+
 
                     return done(null, {
                         response: {

@@ -9,10 +9,10 @@ const SES_CONFIG = {
 
 const AWS_SES = new AWS_SES(SES_CONFIG);
 
-let sendConfirmationEmail = (recipientEmail,id, name, confirmationCode) =>{
+let sendConfirmationEmail = (recipientEmail,id, confirmationCode) =>{
     //TODO: set up params
     let params = {
-        Source: '',
+        Source: 'info@milou.de',
         Destination:{
             ToAddresses: [
                 recipientEmail
@@ -23,8 +23,8 @@ let sendConfirmationEmail = (recipientEmail,id, name, confirmationCode) =>{
             Body: {
                 Html:{
                     Charset: 'UTF-8',
-                    Data: '<h1>Email Confirmation<h1>' +
-                        '<h2> Hello ${name}<h/2>!' +
+                    Data: '<h1>Email Confirmation</h1>' +
+                        '<h2> Hello !</h2>' +
                         '<p> Thank you for registration. Please confirm your email by clicking on the following link</p>' +
                         '<a href=" = http://milou.io/confirm/${id}/${confirmationCode}"> Click here</a>',
                 }
