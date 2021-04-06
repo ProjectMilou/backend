@@ -23,7 +23,7 @@ const portfolioSchema = new mongoose.Schema({
                     //id: Number?
                     //accountId?
                     isin: String,
-                    //wkn?
+                    wkn:String,
                     symbol: String,
                     name: String,
                     price: Number,//=marketValue?
@@ -32,7 +32,7 @@ const portfolioSchema = new mongoose.Schema({
                     quoteCurrency:String,
                     quoteDate: String,
                     entryQuote:Number,
-                    entryQuoteCurrency: Number,
+                    entryQuoteCurrency: String,
                     perf7d: Number,//?
                     perf1y: Number,//?
                     country: String,
