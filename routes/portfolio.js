@@ -326,24 +326,27 @@ router.put('/modify/:id', async (req, res) => {
     var id = req.params.id;
     var response = {};
     for (var j = 0; j < req.body.modifications.length; j++) {
-        var isin = req.body.modifications[j].isin;// TODO implement for all modifications
+        var isin = req.body.modifications[j].isin;
         var qty = req.body.modifications[j].qty;
 
 
         if (!is_valid_id(id)) {
             response.error = "PORTFOLIO_ID_INVALID"
             res.status(404).json(response);
+            j = req.body.modifications.length//=break;
             break;
         } else {
             if (!is_valid_qty(qty)) {
                 console.log(qty)
                 response.error = "QTY_INVALID"
                 res.status(400).json(response);
+                j = req.body.modifications.length//=break;
                 break;
             } else {
                 if (!is_valid_isin(isin)) {
                     response.error = "ISIN_INVALID"
                     res.status(400).json(response);
+                    j = req.body.modifications.length//=break;
                     break;
                 } else {
                     // find Portfolio
@@ -391,7 +394,7 @@ router.put('/modify/:id', async (req, res) => {
                             portfolio.portfolio.overview.modified = Date.now()// current timestamp
                             portfolio.portfolio.overview.positionCount = portfolio.portfolio.positions.length;
                             portfolio.save()
-                            console.log("success for modification nr. " + j)
+                            console.log("success for modification nr. " + j)//why does this happen even when the isin is invalid?
                             if (j == req.body.modifications.length - 1) {
                                 res.json(response)
                             }
@@ -481,17 +484,38 @@ router.put('/stock/:isin', (req, res) => {
 });
 
 
-router.get('/stock/:isin', (req, res) => {
+router.get('/stock/:isin', (req, res) => {// get portfolioId, name, qty of stock
     var isin = req.params.isin;
+
     var response = {};
-    if (isin.replace("-", "").length != 12) {
-        response.error = "ISIN_INVALID";
-        console.log(isin.replace("-", ""));
-        res.status(400).json(response);
-    } else {
-        response.portfolios = [portfolioStock];
-        res.json(response);
-    }
+//? = %3F
+    Portfolio.find({ "userId": userId }, 'id portfolio.overview.name portfolio.positions', function (err, portf) {
+        if (err) {
+            handle_database_error(res, err)
+        } else {
+            response.portfolios = portf.map(({ id: pfId, portfolio: { overview: { name: pfName }, positions: arrayStocks } }) => {
+                var positionsWithCurrentISIN = arrayStocks.filter((position) => {
+                    return position.stock.isin == isin
+                })// the resulting array should have length 1 or 0
+                var qty;
+                if (positionsWithCurrentISIN.length == 0) {
+                    qty = 0
+                } else {
+                    qty = positionsWithCurrentISIN[0].qty
+                }
+                var result = {
+                    "id": pfId,
+                    "name": pfName,
+                    "qty": qty
+                };
+                return result;
+            }).filter((result) => {
+                return result.qty > 0
+            })
+            
+            res.json(response);
+        }
+    })
 });
 
 // is not in the documentation any more
