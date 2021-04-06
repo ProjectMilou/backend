@@ -2,6 +2,7 @@
 const express = require('express');
 const passport = require('passport');
 const genToken= require('../auth/auth');
+const secrets = require('../secret/secret');
 
 
 const router = express.Router();
@@ -10,6 +11,9 @@ const router = express.Router();
 
 
 router.post('/register', async (req, res) => {
+
+    console.log(secrets());
+
 
     // req: { email, pwd }
 

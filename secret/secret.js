@@ -1,22 +1,36 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
-// In this sample we only handle the specific exceptions for the 'GetSecretValue' API.
-// See https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
-// We rethrow the exception by default.
 
-module.exports = function() {
+class Secret{
 
-    if (process.env.NODE_ENV == 'development') {
-        return 4;
-        return secrets =  {
+    constructor(){
+        this.secret = {}
+    }
+
+    setSecret(secret) {
+        this.secret = secret;
+    }
+
+    getSecret(){
+        return this.secret;
+    }
+}
+
+
+
+
+module.exports
+function getSecrets(myScret) {
+    if (process.env.NODE_ENV === 'development') {
+        return {
             db_admin_pw: process.env.db_admin_pw,
             finAPI_client_id: process.env.finAPI_client_id,
             finAPI_client_secret: process.env.finAPI_client_secret,
-            auth_jwt_secret : process.env.auth_jwt_secret,
-            alpha_ventage_key : process.env.alpha_ventage_key,
-            finnhub_key : process.env.finnhub_key,
-            aws_access_id : process.env.aws_access_id
+            auth_jwt_secret: process.env.auth_jwt_secret,
+            alpha_ventage_key: process.env.alpha_ventage_key,
+            finnhub_key: process.env.finnhub_key,
+            aws_access_id: process.env.aws_access_id
         }
     } else {
 
@@ -32,6 +46,7 @@ module.exports = function() {
             region: region
         });
 
+        var secrets;
         client.getSecretValue({SecretId: secretName}, function (err, data) {
             if (err) {
                 if (err.code === 'DecryptionFailureException')
@@ -55,23 +70,16 @@ module.exports = function() {
                     // Deal with the exception here, and/or rethrow at your discretion.
                     throw err;
             } else {
-                // Decrypts secret using the associated KMS CMK.
-                // Depending on whether the secret is a string or binary, one of these fields will be populated.
+
                 if ('SecretString' in data) {
                     secret = data.SecretString;
                 } else {
                     let buff = new Buffer(data.SecretBinary, 'base64');
                     decodedBinarySecret = buff.toString('ascii');
                 }
-                secrets = ({
-                    db_admin_pw : JSON.parse(data.SecretString).db_admin_pw,
-                    finAPI_client_id : JSON.parse(data.SecretString).finAPI_client_id,
-                    finAPI_client_secret : JSON.parse(data.SecretString).finAPI_client_secret,
-                    auth_jwt_secret : JSON.parse(data.SecretString).auth_jwt_secret,
-                    alpha_ventage_key : JSON.parse(data.SecretString).alpha_ventage_key,
-                    finnhub_key : JSON.parse(data.SecretString).finnhub_key,
-                    aws_access_id : JSON.parse(data.SecretString).aws_access_id
-                });
+
+                myScret.setSecret(JSON.parse(data.SecretString));
+                console.log(secrets);
             }
         });
     }

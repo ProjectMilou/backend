@@ -35,7 +35,7 @@ const swaggerOptions = {
     ]
 };
 
-console.log( secrets({}) );
+
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
@@ -57,4 +57,5 @@ app.use('/analytics', getAnalyticsRoute);
 app.listen(process.env.PORT || 3000);
 console.log(`Running on http://${HOST}:${PORT}`);
 
+// console.log( secrets );
 //db()
