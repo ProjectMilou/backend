@@ -4,6 +4,9 @@ const analytics = require('../data-analytics/analytics/analytics');
 const portfolioFetcher = require('../data-analytics/dynamic_data/portfolio-fetcher');
 // Require analytics, alphaVantageAPI, dbConnection and data filtering module.
 
+
+const router = express.Router();
+
 /**
  * @swagger
  * /analytics/backtest:

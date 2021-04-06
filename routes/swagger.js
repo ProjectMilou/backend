@@ -1003,7 +1003,7 @@
  *    '200':
  *      description: Accepted, bank-connection deleted.
  * 
- * /analytics/backtest:
+ * /analytics/backtest/{portfolioId}?{fromDate}&{toDate}:
  *  get:
  *   description: Backtests a real or a virtual portfolio for a given period of time
  *   summary: Backtests a real or a virtual portfolio for a given period of time
@@ -1011,6 +1011,22 @@
  *      - application/json  
  *   tags:
  *    - analytics
+ *   parameters:
+ *     - name: portfolioId
+ *       in: path
+ *       description: ID of the portfolio that needs to be backtested
+ *       required: true
+ *       type: string
+ *     - name: fromDate
+ *       in: path
+ *       description: Beginning date for the backtest
+ *       required: true
+ *       type: string
+ *     - name: toDate
+ *       in: path
+ *       description: Ending date for the backtest
+ *       required: true
+ *       type: string
  *   requestbody:
  *        portfolioId: The id of the Portfolio
  *        startDate: The start date for the backtest
@@ -1033,7 +1049,7 @@
  *       in: path
  *       description: ID of portfolio
  *       required: true
- *       type: number
+ *       type: string
  *   responses:
  *      '200':
  *          description: Success. 
@@ -1050,7 +1066,7 @@
  *       in: path
  *       description: ID of portfolio
  *       required: true
- *       type: number
+ *       type: string
  *   responses:
  *      '200':
  *          description: Success.
@@ -1067,7 +1083,7 @@
  *       in: path
  *       description: ID of portfolio
  *       required: true
- *       type: number
+ *       type: string
  *   responses:
  *      '200':
  *          description: Success.
@@ -1084,7 +1100,7 @@
  *       in: path
  *       description: ID of portfolio
  *       required: true
- *       type: number
+ *       type: string
  *   responses:
  *      '200':
  *          description: Success.
@@ -1101,7 +1117,7 @@
  *       in: path
  *       description: ID of portfolio
  *       required: true
- *       type: number
+ *       type: string
  *   responses:
  *      '200':
  *          description: Success.
@@ -1118,7 +1134,7 @@
  *       in: path
  *       description: ID of portfolio
  *       required: true
- *       type: number
+ *       type: string
  *   responses:
  *      '200':
  *          description: Success.
@@ -1135,7 +1151,7 @@
  *       in: path
  *       description: ID of portfolio
  *       required: true
- *       type: number
+ *       type: string
  *   responses:
  *      '200':
  *          description: Success.
