@@ -45,6 +45,27 @@ const appleStock = {
     "picture": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
     "date": "2021-03-23T18:25:43.511Z"
 }
+const sapStock = {
+    "symbol": "SAP",
+    "isin": "US0378331013",
+    "wkn": "865984",
+    "name": "SAP SE",
+    "price": "252.19",
+    "per1d": "1.79",
+    "per7d": "1.52",
+    "per30d": "0.92",
+    "per365d": "0.45",
+    "marketCapitalization": "172637867392",
+    "analystTargetPrice": "290.24",
+    "valuation": "27.6803",
+    "growth": "3.2",
+    "div": "0.1208",
+    "currency": "EUR",
+    "country": "Germany",
+    "industry": "Information Technology Services",
+    "picture": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/SAP_2011_logo.svg/800px-SAP_2011_logo.svg.png",
+    "date": "2021-03-23T18:25:43.511Z"
+}
 const microsoftStock = {
     "symbol": "MSFT",
     "isin": "US9278331005",
@@ -127,6 +148,16 @@ const morganStanleyStockDetails = {
     "assembly": "2021-05-19"
 }
 
+const sapStockDetails = {
+    "symbol": "SAP",
+    "intro": "SAP, software services company",
+    "founded": "1935",
+    "website": "sap.com",
+    "fullTimeEmployees": "142300",
+    "address": "Walldorf, 10237, Germany",
+    "assembly": "2021-05-23"
+}
+
 // /**
 //  * @swagger
 //  * /stocks/:
@@ -156,31 +187,34 @@ router.get('/list', async (req, res) => {
     let country = req.query.country;
     let industry = req.query.industry;
     let mc = req.query.mc; // either small, medium or large market capitalization
-
     if (currency === undefined && country === undefined && industry === undefined && mc === undefined) {
-        response = {"stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock]};
+        response = { "stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock, sapStock] };
     } else {
-        if (currency === "USD") {   // currency
-            response = {"stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock]};
+        if (country === 'Germany' && currency === 'EUR') {
+            response = { "stocks": [sapStock] };
+        } else if (currency === "USD") {   // currency
+            response = { "stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock] };
         } else if (country === "USA") { // country
-            response = {"stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock]};
+            response = { "stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock] };
         } else if ("Consumer Electronics".includes(industry)) { //industry
-            response = {"stocks": [ibmStock]};
+            response = { "stocks": [ibmStock] };
         } else if ("Information Technology Services".includes(industry)) {
-            response = {"stocks": [appleStock]};
+            response = { "stocks": [appleStock] };
         } else if ("Software-Infrastructure".includes(industry)) {
-            response = {"stocks": [microsoftStock]};
+            response = { "stocks": [microsoftStock] };
         } else if ("Capital Markets".includes(industry)) {
-            response = {"stocks": [morganStanleyStock]};
+            response = { "stocks": [morganStanleyStock] };
         } else if (mc === "small") { // market capitalization
-            response = {"stocks": [morganStanleyStock]};
+            response = { "stocks": [morganStanleyStock] };
         } else if (mc === "medium") {
-            response = {"stocks": [ibmStock, microsoftStock]};
+            response = { "stocks": [ibmStock, microsoftStock] };
         } else if (mc === "large") {
-            response = {"stocks": [appleStock]};
+            response = { "stocks": [appleStock] };
+        } else if (mc === 'small,medium') {
+            response = { "stocks": [morganStanleyStock, ibmStock, microsoftStock] };
         } else {
             isError = true;
-            response = {"error": "STOCK_ID_INVALID"}
+            response = { "error": "STOCK_ID_INVALID" }
         }
     }
     !isError && res.json(response);
@@ -194,16 +228,18 @@ router.get('/search', async (req, res) => {
     let id = req.query.id;
 
     if (id === "IBM" || id === "International Business Machines Corporation" || id === "US4592001014" || id === "851399") {
-        response = {"stocks": [ibmStock]};
+        response = { "stocks": [ibmStock] };
     } else if (id === "AAPL" || id === "Apple Inc" || id === "US0378331005" || id === "865985") {
-        response = {"stocks": [appleStock]};
+        response = { "stocks": [appleStock] };
     } else if (id === "MSFT" || id === "Microsoft Corporation" || id === "US9278331005" || id === "358331") {
-        response = {"stocks": [microsoftStock]};
+        response = { "stocks": [microsoftStock] };
     } else if (id === "MS" || id === "Morgan Stanley" || id === "US9383331005" || id === "871985") {
-        response = {"stocks": [morganStanleyStock]};
+        response = { "stocks": [morganStanleyStock] };
+    } else if (id === "SAP" || id === "SAP SE" || id === "US0378331013" || id === "865984") {
+        response = { "stocks": [sapStock] };
     } else {
         isError = true;
-        response = {"error": "STOCK_ID_INVALID"}
+        response = { "error": "STOCK_ID_INVALID" }
     }
 
     !isError && res.json(response);
@@ -222,36 +258,38 @@ router.get('/details/search', (req, res) => {
         response = microsoftStockDetails;
     } else if (id === "MS") {
         response = morganStanleyStockDetails;
+    } else if (id === "SAP") {
+        response = sapStockDetails;
     } else {
         isError = true;
-        response = {"error": "STOCK_ID_INVALID"}
+        response = { "error": "STOCK_ID_INVALID" }
     }
     !isError && res.json(response);
     isError && res.status(404).json(response);
 });
 
-const dataPoint1 = {"date": "2021-01-19", "close": "1.1770"}
-const dataPoint2 = {"date": "2021-01-20", "close": "1.1727"}
-const dataPoint3 = {"date": "2021-01-21", "close": "1.1718"}
-const dataPoint4 = {"date": "2021-01-22", "close": "1.1766"}
-const dataPoint5 = {"date": "2021-01-23", "close": "1.1793"}
-const dataPoint6 = {"date": "2021-01-24", "close": "1.1768"}
-const dataPoint7 = {"date": "2021-01-25", "close": "1.1812"}
-const dataPoint8 = {"date": "2021-01-26", "close": "1.1849"}
-const dataPoint9 = {"date": "2021-01-27", "close": "1.1932"}
-const dataPoint10 = {"date": "2021-01-28", "close": "1.1904"}
-const dataPoint11 = {"date": "2021-01-29", "close": "1.1912"}
-const dataPoint12 = {"date": "2021-01-30", "close": "1.1770"}
-const dataPoint13 = {"date": "2021-01-31", "close": "1.1727"}
-const dataPoint14 = {"date": "2021-02-01", "close": "1.1718"}
-const dataPoint15 = {"date": "2021-02-02", "close": "1.1766"}
-const dataPoint16 = {"date": "2021-02-03", "close": "1.1793"}
-const dataPoint17 = {"date": "2021-02-04", "close": "1.1768"}
-const dataPoint18 = {"date": "2021-02-05", "close": "1.1812"}
-const dataPoint19 = {"date": "2021-02-06", "close": "1.1849"}
-const dataPoint20 = {"date": "2021-02-07", "close": "1.1932"}
-const dataPoint21 = {"date": "2021-02-08", "close": "1.1904"}
-const dataPoint22 = {"date": "2021-02-09", "close": "1.1912"}
+const dataPoint1 = { "date": "2021-01-19", "close": "1.1770" }
+const dataPoint2 = { "date": "2021-01-20", "close": "1.1727" }
+const dataPoint3 = { "date": "2021-01-21", "close": "1.1718" }
+const dataPoint4 = { "date": "2021-01-22", "close": "1.1766" }
+const dataPoint5 = { "date": "2021-01-23", "close": "1.1793" }
+const dataPoint6 = { "date": "2021-01-24", "close": "1.1768" }
+const dataPoint7 = { "date": "2021-01-25", "close": "1.1812" }
+const dataPoint8 = { "date": "2021-01-26", "close": "1.1849" }
+const dataPoint9 = { "date": "2021-01-27", "close": "1.1932" }
+const dataPoint10 = { "date": "2021-01-28", "close": "1.1904" }
+const dataPoint11 = { "date": "2021-01-29", "close": "1.1912" }
+const dataPoint12 = { "date": "2021-01-30", "close": "1.1770" }
+const dataPoint13 = { "date": "2021-01-31", "close": "1.1727" }
+const dataPoint14 = { "date": "2021-02-01", "close": "1.1718" }
+const dataPoint15 = { "date": "2021-02-02", "close": "1.1766" }
+const dataPoint16 = { "date": "2021-02-03", "close": "1.1793" }
+const dataPoint17 = { "date": "2021-02-04", "close": "1.1768" }
+const dataPoint18 = { "date": "2021-02-05", "close": "1.1812" }
+const dataPoint19 = { "date": "2021-02-06", "close": "1.1849" }
+const dataPoint20 = { "date": "2021-02-07", "close": "1.1932" }
+const dataPoint21 = { "date": "2021-02-08", "close": "1.1904" }
+const dataPoint22 = { "date": "2021-02-09", "close": "1.1912" }
 
 const dataPointsLess = {
     "dataPoints": [dataPoint1, dataPoint2, dataPoint3, dataPoint4, dataPoint5,
@@ -280,9 +318,11 @@ router.get('/charts/historic/search', (req, res) => {
                 response = dataPointsLess;
             } else if (id === "MS") {
                 response = dataPointsLess;
+            } else if (id === "SAP") {
+                response = dataPointsLess;
             } else {
                 isError = true;
-                response = {"error": "STOCK_ID_INVALID"}
+                response = { "error": "STOCK_ID_INVALID" }
             }
         } else if (max === "true") {
             if (id === "IBM") {
@@ -293,16 +333,18 @@ router.get('/charts/historic/search', (req, res) => {
                 response = dataPointsMore;
             } else if (id === "MS") {
                 response = dataPointsMore;
+            } else if (id === "SAP") {
+                response = dataPointsMore;
             } else {
                 isError = true;
-                response = {"error": "STOCK_ID_INVALID"}
+                response = { "error": "STOCK_ID_INVALID" }
             }
         } else {
             isError = true;
-            response = {"error": "STOCK_ID_INVALID"}
+            response = { "error": "STOCK_ID_INVALID" }
         }
     } else {
-        response = {"error": "STOCK_ID_INVALID"}
+        response = { "error": "STOCK_ID_INVALID" }
     }
 
     !isError && res.json(response);
@@ -310,26 +352,26 @@ router.get('/charts/historic/search', (req, res) => {
 
 });
 
-const keyFigure1 = {"date": "2021-01-19", "pte": "1.587", "PriceToBookRatio": "5.345", "ptg": "1.7978", "eps": "1.789"}
-const keyFigure2 = {"date": "2021-01-20", "pte": "1.678", "PriceToBookRatio": "5.645", "ptg": "1.789", "eps": "1.789"}
-const keyFigure3 = {"date": "2021-01-21", "pte": "1.786", "PriceToBookRatio": "5.789", "ptg": "1.7897", "eps": "1.97"}
-const keyFigure4 = {"date": "2021-01-22", "pte": "1.543", "PriceToBookRatio": "5.34", "ptg": "1.798", "eps": "1.678"}
-const keyFigure5 = {"date": "2021-01-23", "pte": "1.687", "PriceToBookRatio": "5.435", "ptg": "1.978", "eps": "1.6798"}
-const keyFigure6 = {"date": "2021-01-24", "pte": "1.45654", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6798"}
-const keyFigure7 = {"date": "2021-01-25", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6789"}
-const keyFigure8 = {"date": "2021-01-26", "pte": "1.456", "PriceToBookRatio": "5.435", "ptg": "1.97", "eps": "1.6789"}
-const keyFigure9 = {"date": "2021-01-27", "pte": "1.54", "PriceToBookRatio": "5.45", "ptg": "1.978", "eps": "1.956"}
-const keyFigure10 = {"date": "2021-01-28", "pte": "1.45654", "PriceToBookRatio": "5.786", "ptg": "1.789", "eps": "1.769"}
-const keyFigure11 = {"date": "2021-01-29", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.7698"}
-const keyFigure12 = {"date": "2021-01-30", "pte": "1.687", "PriceToBookRatio": "5.45", "ptg": "1.997", "eps": "1.67"}
-const keyFigure13 = {"date": "2021-01-31", "pte": "1.546", "PriceToBookRatio": "5.645", "ptg": "1.798", "eps": "1.6789"}
-const keyFigure14 = {"date": "2021-02-01", "pte": "1.768", "PriceToBookRatio": "5.786", "ptg": "1.789", "eps": "1.7689"}
-const keyFigure15 = {"date": "2021-02-02", "pte": "1.354", "PriceToBookRatio": "5.456", "ptg": "1.78", "eps": "1.7698"}
-const keyFigure16 = {"date": "2021-02-03", "pte": "1.678", "PriceToBookRatio": "5.245", "ptg": "1.789", "eps": "1.7698"}
-const keyFigure17 = {"date": "2021-02-04", "pte": "1.876", "PriceToBookRatio": "5.786", "ptg": "1.978", "eps": "1.7689"}
-const keyFigure18 = {"date": "2021-02-05", "pte": "1.645", "PriceToBookRatio": "5.94", "ptg": "1.789", "eps": "1.97"}
-const keyFigure19 = {"date": "2021-02-06", "pte": "1.786", "PriceToBookRatio": "5.78", "ptg": "1.978", "eps": "1.7"}
-const keyFigure20 = {"date": "2021-02-07", "pte": "1.456", "PriceToBookRatio": "5.456", "ptg": "1.789", "eps": "1.68"}
+const keyFigure1 = { "date": "2021-01-19", "pte": "1.587", "PriceToBookRatio": "5.345", "ptg": "1.7978", "eps": "1.789" }
+const keyFigure2 = { "date": "2021-01-20", "pte": "1.678", "PriceToBookRatio": "5.645", "ptg": "1.789", "eps": "1.789" }
+const keyFigure3 = { "date": "2021-01-21", "pte": "1.786", "PriceToBookRatio": "5.789", "ptg": "1.7897", "eps": "1.97" }
+const keyFigure4 = { "date": "2021-01-22", "pte": "1.543", "PriceToBookRatio": "5.34", "ptg": "1.798", "eps": "1.678" }
+const keyFigure5 = { "date": "2021-01-23", "pte": "1.687", "PriceToBookRatio": "5.435", "ptg": "1.978", "eps": "1.6798" }
+const keyFigure6 = { "date": "2021-01-24", "pte": "1.45654", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6798" }
+const keyFigure7 = { "date": "2021-01-25", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6789" }
+const keyFigure8 = { "date": "2021-01-26", "pte": "1.456", "PriceToBookRatio": "5.435", "ptg": "1.97", "eps": "1.6789" }
+const keyFigure9 = { "date": "2021-01-27", "pte": "1.54", "PriceToBookRatio": "5.45", "ptg": "1.978", "eps": "1.956" }
+const keyFigure10 = { "date": "2021-01-28", "pte": "1.45654", "PriceToBookRatio": "5.786", "ptg": "1.789", "eps": "1.769" }
+const keyFigure11 = { "date": "2021-01-29", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.7698" }
+const keyFigure12 = { "date": "2021-01-30", "pte": "1.687", "PriceToBookRatio": "5.45", "ptg": "1.997", "eps": "1.67" }
+const keyFigure13 = { "date": "2021-01-31", "pte": "1.546", "PriceToBookRatio": "5.645", "ptg": "1.798", "eps": "1.6789" }
+const keyFigure14 = { "date": "2021-02-01", "pte": "1.768", "PriceToBookRatio": "5.786", "ptg": "1.789", "eps": "1.7689" }
+const keyFigure15 = { "date": "2021-02-02", "pte": "1.354", "PriceToBookRatio": "5.456", "ptg": "1.78", "eps": "1.7698" }
+const keyFigure16 = { "date": "2021-02-03", "pte": "1.678", "PriceToBookRatio": "5.245", "ptg": "1.789", "eps": "1.7698" }
+const keyFigure17 = { "date": "2021-02-04", "pte": "1.876", "PriceToBookRatio": "5.786", "ptg": "1.978", "eps": "1.7689" }
+const keyFigure18 = { "date": "2021-02-05", "pte": "1.645", "PriceToBookRatio": "5.94", "ptg": "1.789", "eps": "1.97" }
+const keyFigure19 = { "date": "2021-02-06", "pte": "1.786", "PriceToBookRatio": "5.78", "ptg": "1.978", "eps": "1.7" }
+const keyFigure20 = { "date": "2021-02-07", "pte": "1.456", "PriceToBookRatio": "5.456", "ptg": "1.789", "eps": "1.68" }
 
 const keyFiguresLess = {
     "keyFigures": [keyFigure1, keyFigure2, keyFigure3, keyFigure4, keyFigure5, keyFigure6,
@@ -359,9 +401,11 @@ router.get('/charts/key_figures/search', (req, res) => {
                 response = keyFiguresLess;
             } else if (id === "MS") {
                 response = keyFiguresLess;
+            } else if (id === "SAP") {
+                response = keyFiguresLess;
             } else {
                 isError = true;
-                response = {"error": "STOCK_ID_INVALID"}
+                response = { "error": "STOCK_ID_INVALID" }
             }
         } else if (max === "true") {
             if (id === "IBM") {
@@ -372,16 +416,18 @@ router.get('/charts/key_figures/search', (req, res) => {
                 response = keyFiguresMore;
             } else if (id === "MS") {
                 response = keyFiguresMore;
+            } else if (id === "SAP") {
+                response = keyFiguresMore;
             } else {
                 isError = true;
-                response = {"error": "STOCK_ID_INVALID"}
+                response = { "error": "STOCK_ID_INVALID" }
             }
         } else {
             isError = true;
-            response = {"error": "STOCK_ID_INVALID"}
+            response = { "error": "STOCK_ID_INVALID" }
         }
     } else {
-        response = {"error": "STOCK_ID_INVALID"}
+        response = { "error": "STOCK_ID_INVALID" }
     }
 
     !isError && res.json(response);
@@ -389,28 +435,28 @@ router.get('/charts/key_figures/search', (req, res) => {
 
 });
 
-const dp1 = {"date": "2021-01-19", "div": "0.0770"}
-const dp2 = {"date": "2021-01-20", "div": "0.0727"}
-const dp3 = {"date": "2021-01-21", "div": "0.0718"}
-const dp4 = {"date": "2021-01-22", "div": "0.0766"}
-const dp5 = {"date": "2021-01-23", "div": "0.0793"}
-const dp6 = {"date": "2021-01-24", "div": "0.0768"}
-const dp7 = {"date": "2021-01-25", "div": "0.0812"}
-const dp8 = {"date": "2021-01-26", "div": "0.0849"}
-const dp9 = {"date": "2021-01-27", "div": "0.0932"}
-const dp10 = {"date": "2021-01-28", "div": "0.0904"}
-const dp11 = {"date": "2021-01-29", "div": "0.0912"}
-const dp12 = {"date": "2021-01-30", "div": "0.0770"}
-const dp13 = {"date": "2021-01-31", "div": "0.0727"}
-const dp14 = {"date": "2021-02-01", "div": "0.0718"}
-const dp15 = {"date": "2021-02-02", "div": "0.0766"}
-const dp16 = {"date": "2021-02-03", "div": "0.0793"}
-const dp17 = {"date": "2021-02-04", "div": "0.0768"}
-const dp18 = {"date": "2021-02-05", "div": "0.0812"}
-const dp19 = {"date": "2021-02-06", "div": "0.0849"}
-const dp20 = {"date": "2021-02-07", "div": "0.0932"}
-const dp21 = {"date": "2021-02-08", "div": "0.0904"}
-const dp22 = {"date": "2021-02-09", "div": "0.0912"}
+const dp1 = { "date": "2021-01-19", "div": "0.0770" }
+const dp2 = { "date": "2021-01-20", "div": "0.0727" }
+const dp3 = { "date": "2021-01-21", "div": "0.0718" }
+const dp4 = { "date": "2021-01-22", "div": "0.0766" }
+const dp5 = { "date": "2021-01-23", "div": "0.0793" }
+const dp6 = { "date": "2021-01-24", "div": "0.0768" }
+const dp7 = { "date": "2021-01-25", "div": "0.0812" }
+const dp8 = { "date": "2021-01-26", "div": "0.0849" }
+const dp9 = { "date": "2021-01-27", "div": "0.0932" }
+const dp10 = { "date": "2021-01-28", "div": "0.0904" }
+const dp11 = { "date": "2021-01-29", "div": "0.0912" }
+const dp12 = { "date": "2021-01-30", "div": "0.0770" }
+const dp13 = { "date": "2021-01-31", "div": "0.0727" }
+const dp14 = { "date": "2021-02-01", "div": "0.0718" }
+const dp15 = { "date": "2021-02-02", "div": "0.0766" }
+const dp16 = { "date": "2021-02-03", "div": "0.0793" }
+const dp17 = { "date": "2021-02-04", "div": "0.0768" }
+const dp18 = { "date": "2021-02-05", "div": "0.0812" }
+const dp19 = { "date": "2021-02-06", "div": "0.0849" }
+const dp20 = { "date": "2021-02-07", "div": "0.0932" }
+const dp21 = { "date": "2021-02-08", "div": "0.0904" }
+const dp22 = { "date": "2021-02-09", "div": "0.0912" }
 
 const dpLess = [dp1, dp2, dp3, dp4, dp5, dp6, dp7, dp8, dp9, dp10, dp11];
 const dpMore = [dp1, dp2, dp3, dp4, dp5, dp6, dp7, dp8, dp9, dp10, dp11,
@@ -426,36 +472,36 @@ router.get('/charts/dividend/search', (req, res) => {
 
         if (max === "false") {
             if (id === "IBM") {
-                response = {"dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03"};
+                response = { "dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03" };
             } else if (id === "AAPL") {
-                response = {"dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03"};
+                response = { "dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03" };
             } else if (id === "MSFT") {
-                response = {"dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03"};
+                response = { "dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03" };
             } else if (id === "MS") {
-                response = {"dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03"};
+                response = { "dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03" };
             } else {
                 isError = true;
-                response = {"error": "STOCK_ID_INVALID"}
+                response = { "error": "STOCK_ID_INVALID" }
             }
         } else if (max === "true") {
             if (id === "IBM") {
-                response = {"dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03"};
+                response = { "dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03" };
             } else if (id === "AAPL") {
-                response = {"dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03"};
+                response = { "dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03" };
             } else if (id === "MSFT") {
-                response = {"dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03"};
+                response = { "dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03" };
             } else if (id === "MS") {
-                response = {"dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03"};
+                response = { "dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03" };
             } else {
                 isError = true;
-                response = {"error": "STOCK_ID_INVALID"}
+                response = { "error": "STOCK_ID_INVALID" }
             }
         } else {
             isError = true;
-            response = {"error": "STOCK_ID_INVALID"}
+            response = { "error": "STOCK_ID_INVALID" }
         }
     } else {
-        response = {"error": "STOCK_ID_INVALID"}
+        response = { "error": "STOCK_ID_INVALID" }
     }
 
     !isError && res.json(response);
@@ -463,26 +509,26 @@ router.get('/charts/dividend/search', (req, res) => {
 
 });
 
-const rating1 = {"date": "2021-01-19", "goal": "345770", "strategy": "buy", "source": "investing.com"}
-const rating2 = {"date": "2021-01-20", "goal": "345727", "strategy": "hold", "source": "investing.com"}
-const rating3 = {"date": "2021-01-21", "goal": "346718", "strategy": "sell", "source": "investing.com"}
-const rating4 = {"date": "2021-01-22", "goal": "346766", "strategy": "sell", "source": "investing.com"}
-const rating5 = {"date": "2021-01-23", "goal": "346793", "strategy": "sell", "source": "investing.com"}
-const rating6 = {"date": "2021-01-24", "goal": "344768", "strategy": "sell", "source": "investing.com"}
-const rating7 = {"date": "2021-01-25", "goal": "344812", "strategy": "hold", "source": "investing.com"}
-const rating8 = {"date": "2021-01-26", "goal": "345849", "strategy": "buy", "source": "investing.com"}
-const rating9 = {"date": "2021-01-27", "goal": "345932", "strategy": "hold", "source": "investing.com"}
-const rating10 = {"date": "2021-01-28", "goal": "345904", "strategy": "hold", "source": "investing.com"}
-const rating11 = {"date": "2021-01-29", "goal": "345912", "strategy": "sell", "source": "investing.com"}
-const rating12 = {"date": "2021-01-30", "goal": "345770", "strategy": "sell", "source": "investing.com"}
-const rating13 = {"date": "2021-01-31", "goal": "345727", "strategy": "sell", "source": "investing.com"}
-const rating14 = {"date": "2021-02-01", "goal": "346718", "strategy": "sell", "source": "investing.com"}
-const rating15 = {"date": "2021-02-02", "goal": "347766", "strategy": "sell", "source": "investing.com"}
-const rating16 = {"date": "2021-02-03", "goal": "346793", "strategy": "hold", "source": "investing.com"}
-const rating17 = {"date": "2021-02-04", "goal": "345768", "strategy": "hold", "source": "investing.com"}
-const rating18 = {"date": "2021-02-05", "goal": "343812", "strategy": "hold", "source": "investing.com"}
-const rating19 = {"date": "2021-02-06", "goal": "345849", "strategy": "buy", "source": "investing.com"}
-const rating20 = {"date": "2021-02-07", "goal": "345932", "strategy": "sell", "source": "investing.com"}
+const rating1 = { "date": "2021-01-19", "goal": "345770", "strategy": "buy", "source": "investing.com" }
+const rating2 = { "date": "2021-01-20", "goal": "345727", "strategy": "hold", "source": "investing.com" }
+const rating3 = { "date": "2021-01-21", "goal": "346718", "strategy": "sell", "source": "investing.com" }
+const rating4 = { "date": "2021-01-22", "goal": "346766", "strategy": "sell", "source": "investing.com" }
+const rating5 = { "date": "2021-01-23", "goal": "346793", "strategy": "sell", "source": "investing.com" }
+const rating6 = { "date": "2021-01-24", "goal": "344768", "strategy": "sell", "source": "investing.com" }
+const rating7 = { "date": "2021-01-25", "goal": "344812", "strategy": "hold", "source": "investing.com" }
+const rating8 = { "date": "2021-01-26", "goal": "345849", "strategy": "buy", "source": "investing.com" }
+const rating9 = { "date": "2021-01-27", "goal": "345932", "strategy": "hold", "source": "investing.com" }
+const rating10 = { "date": "2021-01-28", "goal": "345904", "strategy": "hold", "source": "investing.com" }
+const rating11 = { "date": "2021-01-29", "goal": "345912", "strategy": "sell", "source": "investing.com" }
+const rating12 = { "date": "2021-01-30", "goal": "345770", "strategy": "sell", "source": "investing.com" }
+const rating13 = { "date": "2021-01-31", "goal": "345727", "strategy": "sell", "source": "investing.com" }
+const rating14 = { "date": "2021-02-01", "goal": "346718", "strategy": "sell", "source": "investing.com" }
+const rating15 = { "date": "2021-02-02", "goal": "347766", "strategy": "sell", "source": "investing.com" }
+const rating16 = { "date": "2021-02-03", "goal": "346793", "strategy": "hold", "source": "investing.com" }
+const rating17 = { "date": "2021-02-04", "goal": "345768", "strategy": "hold", "source": "investing.com" }
+const rating18 = { "date": "2021-02-05", "goal": "343812", "strategy": "hold", "source": "investing.com" }
+const rating19 = { "date": "2021-02-06", "goal": "345849", "strategy": "buy", "source": "investing.com" }
+const rating20 = { "date": "2021-02-07", "goal": "345932", "strategy": "sell", "source": "investing.com" }
 
 const ratings = [rating1, rating2, rating3, rating4, rating5, rating6, rating7, rating8, rating9, rating10, rating11,
     rating12, rating13, rating14, rating15, rating16, rating17, rating18, rating19, rating20];
@@ -493,16 +539,16 @@ router.get('/charts/analysts/search', (req, res) => {
     let response;
 
     if (id === "IBM") {
-        response = {"ratings": ratings, "averageGoal": "345961"};
+        response = { "ratings": ratings, "averageGoal": "345961" };
     } else if (id === "AAPL") {
-        response = {"ratings": ratings, "averageGoal": "345961"};
+        response = { "ratings": ratings, "averageGoal": "345961" };
     } else if (id === "MSFT") {
-        response = {"ratings": ratings, "averageGoal": "345961"};
+        response = { "ratings": ratings, "averageGoal": "345961" };
     } else if (id === "MS") {
-        response = {"ratings": ratings, "averageGoal": "345961"};
+        response = { "ratings": ratings, "averageGoal": "345961" };
     } else {
         isError = true;
-        response = {"error": "STOCK_ID_INVALID"}
+        response = { "error": "STOCK_ID_INVALID" }
     }
 
     !isError && res.json(response);
