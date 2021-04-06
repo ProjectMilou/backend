@@ -3,6 +3,28 @@ const bcrypt = require('bcrypt');
 
 // adapted from https://www.digitalocean.com/community/tutorials/api-authentication-with-json-web-tokensjwt-and-passport
 
+// fixme is _id realy integer or object.id (?)
+// fixme should _id be available to the frontend ? or should email be enough
+/**
+ * @swagger
+ * definitions:
+ *  user:
+ *    type: object
+ *    properties:
+ *          _id:
+ *              type: object.id
+ *          email:
+ *              type: string
+ *          lastName:
+ *              type: string
+ *          firstName:
+ *              type: string
+ *          password:
+ *              type: string
+ *          confirmed:
+ *              type: boolean
+ */
+
 const UserSchema = new mongoose.Schema({
     email: {
         type: String,

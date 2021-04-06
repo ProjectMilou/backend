@@ -28,7 +28,10 @@ const swaggerOptions = {
     },
     definition: {},
     apis: [
-        './routes/swagger.js'
+        './routes/swagger.js',
+        './routes/user.js',
+        './models/user.js',
+        './models/userToken.js'
     ]
 };
 

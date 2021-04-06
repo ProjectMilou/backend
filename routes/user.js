@@ -6,10 +6,39 @@ const jwt = require('jsonwebtoken');
 const genToken = require('../auth/auth');
 const UserModel = require("../models/user");
 const UserTokenModel = require ("../models/userToken")
-
 const router = express.Router();
 
 // logout wont be needed, since frontend will delete token for logout and passportjs's encoder specifies the time, in which its token will be valid
+/**
+ * @swagger
+ * /user/register:
+ *  post:
+ *      description: Registering an account by passing mail and password. Email for confirmation will be sent.
+ *      summary: Registering a user
+ *      tags:
+ *      - user
+ *      produces:
+ *      - application/json
+ *      consumes:
+ *      - application/json
+ *      parameters:
+ *      - in: body
+ *          name: email
+ *          required: true
+ *          schema:
+ *              type: string
+ *      - in: body
+ *          name: password
+ *          requires: true
+ *          schema:
+ *              type: string
+ *
+ *      responses:
+ *          '200':
+ *              description: Accepted. User is now registered, confirm mail.
+ *          '404':
+ *              description: Not accepted, email already taken.
+*/
 
 router.post(
     '/register',
@@ -19,6 +48,31 @@ router.post(
         res.json(req.user.response);
     }
 );
+/**
+ * @swagger
+ * /user/confirm:
+ *  post:
+ *      description: Confirms, that the token is correct, which has been sent to users email address.
+ *      summary: Confirmation of email token
+ *      tags:
+ *      - user
+ *      produces:
+ *      - application/json
+ *      consumes:
+ *      - application/json
+ *      parameters:
+ *          -in: path
+ *              name: token
+ *              required: true
+ *          -in: path
+ *              name:id
+ *              required: true
+ *      responses:
+ *          '200':
+ *              description: User is confirmed.
+ *          '404':
+ *              description: User is not confirmed.
+ */
 
 // todo fix in swagger !
 router.post('/confirm/:id/:token', async (req, res) => {
@@ -62,6 +116,20 @@ router.post('/confirm/:id/:token', async (req, res) => {
      */
 });
 
+/**
+* @swagger
+* /user/login:
+*  post:
+*   description: Checks if email and password are correct. sends back a token that needs to be passed in the header of each user-relevant request.
+*   summary:
+*   tags:
+*   - user
+*   responses:
+*    '200':
+*      description: Password accepted.
+*    '401':
+*      description: Password is not correct or email is not registered.
+*/
 router.post(
     '/login',
     async (req, res, next) => {
@@ -103,7 +171,20 @@ router.post(
         )(req, res, next);
     }
 );
-
+/**
+ * @swagger
+* /user/profile:
+    *  get:
+    *   description: Sends back account information about user profile.
+*   summary:
+*   tags:
+    *    - user
+*   responses:
+*    '200':
+*      description: Accepted.
+*    '401':
+*      description: Unauthorized. Token not valid.
+*/
 // profile
 router.get('/profile', passport.authenticate('jwt',{session: false}), async (req, res) => {
     // http://www.passportjs.org/docs/username-password/
@@ -124,7 +205,20 @@ router.get('/profile', passport.authenticate('jwt',{session: false}), async (req
     }
 
 });
-
+/**
+ * @swagger
+ * /user/forgot:
+ *  post:
+ *   description: If user has forgotten password, a token will be sent to email, that has to be confirmed.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '202':
+ *      description: Email exists, token will be sent.
+ *    '401':
+ *      description: Not foundMail was not found.
+ */
 // forgot password
 router.post('/forgot', async (req, res) => {
 
@@ -141,7 +235,20 @@ router.post('/forgot', async (req, res) => {
         res.status(404).json({message: "mail not found"});
     }
 });
-
+/**
+ * @swagger
+ * /user/reset/confirm:
+ *  post:
+ *   description: Confirms token that was sent to user-email, when a user has forgotten the password to his account.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '200':
+ *      description: Token was correct, password can now be reset.
+ *    '404':
+ *      description: Not found. Token was not found.
+ */
 router.post('/reset/confirm', (req, res) => {
 
     // req: body { token: c31d350f-dfdb-4887-b7cf-b69520be26ec, pwd: ***** }
@@ -166,6 +273,20 @@ router.post('/reset/confirm', (req, res) => {
 });
 
 // edit profile
+/**
+ * @swagger
+ * /user/edit:
+ *  put:
+ *   description: Edit user account information.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '200':
+ *      description: Token was correct, user-account will be edited as specified.
+ *    '404':
+ *      description: Not found, Token was not found.
+ */
 router.put('/edit', passport.authenticate('jwt', {session: false}), async (req, res) => {
     // implement the following authorization: http://www.passportjs.org/docs/username-password/
     // req: {?firstname, ?lastname}
@@ -194,7 +315,20 @@ router.put('/edit', passport.authenticate('jwt', {session: false}), async (req, 
     }
 });
 
-
+/**
+ * @swagger
+ * /user/delete:
+ *  delete:
+ *   description: Delete user-account.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '200':
+ *      description: Accepted, user-account will be deleted.
+ *    '404':
+ *      description: Not found, Token was not found.
+ */
 // delete profile
 router.delete('/profile', passport.authenticate('jwt', {session: false}),  async (req, res) => {
     // implement the following authorization: http://www.passportjs.org/docs/username-password/
@@ -232,14 +366,46 @@ router.get('/bank', (req,res) => {
         }]
     });
 })
-
+/**
+ * @swagger
+ * /user/bank
+ * post:
+ * description: Adds bank connection
+ * summary: Adds bank connection
+ * tags:
+ *  -user
+ *   responses:
+ *    '200':
+ *      description: Accepted, bank-connection added.
+ *    '404':
+ *      description: Rejected, Token was not found.
+ */
 // add a bank
 router.post('/bank_connection', (req, res) => {
     res.statusCode = 200;
     res.send("bank added")
 });
 
-
+/**
+ * @swagger
+ * /user/bank:
+ *  get:
+ *   description: Sends back banks, that fit the passed String.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '200':
+ *      description: Accepted.
+ *  delete:
+ *   description: bank-connection with id will be deleted.
+ *   summary:
+ *   tags:
+ *    - user
+ *   responses:
+ *    '200':
+ *      description: Accepted, bank-connection deleted.
+ */
 // delete a bank connection
 router.delete('/bank_connection/:id', (req, res) => {
     res.statusCode = 200;

@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const JWTstrategy = require('passport-jwt').Strategy;
 const ExtractJWT = require('passport-jwt').ExtractJwt;
 const {hash} = require('../encryption/encryption');
-const email = require('../auth/email')
+const confEmail = require('../auth/email')
 
 
 // adapted from https://www.digitalocean.com/community/tutorials/api-authentication-with-json-web-tokensjwt-and-passport
@@ -63,7 +63,8 @@ passport.use(
                     });
 
                     // send token to mail
-                    const confEmail = await email.sendConfirmationEmail( email,user.id, token);
+
+                    //await confEmail.sendConfirmationEmail( email,user.id, token);
 
                     return done(null, {
                         response: {

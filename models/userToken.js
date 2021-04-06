@@ -1,5 +1,17 @@
 const mongoose = require("mongoose");
-
+/**
+ * @swagger
+ * definitions:
+ *  userToken:
+ *    type: object
+ *    properties:
+ *      userID:
+ *        type: string
+ *      token:
+ *        type: string
+ *      expirationDate:
+ *        type: Date
+ */
 const UserTokenSchema = new mongoose.Schema({
     userID: {
         type: String,
