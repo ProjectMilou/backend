@@ -7,9 +7,9 @@ const SES_CONFIG = {
     region:'eu-central-1'
 };
 
-const AWS_SES = new AWS_SES(SES_CONFIG);
+const AWS_SES = new AWS.SES(SES_CONFIG);
 
-let sendConfirmationEmail = (recipientEmail,id, confirmationCode) =>{
+function sendConfirmationEmail (recipientEmail,id, confirmationCode){
     //TODO: set up params
     let params = {
         Source: 'info@milou.de',
