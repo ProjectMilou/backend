@@ -1,6 +1,6 @@
 'use strict';
 const express = require('express');
-
+const analytics = require('../data-analytics/analytics/analytics');
 // Require analytics, alphaVantageAPI, dbConnection and data filtering module.
 
 
