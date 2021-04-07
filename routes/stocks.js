@@ -221,16 +221,21 @@ router.get('/list', async (req, res) => {
                 } else if (mc_values.includes["small"] && mc_values.includes["medium"]) {
                     query["$expr"] = { $lt: [{ $toDouble: "$marketCapitalization" }, 10000000000] }
                 } else if (mc_values.includes["small"] && mc_values.includes["large"]) {
-                    query["$expr"] = { $or: { $gte: [{ $toDouble: "$marketCapitalization" }, 10000000000], $lt: [{ $toDouble: "$marketCapitalization" }, 2000000000] } }
+                    query["$or"] = [
+                        { $expr: { $lt: [{ $toDouble: "$marketCapitalization" }, 2000000000] } },
+                        { $expr: { $gt: [{ $toDouble: "$marketCapitalization" }, 10000000000] } }
+                    ]
                 } else if (mc_values.includes["medium"] && mc_values.includes["large"]) {
                     query["$expr"] = { $gte: [{ $toDouble: "$marketCapitalization" }, 2000000000] }
                 }
             } else {
                 if (mc === "small") {
-                    //$expr: { $gt: [{ $toDouble: "$marketCapitalization" }, 30] }
                     query["$expr"] = { $lt: [{ $toDouble: "$marketCapitalization" }, 2000000000] }
                 } else if (mc === 'medium') {
-                    query["$expr"] = { $lt: [{ $toDouble: "$marketCapitalization" }, 10000000000] }
+                    query["$and"] = [
+                        { $expr: { $lt: [{ $toDouble: "$marketCapitalization" }, 10000000000] } },
+                        { $expr: { $gt: [{ $toDouble: "$marketCapitalization" }, 2000000000] } }
+                    ]
                 } else if (mc === 'large') {
                     query["$expr"] = { $gte: [{ $toDouble: "$marketCapitalization" }, 10000000000] }
                 }
