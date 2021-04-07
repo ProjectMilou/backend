@@ -4,6 +4,7 @@ const passport = require('passport');
 const genToken = require('../auth/auth');
 const UserModel = require("../models/user");
 const UserTokenModel = require ("../models/userToken")
+
 const router = express.Router();
 
 // logout not required, frontend will delete token for logout.

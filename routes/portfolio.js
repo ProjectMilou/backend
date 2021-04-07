@@ -17,11 +17,19 @@ var stock = {
 }
 var position = {
     "stock": stock,
-    "qty": 20
+    "qty": 20,
+    "totalReturn": 0,
+    "totalReturnPercent": 0
+}
+
+var portfolioStock = {
+    "id": "1",
+    "name": "pfName",
+    "qty": 10
 }
 
 var pf1 = {
-    "id": 0,
+    "id": "0",
     "name": "test1",
     "virtual": true,
     "positionCount": 0,
@@ -32,7 +40,7 @@ var pf1 = {
     "modified": 0
 };
 var pf2 = {
-    "id": 1,
+    "id": "1",
     "name": "test2",
     "virtual": true,
     "positionCount": 1,
@@ -52,10 +60,11 @@ var risk1 = {
 var keyFigures = {
     "year": 2021,
     "pte": 15.00,
-    "ptv": 1.00,
+    "ptb": 1.00,
     "ptg": 0.85,
     "eps": 99,
-    "div": 10
+    "div": 10,
+    "dividendPayoutRatio": 2.3
 }
 
 var riskAnalysis = {
@@ -70,7 +79,9 @@ var pf1details = {
     "risk": riskAnalysis,
     "keyFigures": [keyFigures],
     "nextDividend": 1616086585,
-    "dividendPayoutRatio": 41
+    "dividendPayoutRatio": 41,
+    "totalReturn": 0,
+    "totalReturnPercent": 0
 }
 
 router.get('/list', (req, res) => {
@@ -81,9 +92,9 @@ router.get('/list', (req, res) => {
 router.get('/details/:id', (req, res) => {
     var id = req.params.id;
     var response = {};
-    if (id == 0) {
+    if (id == "0") {
         res.json(response);
-    } else if (id == 1) {
+    } else if (id == "1") {
         response = pf1details
         res.json(response);
     } else {
@@ -96,11 +107,11 @@ router.get('/details/:id', (req, res) => {
 router.get('/modifications/:id', (req, res) => {
     var id = req.params.id;
     var response = {};
-    if (id == 0) {
+    if (id == "0") {
         response.modifications = [];
         res.json(response);
-    } else if (id == 1) {
-        response.modifications = [1616086585];
+    } else if (id == "1") {
+        response.modifications = [positionQty];
         res.json(response);
     } else {
         response.error = "PORTFOLIO_ID_INVALID"
@@ -114,10 +125,10 @@ router.get('/positions/:id/', (req, res) => {
     var id = req.params.id;
     var time = req.body.time;
     var response = {};
-    if (id == 1 && time == 1) {
+    if (id == "1" && time == 1) {
         response.positions = [position]
         res.json(response);
-    } else if (id != 0 && id != 1) {
+    } else if (id != "0" && id != "1") {
         response.error = "PORTFOLIO_ID_INVALID"
         res.status(404).json(response);
     } else {
@@ -134,10 +145,14 @@ router.get('/performance/:id', (req, res) => {
     var id = req.params.id;
     var range = req.body.range;
     var response = {};
-    if (id == 1 && range == "7D") {
-        response.chart = [0, 1, 2, 3, 4];
+    if (id == "1" && range == "7D") {
+        response.chart = [
+            [1327359600000, 0],
+            [1327359700000, 1],
+            [1327359800000, 2]
+        ];
         res.json(response);
-    } else if (id != 1) {
+    } else if (id != "1") {
         response.error = "PORTFOLIO_ID_INVALID";
         res.status(404).json(response);
     } else {
@@ -145,6 +160,19 @@ router.get('/performance/:id', (req, res) => {
         res.status(400).json(response);
     }
 });
+
+router.get('/stock', (req, res) => {
+    var isin = req.body.isin + "";
+    var response = {};
+    if (isin.replace(/-/g, "").length != 12) {
+        response.error = "ISIN_INVALID";
+        res.status(400).json(response);
+    } else {
+        response.portfolios = [portfolioStock];
+        res.json(response);
+    }
+});
+
 
 router.post('/create', (req, res) => {
     // request: {"name" : name}
@@ -157,7 +185,7 @@ router.post('/create', (req, res) => {
         response.error = "PORTFOLIO_NAME_INVALID";
         res.status(400).json(response);
     } else {
-        response.id = 2;
+        response.id = "2";
         res.json(response);
     }
 });
@@ -165,8 +193,8 @@ router.post('/create', (req, res) => {
 router.delete('/:id', (req, res) => {
     var id = req.params.id;
     var response = {};
-    if (id != 0 && id != 1) {
-        response.error = "PORTFOLIO_ID_INVALID"
+    if (id != "0" && id != "1") {
+        response.error = "PORTFOLIO_NOT_EXISTS"
         res.status(400).json(response);
     } else {
         res.json(response);
@@ -179,7 +207,7 @@ router.put('/rename/:id', (req, res) => {
     var id = req.params.id;
     var name = req.body.name;
     var response = {};
-    if (id != 1 && id != 0) {
+    if (id != "1" && id != "0") {
         response.error = "PORTFOLIO_ID_INVALID"
         res.status(404).json(response);
     } else if (name == "test1" || name == "test2") {
@@ -199,16 +227,14 @@ router.put('/modify/:id', (req, res) => {
     //                  [{"isin": "string",
     //                  "qty": 0}]}
     var id = req.params.id;
-    var isin = req.body.isin + "";
-    var qty = req.body.qty;
     var response = {};
-    if (id != 1 && id != 0) {
+    if (id != "1" && id != "0") {
         response.error = "PORTFOLIO_ID_INVALID"
         res.status(404).json(response);
-    } else if (qty <= 0) {
+    } else if (req.body.modifications[0].qty < 0) {
         response.error = "QTY_INVALID"
         res.status(400).json(response);
-    } else if (isin.length != 12) {
+    } else if (req.body.modifications[0].isin.replace(/-/g, "").length != 12) {
         response.error = "ISIN_INVALID"
         res.status(400).json(response);
     } else {
@@ -217,12 +243,33 @@ router.put('/modify/:id', (req, res) => {
 
 });
 
+router.put('/stock', (req, res) => {
+    // request: {"modifications": 
+    //                  [{"id": "1",
+    //                  "qty": 0}],
+    //                  isin     }
+    var isin = req.body.isin;
+    var response = {};
+    if (isin.replace(/-/g, "").length != 12) {
+        response.error = "ISIN_INVALID";
+        res.status(400).json(response);
+    } else if (req.body.modifications[0].id != "0" && req.body.modifications[0].id != "1") {
+        response.error = "PORTFOLIO_ID_INVALID";
+        res.status(400).json(response);
+    } else if (req.body.modifications[0].qty < 0) {
+        response.error = "QTY_INVALID";
+        res.status(400).json(response);
+    } else {
+        res.json(response);
+    }
+});
+
 router.post('/duplicate/:id', (req, res) => {
     // request: {"name" : name} 
     var id = req.params.id;
     var name = req.body.name;
     var response = {};
-    if (id != 1 && id != 0) {
+    if (id != "1" && id != "0") {
         response.error = "PORTFOLIO_ID_INVALID"
         res.status(404).json(response);
     } else if (name == "test1" || name == "test2") {
@@ -232,7 +279,7 @@ router.post('/duplicate/:id', (req, res) => {
         response.error = "PORTFOLIO_NAME_INVALID";
         res.status(400).json(response);
     } else {
-        response.id = 2;
+        response.id = "2";
         res.json(response);
     }
 

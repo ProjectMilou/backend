@@ -8,7 +8,7 @@ const init = async () => {
     const bodyParser = require('body-parser');
     const cors = require('cors');
 
-// const getAnalyticsRoute = require('./routes/analyticsRoutes')
+    const getAnalyticsRoute = require('./routes/analyticsRoutes')
     const getUserRoute = require('./routes/user');
     const getPortfolioRoute = require('./routes/portfolio');
     const getStocksRoute = require('./routes/stocks');
@@ -57,6 +57,7 @@ const init = async () => {
     app.use('/user', getUserRoute);
     app.use('/portfolio', getPortfolioRoute);
     app.use('/stocks', getStocksRoute);
+    app.use('/analytics', getAnalyticsRoute);
 
     app.listen(process.env.PORT || 3000);
     console.log(`Running on http://${HOST}:${PORT}`);
