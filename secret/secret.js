@@ -7,18 +7,18 @@ module.exports = async () => {
     } else {
 
         // Load the AWS SDK
-        var AWS = require('aws-sdk'),
+        let AWS = require('aws-sdk'),
             region = "eu-central-1",
             secretName = "backend-secrets",
             secret,
             decodedBinarySecret;
 
         // Create a Secrets Manager client
-        var client = new AWS.SecretsManager({
+        let client = new AWS.SecretsManager({
             region: region
         });
 
-        var secrets;
+        let secrets;
         return await client.getSecretValue({SecretId: secretName}, function (err, data) {
             if (err) {
                 if (err.code === 'DecryptionFailureException')
@@ -50,7 +50,7 @@ module.exports = async () => {
                     decodedBinarySecret = buff.toString('ascii');
                 }
 
-                // secrets are set to 'process.env.(secret_name)'
+                // secrets will be stored in 'process.env.(secret_name)'
                 secrets = JSON.parse(data.SecretString);
                 process.env.db_admin_pw = secrets.db_admin_pw;
                 process.env.finAPI_client_id = secrets.finAPI_client_id;
@@ -60,6 +60,6 @@ module.exports = async () => {
                 process.env.finnhub_key = secrets.finnhub_key;
                 process.env.aws_access_id = secrets.aws_access_id;
             }
-        }).promise();
+        }).promise().then();
     }
 }

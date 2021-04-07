@@ -1,6 +1,5 @@
 'use strict';
 
-const getSecrets = require('./secret/secret');
 const express = require('express');
 const bodyParser = require('body-parser');
 require('./auth/auth');
@@ -13,34 +12,29 @@ const getPortfolioRoute = require('./routes/portfolio');
 const getStocksRoute = require('./routes/stocks');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-const secrets = require('./secret/secret');
-require('./auth/auth');
-
-
-// Constants
-const { PORT = 3000 } = process.env;
-const HOST = '0.0.0.0';
-const app = express();
-const swaggerOptions = {
-    encoding: "utf-8",
-    swaggerDefinition: {
-        info: {
-            title: 'Milou Backend API',
-            description: 'Information about users, portfolios and stocks',
-            servers: ["http://localhost:" + PORT]
-        }
-    },
-    definition: {},
-    apis: [
-        './routes/swagger.js'
-    ]
-};
 
 // init is required to access AWS Secret Manager before running any other code.
 const init = async () => {
-    await getSecrets();
-    // console.log(process.env);
+    await require('./secret/secret')();
 
+    // Constants
+    const { PORT = 3000 } = process.env;
+    const HOST = '0.0.0.0';
+    const app = express();
+    const swaggerOptions = {
+        encoding: "utf-8",
+        swaggerDefinition: {
+            info: {
+                title: 'Milou Backend API',
+                description: 'Information about users, portfolios and stocks',
+                servers: ["http://localhost:" + PORT]
+            }
+        },
+        definition: {},
+        apis: [
+            './routes/swagger.js'
+        ]
+    };
     const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
@@ -62,5 +56,4 @@ const init = async () => {
     app.listen(process.env.PORT || 3000);
     console.log(`Running on http://${HOST}:${PORT}`);
 }
-
-init();
+init().then();
