@@ -188,41 +188,62 @@ router.get('/list', async (req, res) => {
     let industry = req.query.industry;
     let mc = req.query.mc; // either small, medium or large market capitalization
     if (currency === undefined && country === undefined && industry === undefined && mc === undefined) {
-        response = { "stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock, sapStock] };
+        //response = { "stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock, sapStock] };
+        const stocks = await stockModel.find({}, '-_id');
+        res.json({ "stocks": stocks });
     } else {
-        if (country === 'Germany' && currency === 'EUR') {
-            response = { "stocks": [sapStock] };
-        } else if (country === 'Germany') {
-            response = { "stocks": [sapStock] };
-        } else if (currency === 'EUR') {
-            response = { "stocks": [sapStock] };
-        } else if (currency === "USD") {   // currency
-            response = { "stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock] };
-        } else if (country === "USA") { // country
-            response = { "stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock] };
-        } else if ("Consumer Electronics".includes(industry)) { //industry
-            response = { "stocks": [ibmStock] };
-        } else if ("Information Technology Services".includes(industry)) {
-            response = { "stocks": [appleStock] };
-        } else if ("Software-Infrastructure".includes(industry)) {
-            response = { "stocks": [microsoftStock] };
-        } else if ("Capital Markets".includes(industry)) {
-            response = { "stocks": [morganStanleyStock] };
-        } else if (mc === "small") { // market capitalization
-            response = { "stocks": [morganStanleyStock] };
-        } else if (mc === "medium") {
-            response = { "stocks": [ibmStock, microsoftStock] };
-        } else if (mc === "large") {
-            response = { "stocks": [appleStock] };
-        } else if (mc === 'small,medium') {
-            response = { "stocks": [morganStanleyStock, ibmStock, microsoftStock] };
-        } else {
-            isError = true;
-            response = { "error": "STOCK_ID_INVALID" }
+        let query = {};
+        if (currency != undefined) {
+            if (currency.includes(',')) {
+                const currencies = currency.split(',');
+                query["currency"] = { $in: currencies }
+            } else {
+                query["currency"] = currency;
+            }
         }
+        if (country != undefined) {
+            if (country.includes(',')) {
+                const countries = country.split(',');
+                query["country"] = { $in: countries }
+            } else {
+                query["country"] = country;
+            }
+        }
+        if (industry != undefined) {
+            query["industry"] = { $regex: ".*" + industry + ".*" };
+        }
+        if (mc != undefined) {
+            if (mc.includes(',')) {
+                // TODO: fix below
+                const mc_values = mc.split(',');
+                if (mc_values.includes["small"] && mc_values.includes["medium"] && mc_values.includes["large"]) {
+                    ; // do nothing
+                } else if (mc_values.includes["small"] && mc_values.includes["medium"]) {
+                    query["$expr"] = { $lt: [{ $toDouble: "$marketCapitalization" }, 10000000000] }
+                } else if (mc_values.includes["small"] && mc_values.includes["large"]) {
+                    query["$or"] = [
+                        { $expr: { $lt: [{ $toDouble: "$marketCapitalization" }, 2000000000] } },
+                        { $expr: { $gt: [{ $toDouble: "$marketCapitalization" }, 10000000000] } }
+                    ]
+                } else if (mc_values.includes["medium"] && mc_values.includes["large"]) {
+                    query["$expr"] = { $gte: [{ $toDouble: "$marketCapitalization" }, 2000000000] }
+                }
+            } else {
+                if (mc === "small") {
+                    query["$expr"] = { $lt: [{ $toDouble: "$marketCapitalization" }, 2000000000] }
+                } else if (mc === 'medium') {
+                    query["$and"] = [
+                        { $expr: { $lt: [{ $toDouble: "$marketCapitalization" }, 10000000000] } },
+                        { $expr: { $gt: [{ $toDouble: "$marketCapitalization" }, 2000000000] } }
+                    ]
+                } else if (mc === 'large') {
+                    query["$expr"] = { $gte: [{ $toDouble: "$marketCapitalization" }, 10000000000] }
+                }
+            }
+        }
+        const stocks = await stockModel.find(query, '-_id');
+        res.json({ "stocks": stocks });
     }
-    !isError && res.json(response);
-    isError && res.status(404).json(response);
 });
 
 router.get('/search', async (req, res) => {

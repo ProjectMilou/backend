@@ -3,14 +3,9 @@ const express = require('express');
 const passport = require('passport');
 const genToken= require('../auth/auth');
 
-
 const router = express.Router();
 
-
-
-
 router.post('/register', async (req, res) => {
-
     // req: { email, pwd }
 
     // already used email: test@getmilou.de -> 409
@@ -29,9 +24,6 @@ router.post('/register', async (req, res) => {
         });
     }
 });
-
-
-
 
 router.post('/register/confirm', (req, res) => {
 
@@ -53,8 +45,6 @@ router.post('/register/confirm', (req, res) => {
         });
     }
 });
-
-
 
 // login
 router.post('/login',async (req, res, next) => {
@@ -87,8 +77,6 @@ router.post('/login',async (req, res, next) => {
 // todo logout is needed! what if the user decides to log out?
 // logout wont be needed, since frontend will delete token for logout and passportjs's encoder specifies the time, in which its token will be valid
 
-
-
 // profile
 router.get('/profile', passport.authenticate('jwt',{session: false}),  (req, res) => {
     // http://www.passportjs.org/docs/username-password/
@@ -96,8 +84,6 @@ router.get('/profile', passport.authenticate('jwt',{session: false}),  (req, res
     // request just contains an JWT token in its header, that will be checked by passport automaticaly. If unathorized, 401 will be sent back.
     res.json({firstName:'test',user: req.user});
 });
-
-
 
 // forgot password
 router.post('/forgot', (req, res) => {
@@ -119,8 +105,6 @@ router.post('/forgot', (req, res) => {
         });
     }
 });
-
-
 
 router.post('/reset/confirm', (req, res) => {
 
