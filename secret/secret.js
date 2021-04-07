@@ -1,19 +1,25 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
+// function needs to run before all other functions, that require secrets from AWS Secret Manager
+
+// stores all secrets in process.env
 module.exports = async () => {
+
+    // running on AWS -> AWS Secret Manager will import keys automatically
     if (process.env.NODE_ENV === 'development') {
         // secrets are stored in 'process.env.(secret_name)'
-    } else {
+    }
 
-        // Load the AWS SDK
+    // running locally -> manual extraction of secrets from AWS Secret Manager needed
+    else {
+
         let AWS = require('aws-sdk'),
             region = "eu-central-1",
             secretName = "backend-secrets",
             secret,
             decodedBinarySecret;
 
-        // Create a Secrets Manager client
         let client = new AWS.SecretsManager({
             region: region
         });
