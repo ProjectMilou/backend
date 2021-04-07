@@ -465,7 +465,6 @@ router.delete('/profile', passport.authenticate('jwt', {session: false}),  async
     }
 });
 
-
 /**
  * swagger
  *  /user/bank:
