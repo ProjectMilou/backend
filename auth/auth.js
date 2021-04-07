@@ -10,12 +10,10 @@ const ExtractJWT = require('passport-jwt').ExtractJwt;
 const {hash} = require('../encryption/encryption');
 const confEmail = require('../auth/email')
 
+// import secret from AWS Secret Manager
+const jwtSecret = process.env.auth_jwt_secret;
 
 // adapted from https://www.digitalocean.com/community/tutorials/api-authentication-with-json-web-tokensjwt-and-passport
-
-// todo: store in AWS Secret Manager
-const jwtSecret = "TOP SECRET TODO";
-
 const genToken = user => {
     return jwt.sign({
         id: user.id,

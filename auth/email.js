@@ -1,6 +1,9 @@
 const AWS = require('aws-sdk')
 
 //TODO: SET UP KEYS
+const accessId = process.env.aws_access_id;
+const accessKey = process.env.aws_access_key;
+
 const SES_CONFIG = {
     accessKeyId : '',
     secretAccessKey: '',

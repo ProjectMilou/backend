@@ -3,6 +3,12 @@ dotenv.config();
 const mongoose = require('mongoose');//https://mongoosejs.com/docs/index.html
 
 module.exports = function (app) {
+    let pwd = process.env.db_admin_pw
+    let url = "mongodb+srv://admin:" + pwd + "@miloucluster.q8dhp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+    mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
+    app.set("mongoose", mongoose);
+
+    /*
     let url;
     if (process.env.NODE_ENV == 'development') {
         pwd = process.env.db_admin_pw
@@ -50,5 +56,5 @@ module.exports = function (app) {
             app.set("mongoose", mongoose);
         })
     }
-
+     */
 }

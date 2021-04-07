@@ -3,7 +3,11 @@ dotenv.config();
 const mongoose = require('mongoose');//https://mongoosejs.com/docs/index.html
 mongoose.set('useFindAndModify', false);
 
-let url;
+let pwd = process.env.db_admin_pw
+let url = "mongodb+srv://admin:" + pwd + "@miloucluster.q8dhp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
+
+/*
 if (process.env.NODE_ENV == 'development') {
     pwd = process.env.db_admin_pw
     url = "mongodb+srv://admin:" + pwd + "@miloucluster.q8dhp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
@@ -52,3 +56,4 @@ if (process.env.NODE_ENV == 'development') {
 
     })
 }
+*/
