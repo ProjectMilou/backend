@@ -174,6 +174,21 @@
  *        type: array
  *        items:
  *          $ref: '#/definitions/rating'
+ *  news:
+ *    type: object
+ *    properties:
+ *      id:
+ *        type: string
+ *      headline:
+ *        type: string
+ *      summary:
+ *        type: string
+ *      url:
+ *        type: string
+ *  newsss:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/news'
  *
  *  portfolioOverview:
  *    type: object
@@ -864,7 +879,7 @@
  *    '400':
  *      description: Invalid
  *
- * stocks/charts/analysts/search?id={id}:
+ * /stocks/charts/analysts/search?id={id}:
  *  get:
  *   summary: Get the analysts recommendation.
  *   description: Get the analysts recommendation.
@@ -888,6 +903,31 @@
  *                  $ref: '#/definitions/ratings'
  *              averageGoal:
  *                  type: string
+ *    '400':
+ *      description: Invalid
+ *
+ * /stocks/news/search?id={id}:
+ *  get:
+ *   summary: Returns news list with given stock id.
+ *   description: Returns news list with given stock id.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: symbol of stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *       type: object
+ *       properties:
+ *        stocks:
+ *         $ref: '#/definitions/newsss'
  *    '400':
  *      description: Invalid
  *
