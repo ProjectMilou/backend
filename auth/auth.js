@@ -13,6 +13,17 @@ const confEmail = require('../auth/email')
 // import secret from AWS Secret Manager
 const jwtSecret = process.env.auth_jwt_secret;
 
+/**
+ *
+ * @swagger
+ * definitions:
+ *  securitySchemes:
+ *      bearerAuth:
+ *          type: http
+ *          scheme: bearer
+ *          bearerFormat: JWT
+ */
+
 // adapted from https://www.digitalocean.com/community/tutorials/api-authentication-with-json-web-tokensjwt-and-passport
 const genToken = user => {
     return jwt.sign({

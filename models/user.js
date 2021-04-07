@@ -3,47 +3,38 @@ const bcrypt = require('bcrypt');
 
 // adapted from https://www.digitalocean.com/community/tutorials/api-authentication-with-json-web-tokensjwt-and-passport
 
-// fixme is _id realy integer or object.id (?)
-// fixme should _id be available to the frontend ? or should email be enough
 /**
- * @swagger
- * definitions:
- *  user:
- *    type: object
- *    properties:
- *          _id:
- *              type: string
- *          email:
- *              type: string
- *          lastName:
- *              type: string
- *          firstName:
- *              type: string
- *          password:
- *              type: string
- *          confirmed:
- *              type: boolean
- *  loginResponse:
- *    type: object
- *    properties:
- *          user:
- *            type: object
- *            properties:
- *              email:
- *                  type: string
- *              lastName:
- *                  type: string
- *              firstName:
- *                  type: string
- *              confirmed:
- *                  type: boolean
- *          token:
- *            type: string
- *            properties:
- *
- *  loginConfirm
- *    type: obejct
- *    properties
+ *  @swagger
+ *  definitions:
+ *          User:
+ *              type: object
+ *              required:
+ *                  - email
+ *                  - password
+ *              properties:
+ *                  _id:
+ *                      type: integer
+ *                      description: The auto-generated id of the User (not available to frontend)
+ *                  email:
+ *                      type: string
+ *                      description: The email of the user.
+ *                  lastName:
+ *                      type: string
+ *                      description: The last name of the user.
+ *                  firstName:
+ *                      type: string
+ *                      description: The first name of the user.
+ *                  password:
+ *                      type: string
+ *                      description: The hashed password of the user. (not available to frontend)
+ *                  confirmed:
+ *                      type: boolean
+ *                      description: Has the user verified his email?
+ *              example:
+ *                  email: test@getmilou.de
+ *                  lastName: Testus
+ *                  firstName: Maximus
+ *                  confirmed: true
  */
 
 const UserSchema = new mongoose.Schema({

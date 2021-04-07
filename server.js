@@ -36,7 +36,8 @@ const init = async () => {
             './routes/swagger.js',
             './routes/user.js',
             './models/user.js',
-            './models/userToken.js'
+            './models/userToken.js',
+            './auth/auth.js'
         ]
     };
     const swaggerDocs = swaggerJsDoc(swaggerOptions);

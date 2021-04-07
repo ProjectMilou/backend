@@ -1,14 +1,13 @@
 'use strict';
 const express = require('express');
 const passport = require('passport');
-const jwt = require('jsonwebtoken');
-
 const genToken = require('../auth/auth');
 const UserModel = require("../models/user");
 const UserTokenModel = require ("../models/userToken")
 const router = express.Router();
 
-// logout wont be needed, since frontend will delete token for logout and passportjs's encoder specifies the time, in which its token will be valid
+// logout not required, frontend will delete token for logout.
+
 /**
  * @swagger
  * /user/register:
@@ -22,23 +21,39 @@ const router = express.Router();
  *     consumes:
  *     - application/json
  *     parameters:
- *     - in: body
- *       name: email
- *       required: true
- *     - in: body
- *       name: password
- *       requires: true
+ *       - in: body
+ *         name: userInformation
+ *         description: Register information of the user.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             email:
+ *               type: string
+ *             password:
+ *               type: string
+ *           example:
+ *             email: test@milou.de
+ *             password: "123456"
  *     responses:
  *       200:
- *         description: Accepted. User is now registered, confirm mail.
- *         schema:
- *           $ref: '#/definitions/loginResponse'
+ *          description: Accepted. User is now registered, confirm mail.
+ *          schema:
+ *              type: object
+ *              properties:
+ *                  message:
+ *                      type: string
+ *              example:
+ *                  message: Signup success
  *       404:
- *         description: REGISTRATION_FAILED
- *         schema:
- *           $ref: '#/definitions/error'
+ *          description: Failed. Email is already taken.
+ *          schema:
+ *              type: object
+ *              properties:
+ *                  message:
+ *                      type: string
+ *              example:
+ *                  message: Signup failed - mail has got an account already
 */
-
 
 router.post(
     '/register',
@@ -48,18 +63,15 @@ router.post(
         res.json(req.user.response);
     }
 );
+
 /**
  * @swagger
- * /user/confirm:
+ * /user/confirm/:id/:token:
  *   post:
  *     description: Confirms, that the token is correct, which has been sent to users email address.
  *     summary: Confirmation of email token
  *     tags:
  *     - user
- *     produces:
- *     - application/json
- *     consumes:
- *     - application/json
  *     parameters:
  *     - in: path
  *       name: token
@@ -68,18 +80,29 @@ router.post(
  *       name: id
  *       required: true
  *     responses:
- *          '200':
- *              description: User is confirmed.
- *          '404':
- *              description: User is not confirmed.
+ *       200:
+ *          description: Accepted.
+ *          schema:
+ *              type: object
+ *              properties:
+ *                  message:
+ *                      type: string
+ *              example:
+ *                  message: Success
+ *       404:
+ *          description: Failed.
+ *          schema:
+ *              type: object
+ *              properties:
+ *                  message:
+ *                      type: string
+ *              example:
+ *                  message: Failed
  */
 
-// todo fix in swagger !
 router.post('/confirm/:id/:token', async (req, res) => {
-
     const token = req.params.token;
     const id = req.params.id;
-
     try{
         const userToken = await UserTokenModel.findOne({userID: id})
         if(userToken.expirationDate < Date.now()) {
@@ -94,41 +117,69 @@ router.post('/confirm/:id/:token', async (req, res) => {
     } catch(err) {
         res.status(404).send("failed");
     }
-
-    /*
-    // we generate a uuid and send it to the mail. (8e733aeb-8bf8-485c-92b7-62ca4463db3c)
-    // the uuid will be passed back to us in the body of this request (json)
-    if(req.body.uuid === "8e733aeb-8bf8-485c-92b7-62ca4463db3c") {
-        res.statusCode = 200;
-        res.json({
-            message: 'mail confirmed'
-        });
-    }
-
-    // case 8e733aeb-8bf8-485c-92b7-62ca4463db3c: 200, body: mail of the assigned user
-    // case token not found: 404
-    else {
-        res.statusCode = 404;
-        res.json({
-            message: 'failed'
-        });
-    }
-     */
 });
 
 /**
-* @swagger
-* /user/login:
-*  post:
-*    description: Checks if email and password are correct. sends back a token that needs to be passed in the header of each user-relevant request.
-*    summary:
-*    tags:
-*    - user
-*    responses:
-*     '200':
-*       description: Password accepted.
-*     '401':
-*       description: Password is not correct or email is not registered.
+ * @swagger
+ * /user/login:
+ *  post:
+ *    description: Checks if email and password are correct. sends back a token that needs to be passed in the header of each user-relevant request.
+ *    summary:
+ *    tags:
+ *    - user
+ *    parameters:
+ *       - in: body
+ *         name: userInformation
+ *         description: Login information of the user.
+ *         schema:
+ *           type: object
+ *           required:
+ *            - email
+ *            - password
+ *           properties:
+ *             email:
+ *               type: string
+ *             password:
+ *               type: string
+ *           example:
+ *             email: test@milou.de
+ *             password: "123456"
+ *    responses:
+ *     200:
+ *       description: Password accepted.
+ *       schema:
+ *          type: object
+ *          properties:
+ *              user:
+ *                  type: object
+ *                  properties:
+ *                      email:
+ *                          type: string
+ *                      lastName:
+ *                          type: string
+ *                      firstName:
+ *                          type: string
+ *                      confirmed:
+ *                          type: boolean
+ *              token:
+ *                  type: string
+ *          example:
+ *              user:
+ *                  email: test@getmilou.de
+ *                  lastName: Homer
+ *                  firstName: Simpson
+ *                  confirmed: true
+ *              token: eyJhbGciOi.I4MDQyYyIsImlhdCI6MTYx4fQ.kBdmHLKaAn8
+ *
+ *     401:
+ *       description: Password is not correct or email is not registered.
+ *       schema:
+ *          type: object
+ *          properties:
+ *              message:
+ *                  type: string
+ *          example:
+ *              message: Wrong Password
 */
 router.post(
     '/login',
@@ -171,42 +222,61 @@ router.post(
         )(req, res, next);
     }
 );
+
 /**
  * @swagger
  * /user/profile:
  *   get:
- *     description: Sends back account information about user profile.
- *     summary:
+ *     description: Sends back account information about user profile. Pass the JWT Token received from login as a Bearer-token in the header.
+ *     summary: returns user profile
  *     tags:
- *     - user
+ *      - user
+ *     security:
+ *      - bearerAuth: []
  *     responses:
  *       '200':
- *         description: Accepted.
+ *         description: Token accepted. User information returned.
+ *         schema:
+ *              type: object
+ *              properties:
+ *                  email:
+ *                      type: string
+ *                  lastName:
+ *                      type: string
+ *                  firstName:
+ *                      type: string
+ *                  confirmed:
+ *                      type: boolean
+ *              example:
+ *                  email: test@getmilou.de
+ *                  lastName: Testus
+ *                  firstName: Maximus
+ *                  confirmed: true
  *       '401':
  *         description: Unauthorized. Token not valid.
+ *         schema:
+ *              type: string
+ *              example: Unauthorized
  */
 // profile
 router.get('/profile', passport.authenticate('jwt',{session: false}), async (req, res) => {
     // http://www.passportjs.org/docs/username-password/
-
     // request just contains an JWT token in its header, that will be checked by passport automaticaly. If unathorized, 401 will be sent back.
     try{
         res.json({
-            user : {
                 email: req.user.email,
                 lastName: req.user.lastName,
                 firstName: req.user.firstName,
                 confirmed: req.user.confirmed
-            }
         });
     } catch(err){
         console.log(err);
         res.json("error occured");
     }
-
 });
+
 /**
- * @swagger
+ * swagger
  * /user/forgot:
  *  post:
  *   description: If user has forgotten password, a token will be sent to email, that has to be confirmed.
@@ -219,6 +289,7 @@ router.get('/profile', passport.authenticate('jwt',{session: false}), async (req
  *    '401':
  *      description: Not foundMail was not found.
  */
+
 // forgot password
 router.post('/forgot', async (req, res) => {
 
@@ -226,13 +297,9 @@ router.post('/forgot', async (req, res) => {
     if(await UserModel.exists({email: req.body.email})){
         res.status(202).json({message: "confirm your email to proceed"});
 
-        // todo generate token, store in userTokenSchema and send it to email
-
-        // send email
-
-        // store in db
-
-        //
+        // todo generate token
+        // todo safe in UserTokenModel
+        // todo send email
 
     }
 
@@ -241,8 +308,9 @@ router.post('/forgot', async (req, res) => {
         res.status(404).json({message: "mail not found"});
     }
 });
+
 /**
- * @swagger
+ * swagger
  * /user/reset/confirm:
  *  post:
  *   description: Confirms token that was sent to user-email, when a user has forgotten the password to his account.
@@ -255,12 +323,12 @@ router.post('/forgot', async (req, res) => {
  *    '404':
  *      description: Not found. Token was not found.
  */
-router.post('/reset/confirm', (req, res) => {
+router.post('/reset/confirm/:id/:token', (req, res) => {
 
-    // req: body { token: c31d350f-dfdb-4887-b7cf-b69520be26ec, pwd: ***** }
+    // todo check if token is valid
+    // todo enable reset for password
 
-    // we generate a uuid and send it to the mail. (c31d350f-dfdb-4887-b7cf-b69520be26ec)
-    // the uuid will be passed back to us in the body of this request (json)
+    // fixme still mocked
     if(req.body.uuid === "8e733aeb-8bf8-485c-92b7-62ca4463db3c") {
         res.statusCode = 200;
         res.json({
@@ -278,31 +346,63 @@ router.post('/reset/confirm', (req, res) => {
     }
 });
 
-// edit profile
 /**
  * @swagger
  * /user/edit:
  *  put:
  *   description: Edit user account information.
- *   summary:
+ *   summary: Edit user information
  *   tags:
  *    - user
+ *   security:
+ *      - bearerAuth: []
+ *   parameters:
+ *       - in: body
+ *         name: changeInformation
+ *         description: information that has to be changed.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             lastName:
+ *               type: string
+ *             firstName:
+ *               type: string
+ *           example:
+ *             lastName: Homer
+ *             firstName: Simpson
  *   responses:
- *    '200':
- *      description: Token was correct, user-account will be edited as specified.
- *    '404':
- *      description: Not found, Token was not found.
+ *       200:
+ *          description: Token accepted, User information will be changed
+ *          schema:
+ *              type: object
+ *              properties:
+ *                  email:
+ *                      type: string
+ *                  lastName:
+ *                      type: string
+ *                  firstName:
+ *                      type: string
+ *                  confirmed:
+ *                      type: boolean
+ *              example:
+ *                  email: homer.simpson@milou.de
+ *                  lastName: Homer
+ *                  firstName: Simpson
+ *                  confirmed: true
+ *       404:
+ *          description: Token rejected, user not found or deleted.
+ *          schema:
+ *              type: string
+ *              example: Unauthorized
  */
 router.put('/edit', passport.authenticate('jwt', {session: false}), async (req, res) => {
     // implement the following authorization: http://www.passportjs.org/docs/username-password/
-    // req: {?firstname, ?lastname}
-    // todo extra token authentication via mail needed?
 
-    let changes = {};
-    if(req.body.firstName){
+    let changes;
+    if(req.body.firstName !== undefined){
         changes.firstName = req.body.firstName;
     }
-    if(req.body.lastName){
+    if(req.body.lastName !== undefined){
         changes.lastName = req.body.lastName;
     }
 
@@ -325,22 +425,31 @@ router.put('/edit', passport.authenticate('jwt', {session: false}), async (req, 
  * @swagger
  * /user/delete:
  *  delete:
- *   description: Delete user-account.
- *   summary:
+ *   description:
+ *      Delete a user account and if exists portfolio details as well as user information on finAPI. JWT needs to be passed as Bearer-Token in header.
+ *   summary: Delete a user
+ *   security:
+ *      - bearerAuth: []
  *   tags:
  *    - user
  *   responses:
  *    '200':
  *      description: Accepted, user-account will be deleted.
+ *      schema:
+ *              type: string
+ *              example: "successfully deleted user"
  *    '404':
- *      description: Not found, Token was not found.
+ *      description: Token rejected.
+ *      schema:
+ *              type: string
+ *              example: Unauthorized
  */
 // delete profile
 router.delete('/profile', passport.authenticate('jwt', {session: false}),  async (req, res) => {
     // implement the following authorization: http://www.passportjs.org/docs/username-password/
-    // req: token in header
 
-    // todo extra token authentication via mail needed?
+    // JWT token in header as bearer token
+
     // todo: delete user from finAPI
     // todo: delete portfolios
 
@@ -358,7 +467,7 @@ router.delete('/profile', passport.authenticate('jwt', {session: false}),  async
 
 
 /**
- * @swagger
+ * swagger
  *  /user/bank:
  *     get:
  *       description: get a bank
@@ -388,7 +497,7 @@ router.get('/bank', (req,res) => {
     });
 })
 /**
- * @swagger
+ * swagger
  *  /user/bank:
  *    post:
  *      description: add a bank connection
@@ -401,14 +510,14 @@ router.get('/bank', (req,res) => {
  *        '404':
  *          description: not found
  */
-// add a bank
+// add a bank_connection
 router.post('/bank_connection', (req, res) => {
     res.statusCode = 200;
     res.send("bank added")
 });
 
 /**
- * @swagger
+ * swagger
  *  /user/bank:
  *    delete:
  *      description: bank-connection with id will be deleted.
@@ -424,7 +533,5 @@ router.delete('/bank_connection/:id', (req, res) => {
     res.statusCode = 200;
     res.send("bank deleted");
 });
-
-
 
 module.exports = router
