@@ -53,7 +53,6 @@ const init = async () => {
     app.use('/user', getUserRoute);
     app.use('/portfolio', getPortfolioRoute);
     app.use('/stocks', getStocksRoute);
-    app.use('/analytics', getAnalyticsRoute);
 
     app.listen(process.env.PORT || 3000);
     console.log(`Running on http://${HOST}:${PORT}`);

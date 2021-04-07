@@ -12,7 +12,7 @@ const router = express.Router();
 /**
  * @swagger
  * /user/register:
- *  post:
+ *   post:
  *      description: Registering an account by passing mail and password. Email for confirmation will be sent.
  *      summary: Registering a user
  *      tags:
@@ -23,21 +23,21 @@ const router = express.Router();
  *      - application/json
  *      parameters:
  *      - in: body
- *          name: email
- *          required: true
- *          schema:
- *              type: string
+ *       name: email
+ *       required: true
+ *       schema:
+ *          type: string
  *      - in: body
- *          name: password
- *          requires: true
- *          schema:
- *              type: string
- *
+ *       name: password
+ *       requires: true
+ *       schema:
+ *          type: string
  *      responses:
  *          '200':
  *              description: Accepted. User is now registered, confirm mail.
  *          '404':
  *              description: Not accepted, email already taken.
+ *
 */
 
 router.post(
@@ -51,7 +51,7 @@ router.post(
 /**
  * @swagger
  * /user/confirm:
- *  post:
+ *   post:
  *      description: Confirms, that the token is correct, which has been sent to users email address.
  *      summary: Confirmation of email token
  *      tags:
@@ -342,6 +342,7 @@ router.delete('/profile', passport.authenticate('jwt', {session: false}),  async
         const user = await UserModel.findOne({_id: req.user.id});
         await UserModel.deleteOne({_id: req.user.id});
         await UserTokenModel.deleteMany({email: user.email});
+
         res.json("successfully deleted user").status(200);
     } catch(err){
         console.log(err);
@@ -350,7 +351,20 @@ router.delete('/profile', passport.authenticate('jwt', {session: false}),  async
 });
 
 
-
+/**
+ * @swagger
+ * /user/bank
+ * get:
+ * description: Adds bank connection
+ * summary: Adds bank connection
+ * tags:
+ *  -user
+ *   responses:
+ *    '200':
+ *      description: .
+ *    '404':
+ *      description: .
+ */
 // search for a bank
 router.get('/bank', (req,res) => {
 
@@ -377,8 +391,6 @@ router.get('/bank', (req,res) => {
  *   responses:
  *    '200':
  *      description: Accepted, bank-connection added.
- *    '404':
- *      description: Rejected, Token was not found.
  */
 // add a bank
 router.post('/bank_connection', (req, res) => {
@@ -389,17 +401,9 @@ router.post('/bank_connection', (req, res) => {
 /**
  * @swagger
  * /user/bank:
- *  get:
- *   description: Sends back banks, that fit the passed String.
- *   summary:
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Accepted.
  *  delete:
  *   description: bank-connection with id will be deleted.
- *   summary:
+ *   summary: Bank-connection with id wil be deleted
  *   tags:
  *    - user
  *   responses:
