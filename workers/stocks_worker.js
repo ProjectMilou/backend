@@ -7,14 +7,9 @@ const db = require('../db/worker_index.js');
 dotenv.config();
 
 module.exports.updateAllStocks = async function () {
-    let api_key_alphavantage;
-    let api_key_finhub;
-    if (process.env.NODE_ENV == 'development') {
-        api_key_alphavantage = process.env.alphavantage_api_key;
-        api_key_finhub = process.env.finnhub_api_key;
-    } else {
-        // TODO: Add api_keys to AWS Secret Manager
-    }
+
+    let api_key_alphavantage = process.env.alpha_ventage_key;
+    let api_key_finhub = process.env.finnhub_key;
 
     const fileStream = fs.createReadStream('./public/assets/company_symbols.txt');
 
