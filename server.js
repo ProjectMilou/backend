@@ -1,22 +1,19 @@
 'use strict';
 
-const express = require('express');
-const bodyParser = require('body-parser');
-
-
-const cors = require('cors');
-
-const getAnalyticsRoute = require('./routes/analyticsRoutes')
-const getUserRoute = require('./routes/user');
-const getPortfolioRoute = require('./routes/portfolio');
-const getStocksRoute = require('./routes/stocks');
-const swaggerJsDoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
-
 // init is required to access AWS Secret Manager before running any other code.
 const init = async () => {
     await require('./secret/secret')();
 
+    const express = require('express');
+    const bodyParser = require('body-parser');
+    const cors = require('cors');
+
+// const getAnalyticsRoute = require('./routes/analyticsRoutes')
+    const getUserRoute = require('./routes/user');
+    const getPortfolioRoute = require('./routes/portfolio');
+    const getStocksRoute = require('./routes/stocks');
+    const swaggerJsDoc = require('swagger-jsdoc');
+    const swaggerUi = require('swagger-ui-express');
     require('./auth/auth');
     // Constants
     const { PORT = 3000 } = process.env;
