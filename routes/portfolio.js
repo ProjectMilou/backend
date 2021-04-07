@@ -333,47 +333,51 @@ router.put('/rename/:id', (req, res) => {
 
 
 // not perfect yet
-router.put('/modify/:id', async(req, res) => {
+// return the response of the first modification
+router.put('/modify/:id', async (req, res) => {
     // request: {"modifications": 
     //                  [{"isin": "string",
     //                  "qty": 0}]}
     var id = req.params.id;
     var response = {};
+    if(req.body.modifications.length==0){
+        res.json(response)
+    }
     for (var j = 0; j < req.body.modifications.length; j++) {
         var isin = req.body.modifications[j].isin;
         var qty = req.body.modifications[j].qty;
-
-
         if (!is_valid_id(id)) {
             response.error = "PORTFOLIO_ID_INVALID"
-            res.status(404).json(response);
+            res.status(404)
             j = req.body.modifications.length //=break;
-            break;
+
         } else {
             if (!is_valid_qty(qty)) {
                 console.log(qty)
                 response.error = "QTY_INVALID"
-                res.status(400).json(response);
+                res.status(400)
                 j = req.body.modifications.length //=break;
-                break;
+
             } else {
                 if (!is_valid_isin(isin)) {
                     response.error = "ISIN_INVALID"
-                    res.status(400).json(response);
+                    res.status(400)
                     j = req.body.modifications.length //=break;
-                    break;
+
                 } else {
                     // find Portfolio
+                    
                     await Portfolio.findOne({ "id": id, "userId": userId }, (err, portfolio) => {
+                        var currentIndex = j
                         if (err) {
                             handle_database_error(res, err)
                         } else if (!portfolio) {
                             response.error = "PORTFOLIO_ID_INVALID"
-                            res.status(404).json(response);
+                            res.status(404)
                             j = req.body.modifications.length //=break;
                         } else if (!portfolio.portfolio.overview.virtual) {
                             response.error = "REAL_PORTFOLIO_MODIFICATION"
-                            res.status(400).json(response);
+                            res.status(400)
                             j = req.body.modifications.length //=break;
                         } else {
                             // modify portfolio
@@ -407,11 +411,19 @@ router.put('/modify/:id', async(req, res) => {
                             //TODO modify totalReturn of portfolio and all the other fields
                             portfolio.portfolio.overview.modified = Date.now() // current timestamp
                             portfolio.portfolio.overview.positionCount = portfolio.portfolio.positions.length;
-                            portfolio.save()
-                            console.log("success for modification nr. " + j) //why does this happen even when the isin is invalid?
-                            if (j == req.body.modifications.length - 1) {
-                                res.json(response)
-                            }
+                            portfolio.save(
+                                function (err, portfolio) {
+                                    if (err) handle_database_error(res, err)
+                                    else {
+                                        console.log("success for modification nr. " + currentIndex) //why does this happen even when the isin is invalid?
+                                       
+                                        if(currentIndex==0){
+                                            res.json(response)//TODO find a way to make this wait
+                                        }
+                                    }
+
+                                }
+                            )
                         }
                     })
 
@@ -420,6 +432,8 @@ router.put('/modify/:id', async(req, res) => {
         }
     }
 
+
+    
 });
 
 const duplicate_portfolio = (portf, portfolioId, name) => {
