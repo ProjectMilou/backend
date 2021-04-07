@@ -15,6 +15,7 @@ const init = async () => {
     const swaggerJsDoc = require('swagger-jsdoc');
     const swaggerUi = require('swagger-ui-express');
     require('./auth/auth');
+
     // Constants
     const { PORT = 3000 } = process.env;
     const HOST = '0.0.0.0';
@@ -45,8 +46,10 @@ const init = async () => {
     require( "./db/index.js" )( app );
 
     app.get('/', (req, res) => {
-        res.statusCode = res.redirect(req.protocol + '://' + req.get('host') + req.originalUrl + 'api-docs');
+        res.statusCode = 200;
+        res.redirect(req.protocol + '://' + req.get('host') + req.originalUrl + 'api-docs');
     })
+
     app.use(bodyParser.json());
     app.use(cors());
 

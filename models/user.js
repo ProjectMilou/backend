@@ -12,7 +12,7 @@ const bcrypt = require('bcrypt');
  *    type: object
  *    properties:
  *          _id:
- *              type: object.id
+ *              type: string
  *          email:
  *              type: string
  *          lastName:
@@ -23,6 +23,27 @@ const bcrypt = require('bcrypt');
  *              type: string
  *          confirmed:
  *              type: boolean
+ *  loginResponse:
+ *    type: object
+ *    properties:
+ *          user:
+ *            type: object
+ *            properties:
+ *              email:
+ *                  type: string
+ *              lastName:
+ *                  type: string
+ *              firstName:
+ *                  type: string
+ *              confirmed:
+ *                  type: boolean
+ *          token:
+ *            type: string
+ *            properties:
+ *
+ *  loginConfirm
+ *    type: obejct
+ *    properties
  */
 
 const UserSchema = new mongoose.Schema({

@@ -12,6 +12,14 @@ const mongoose = require("mongoose");
  *      expirationDate:
  *        type: Date
  */
+
+/**
+ * @swagger
+ * definitions:
+ *  token:
+ *    type: string
+ */
+
 const UserTokenSchema = new mongoose.Schema({
     userID: {
         type: String,
