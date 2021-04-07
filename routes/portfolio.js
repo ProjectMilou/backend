@@ -350,20 +350,20 @@ router.put('/modify/:id', async (req, res) => {
             response.error = "PORTFOLIO_ID_INVALID"
             res.status(404)
             j = req.body.modifications.length //=break;
-
+            res.json(response)
         } else {
             if (!is_valid_qty(qty)) {
                 console.log(qty)
                 response.error = "QTY_INVALID"
                 res.status(400)
                 j = req.body.modifications.length //=break;
-
+                res.json(response)
             } else {
                 if (!is_valid_isin(isin)) {
                     response.error = "ISIN_INVALID"
                     res.status(400)
                     j = req.body.modifications.length //=break;
-
+                    res.json(response)
                 } else {
                     // find Portfolio
                     
@@ -375,10 +375,12 @@ router.put('/modify/:id', async (req, res) => {
                             response.error = "PORTFOLIO_ID_INVALID"
                             res.status(404)
                             j = req.body.modifications.length //=break;
+                            res.json(response)
                         } else if (!portfolio.portfolio.overview.virtual) {
                             response.error = "REAL_PORTFOLIO_MODIFICATION"
                             res.status(400)
                             j = req.body.modifications.length //=break;
+                            res.json(response)
                         } else {
                             // modify portfolio
                             var positions = portfolio.portfolio.positions
