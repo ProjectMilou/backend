@@ -1,37 +1,9 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
-
-class Secret{
-
-    constructor(){
-        this.secret = {}
-    }
-
-    setSecret(secret) {
-        this.secret = secret;
-    }
-
-    getSecret(){
-        return this.secret;
-    }
-}
-
-
-
-
-module.exports
-function getSecrets(myScret) {
+module.exports = async () => {
     if (process.env.NODE_ENV === 'development') {
-        return {
-            db_admin_pw: process.env.db_admin_pw,
-            finAPI_client_id: process.env.finAPI_client_id,
-            finAPI_client_secret: process.env.finAPI_client_secret,
-            auth_jwt_secret: process.env.auth_jwt_secret,
-            alpha_ventage_key: process.env.alpha_ventage_key,
-            finnhub_key: process.env.finnhub_key,
-            aws_access_id: process.env.aws_access_id
-        }
+        // secrets are stored in 'process.env.(secret_name)'
     } else {
 
         // Load the AWS SDK
@@ -47,7 +19,7 @@ function getSecrets(myScret) {
         });
 
         var secrets;
-        client.getSecretValue({SecretId: secretName}, function (err, data) {
+        return await client.getSecretValue({SecretId: secretName}, function (err, data) {
             if (err) {
                 if (err.code === 'DecryptionFailureException')
                     // Secrets Manager can't decrypt the protected secret text using the provided KMS key.
@@ -78,9 +50,16 @@ function getSecrets(myScret) {
                     decodedBinarySecret = buff.toString('ascii');
                 }
 
-                myScret.setSecret(JSON.parse(data.SecretString));
-                console.log(secrets);
+                // secrets are set to 'process.env.(secret_name)'
+                secrets = JSON.parse(data.SecretString);
+                process.env.db_admin_pw = secrets.db_admin_pw;
+                process.env.finAPI_client_id = secrets.finAPI_client_id;
+                process.env.finAPI_client_secret = secrets.finAPI_client_secret;
+                process.env.auth_jwt_secret = secrets.auth_jwt_secret;
+                process.env.alpha_ventage_key = secrets.alpha_ventage_key;
+                process.env.finnhub_key = secrets.finnhub_key;
+                process.env.aws_access_id = secrets.aws_access_id;
             }
-        });
+        }).promise();
     }
 }

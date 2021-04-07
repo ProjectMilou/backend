@@ -1,5 +1,6 @@
 'use strict';
 
+const getSecrets = require('./secret/secret');
 const express = require('express');
 const bodyParser = require('body-parser');
 require('./auth/auth');
@@ -35,27 +36,31 @@ const swaggerOptions = {
     ]
 };
 
+// init is required to access AWS Secret Manager before running any other code.
+const init = async () => {
+    await getSecrets();
+    // console.log(process.env);
 
+    const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-require( "./db/index.js" )( app );
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+    require( "./db/index.js" )( app );
 
-app.get('/', (req, res) => {
-    res.statusCode = 200;
-    res.send('visit ' + req.protocol + '://' + req.get('host') + req.originalUrl + 'api-docs for documentation.')
-})
+    app.get('/', (req, res) => {
+        res.statusCode = 200;
+        res.send('visit ' + req.protocol + '://' + req.get('host') + req.originalUrl + 'api-docs for documentation.')
+    })
 
-app.use(bodyParser.json());
-app.use(cors());
+    app.use(bodyParser.json());
+    app.use(cors());
 
-app.use('/user', getUserRoute);
-app.use('/portfolio', getPortfolioRoute);
-app.use('/stocks', getStocksRoute);
-app.use('/analytics', getAnalyticsRoute);
+    app.use('/user', getUserRoute);
+    app.use('/portfolio', getPortfolioRoute);
+    app.use('/stocks', getStocksRoute);
+    app.use('/analytics', getAnalyticsRoute);
 
-app.listen(process.env.PORT || 3000);
-console.log(`Running on http://${HOST}:${PORT}`);
+    app.listen(process.env.PORT || 3000);
+    console.log(`Running on http://${HOST}:${PORT}`);
+}
 
-// console.log( secrets );
-//db()
+init();
