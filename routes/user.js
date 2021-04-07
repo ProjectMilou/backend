@@ -399,7 +399,7 @@ router.post('/reset/confirm/:id/:token', (req, res) => {
 router.put('/edit', passport.authenticate('jwt', {session: false}), async (req, res) => {
     // implement the following authorization: http://www.passportjs.org/docs/username-password/
 
-    let changes;
+    let changes = {};
     if(req.body.firstName !== undefined){
         changes.firstName = req.body.firstName;
     }
