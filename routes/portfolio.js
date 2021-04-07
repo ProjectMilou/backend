@@ -188,7 +188,7 @@ const is_valid_isin = (isin) => {
 router.get('/list', (req, res) => {
     var response = { "portfolios": [] };
 
-    Portfolio.find({ "userId": userId }, 'portfolio.overview', function(err, portf) {
+    Portfolio.find({ "userId": userId }, 'portfolio.overview', function (err, portf) {
         if (err) {
             handle_database_error(res, err)
         } else {
@@ -220,14 +220,18 @@ router.get('/details/:id', (req, res) => {
     }
 });
 
-router.get('/performance/:id', function(req, res) {
+router.get('/performance/:id', function (req, res) {
     var id = req.params.id;
     var range = req.body.range;
     var response = {};
-    if (id == 1 && range == "7D") {
-        response.chart = [0, 1, 2, 3, 4]; //TODO: change to new format
+    if (id == "1" && range == "7D") {
+        response.chart = [
+            [1327359600000, 0],
+            [1327359700000, 1],
+            [1327359800000, 2]
+        ];
         res.json(response);
-    } else if (id != 1) {
+    } else if (id != "1") {
         response.error = "PORTFOLIO_ID_INVALID";
         res.status(404).json(response);
     } else {
@@ -255,9 +259,9 @@ router.post('/create', (req, res) => {
                 res.status(400).json(response);
             } else {
                 var portfolio = new Portfolio(emptyPortfolio(portfolioId, userId, name))
-                    // save new portfolio in database
+                // save new portfolio in database
                 portfolio.save(
-                    function(err, portfolio) {
+                    function (err, portfolio) {
                         if (err) {
                             handle_database_error(res, err)
                         } else {
@@ -340,7 +344,7 @@ router.put('/modify/:id', async (req, res) => {
     //                  "qty": 0}]}
     var id = req.params.id;
     var response = {};
-    if(req.body.modifications.length==0){
+    if (req.body.modifications.length == 0) {
         res.json(response)
     }
     for (var j = 0; j < req.body.modifications.length; j++) {
@@ -350,7 +354,7 @@ router.put('/modify/:id', async (req, res) => {
             response.error = "PORTFOLIO_ID_INVALID"
             res.status(404)
             j = req.body.modifications.length //=break;
-            res.json(response)
+            res.json(response)//TODO: only send response when j==0
         } else {
             if (!is_valid_qty(qty)) {
                 console.log(qty)
@@ -366,7 +370,7 @@ router.put('/modify/:id', async (req, res) => {
                     res.json(response)
                 } else {
                     // find Portfolio
-                    
+
                     await Portfolio.findOne({ "id": id, "userId": userId }, (err, portfolio) => {
                         var currentIndex = j
                         if (err) {
@@ -418,8 +422,8 @@ router.put('/modify/:id', async (req, res) => {
                                     if (err) handle_database_error(res, err)
                                     else {
                                         console.log("success for modification nr. " + currentIndex) //why does this happen even when the isin is invalid?
-                                       
-                                        if(currentIndex==0){
+
+                                        if (currentIndex == 0) {
                                             res.json(response)//TODO find a way to make this wait
                                         }
                                     }
@@ -435,7 +439,7 @@ router.put('/modify/:id', async (req, res) => {
     }
 
 
-    
+
 });
 
 const duplicate_portfolio = (portf, portfolioId, name) => {
@@ -484,7 +488,7 @@ router.post('/duplicate/:id', (req, res) => {
                             var newPortf = duplicate_portfolio(portf, portfolioId, name)
 
                             newPortf.save(
-                                function(err, portfolio) {
+                                function (err, portfolio) {
                                     if (err) {
                                         handle_database_error(res, err)
                                     } else {
@@ -519,14 +523,14 @@ router.get('/stock/:isin', (req, res) => { // get portfolioId, name, qty of stoc
 
     var response = {};
     //? = %3F
-    Portfolio.find({ "userId": userId }, 'id portfolio.overview.name portfolio.positions', function(err, portf) {
+    Portfolio.find({ "userId": userId }, 'id portfolio.overview.name portfolio.positions', function (err, portf) {
         if (err) {
             handle_database_error(res, err)
         } else {
             response.portfolios = portf.map(({ id: pfId, portfolio: { overview: { name: pfName }, positions: arrayStocks } }) => {
                 var positionsWithCurrentISIN = arrayStocks.filter((position) => {
-                        return position.stock.isin == isin
-                    }) // the resulting array should have length 1 or 0
+                    return position.stock.isin == isin
+                }) // the resulting array should have length 1 or 0
                 var qty;
                 if (positionsWithCurrentISIN.length == 0) {
                     qty = 0
@@ -560,7 +564,7 @@ router.post('/import', (req, res) => {
 var token;
 
 // token/user gives user auth, for any other thing - client, e.g. token/client
-router.get('/token/:person', async(req, res) => {
+router.get('/token/:person', async (req, res) => {
     let person = req.params.person;
 
     //no merged secret configuration yet, so not specified
@@ -598,7 +602,7 @@ router.get('/token/:person', async(req, res) => {
     }
 });
 
-router.post('/newUser', async(req, res) => {
+router.post('/newUser', async (req, res) => {
     let body = {
         id: req.body.id, // read: username
         password: req.body.password,
@@ -628,7 +632,7 @@ router.post('/newUser', async(req, res) => {
 
 });
 
-router.get('/deleteUser', async(req, res) => {
+router.get('/deleteUser', async (req, res) => {
 
     const api_url = `https://sandbox.finapi.io/api/v1/users`;
 
@@ -649,7 +653,7 @@ router.get('/deleteUser', async(req, res) => {
     }
 });
 
-router.post('/searchBanks', async(req, res) => {
+router.post('/searchBanks', async (req, res) => {
     let params = new URLSearchParams({
         'search': req.body.search, // main field, others if needed
         'ids': req.body.ids, // integer array
@@ -681,7 +685,7 @@ router.post('/searchBanks', async(req, res) => {
 
 });
 
-router.get('/importConnection/:bankId', async(req, res) => {
+router.get('/importConnection/:bankId', async (req, res) => {
     let body = { //e.g. 26628 - stadtsparkasse
         id: req.params.id
     };
@@ -718,7 +722,7 @@ router.get('/importConnection/:bankId', async(req, res) => {
 
 });
 
-router.post('/bankConnections/', async(req, res) => {
+router.post('/bankConnections/', async (req, res) => {
     if (req.body.ids !== undefined) {
         var ids = new URLSearchParams({});
         for (let id of req.body.ids) {
@@ -746,7 +750,7 @@ router.post('/bankConnections/', async(req, res) => {
 
 });
 
-router.get('/deleteConnection/:id', async(req, res) => {
+router.get('/deleteConnection/:id', async (req, res) => {
     var id = req.params.id;
 
     const api_url = `https://sandbox.finapi.io/api/v1/bankConnections/${id}`;
@@ -769,7 +773,7 @@ router.get('/deleteConnection/:id', async(req, res) => {
     }
 });
 
-router.get('/deleteAllConnections', async(req, res) => {
+router.get('/deleteAllConnections', async (req, res) => {
 
     const api_url = `https://sandbox.finapi.io/api/v1/bankConnections`;
 
@@ -792,7 +796,7 @@ router.get('/deleteAllConnections', async(req, res) => {
 
 });
 
-router.post('/securities', async(req, res) => {
+router.post('/securities', async (req, res) => {
     // if no body, all securities given
     let params = new URLSearchParams({
         'search': req.body.search, // isin, name, wkn contain
@@ -838,7 +842,7 @@ router.post('/saveAllSecurities', (req, res) => {
         res.status(400).json(response);
     } else {
         var portfolioId = new mongoose.Types.ObjectId();
-        Portfolio.findOne({ "userId": userId, "portfolio.overview.name": name }).exec(async(err, result) => {
+        Portfolio.findOne({ "userId": userId, "portfolio.overview.name": name }).exec(async (err, result) => {
             if (err) {
                 handle_database_error(res, err);
             } else {
@@ -911,7 +915,7 @@ router.post('/saveAllSecurities', (req, res) => {
                         });
 
                         portfolio.save(
-                            function(error, portfolioRes) {
+                            function (error, portfolioRes) {
                                 if (error) handle_database_error(res, error)
                                 else {
                                     res.json(portfolioRes);

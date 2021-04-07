@@ -7,12 +7,12 @@ const StockSchema = new mongoose.Schema({
         index: true,
         trim: true,
     },
-    ISIN: {
+    isin: {
         type: String,
         index: true,
         trim: true,
     },
-    WKN: {
+    wkn: {
         type: String,
         index: true,
         trim: true,
@@ -24,13 +24,16 @@ const StockSchema = new mongoose.Schema({
     price: {
         type: String,
     },
-    _1d: {
+    per1d: {
         type: String,
     },
-    _7d: {
+    per7d: {
         type: String,
     },
-    _30d: {
+    per30d: {
+        type: String,
+    },
+    per365d: {
         type: String,
     },
     marketCapitalization: {
@@ -63,6 +66,26 @@ const StockSchema = new mongoose.Schema({
     date: {
         type: String,
     },
+    intro: {
+        type: String,
+    },
+    founded: {
+        type: String,
+    },
+    employees: {
+        type: String,
+    },
+    website: {
+        type: String,
+    },
+    address: {
+        type: String,
+    },
+    assembly: {
+        type: String,
+    }
+}, {
+    versionKey: false
 });
 
 const Stock = mongoose.model("Stock", StockSchema);
