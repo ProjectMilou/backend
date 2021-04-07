@@ -4,16 +4,22 @@ const Portfolio = require('../models/portfolio');
 //const PortfolioOverview = PortfolioModels.portfolioOverview
 const mongoose = require('mongoose');
 const { ResourceGroups } = require('aws-sdk');
+
+const secret = require('../secret/secret')();
+const dotenv = require('dotenv');
+dotenv.config();
+
 const router = express.Router();
 router.use(express.json()); // for parsing application/json
 router.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 //var userId ='7066e49a553a5c0447248073'// invalid
-var userId = '6066e49a553a5c0447248073'
-    //var userId = '6066e49a553a5c0000000000'
+// var userId = '6066e49a553a5c0447248073'
+//var userId = '6066e49a553a5c0000000000'
+var userId = '606c983e747e639f685affd0';
 
 const fetch = require('node-fetch');
 const cors = require('cors');
-// const passport = require('passport');
+const passport = require('passport');
 
 router.use(express.json()); // for parsing application/json
 router.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
@@ -544,8 +550,8 @@ router.get('/token/:person', async(req, res) => {
     //no merged secret configuration yet, so not specified
     let body = new URLSearchParams({
         'grant_type': "client_credentials",
-        'client_id': "",
-        'client_secret': ""
+        'client_id': process.env.finAPI_client_id,
+        'client_secret': process.env.finAPI_client_secret
     });
 
     // credentials taken from db 
@@ -554,6 +560,8 @@ router.get('/token/:person', async(req, res) => {
         body.append("password", "");
         body.set("grant_type", "password");
     }
+
+    console.log(body);
 
     const api_url = `https://sandbox.finapi.io/oauth/token`;
 
@@ -574,12 +582,13 @@ router.get('/token/:person', async(req, res) => {
     }
 });
 
-router.get('/newUser', async(req, res) => {
+router.post('/newUser', async(req, res) => {
     let body = {
-        id: "testid",
-        password: "testpassword",
-        email: "email@localhost.de",
-        phone: "+49 99 999999-999"
+        id: req.body.id, // read: username
+        password: req.body.password,
+        email: req.body.email,
+        phone: req.body.phone,
+        isAutoUpdateEnabled: true
     };
 
     const api_url = `https://sandbox.finapi.io/api/v1/users`;
@@ -603,10 +612,40 @@ router.get('/newUser', async(req, res) => {
 
 });
 
-router.get('/search', async(req, res) => {
-    var search = "stadtsparkasse";
+router.get('/deleteUser', async(req, res) => {
 
-    const api_url = `https://sandbox.finapi.io/api/v1/banks?search=${search}`;
+    const api_url = `https://sandbox.finapi.io/api/v1/users`;
+
+    try {
+        const api_response = await fetch(api_url, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': token
+            }
+        });
+        catchErrors(api_response);
+
+        var response = { "success": "DELETION_SUCCESS" };
+        res.json(response);
+
+    } catch (err) {
+        res.send(err.message);
+    }
+});
+
+router.post('/searchBanks', async(req, res) => {
+    let params = new URLSearchParams({
+        'search': req.body.search, // main field, others if needed
+        'ids': req.body.ids, // integer array
+        'location': req.body.location, // Comma-separated list of two-letter country codes
+        'order': req.body.order // string array,e.g. order by 'id', 'name', 'blz', 'bic' or 'popularity'
+    });
+
+    if (params.get('ids') == "undefined") params.delete('ids');
+    if (params.get('location') == "undefined") params.delete('location');
+    if (params.get('order') == "undefined") params.delete('order');
+
+    const api_url = `https://sandbox.finapi.io/api/v1/banks?${params}`;
 
     try {
         const api_response = await fetch(api_url, {
@@ -640,7 +679,8 @@ router.get('/importConnection/:bankId', async(req, res) => {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': token,
-                'Access-Control-Expose-Headers': 'Location'
+                'Access-Control-Expose-Headers': 'Location',
+                'redirect': 'manual'
             }
         });
 
@@ -653,19 +693,24 @@ router.get('/importConnection/:bankId', async(req, res) => {
         var location = json_response.headers.get('Location');
 
         //temporary overwriting of location due for testing
-        location = "/finapi/token/user";
+        location = "https://api.milou.io/api-docs";
 
         res.redirect(location);
-
-
     } catch (err) {
         res.send(err.message);
     }
 
 });
 
-router.get('/bankConnections/', async(req, res) => {
-    const api_url = `https://sandbox.finapi.io/api/v1/bankConnections`;
+router.post('/bankConnections/', async(req, res) => {
+    if (req.body.ids !== undefined) {
+        var ids = new URLSearchParams({});
+        for (let id of req.body.ids) {
+            ids.append("ids[]", id);
+        }
+    }
+
+    const api_url = `https://sandbox.finapi.io/api/v1/bankConnections?${ids}`;
 
     try {
         const api_response = await fetch(api_url, {
@@ -694,21 +739,22 @@ router.get('/deleteConnection/:id', async(req, res) => {
         const api_response = await fetch(api_url, {
             method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': token
             }
         });
         catchErrors(api_response);
 
-        const json_response = await api_response.json();
-        res.json(json_response);
+        var response = { "id": id };
+        res.json(response);
+
+        console.log("successfully deleted a bank connection " + id)
     } catch (err) {
         res.send(err.message);
     }
-
 });
 
 router.get('/deleteAllConnections', async(req, res) => {
+
     const api_url = `https://sandbox.finapi.io/api/v1/bankConnections`;
 
     try {
@@ -730,8 +776,23 @@ router.get('/deleteAllConnections', async(req, res) => {
 
 });
 
-router.get('/securities', async(req, res) => {
-    const api_url = `https://sandbox.finapi.io/api/v1/securities`;
+router.post('/securities', async(req, res) => {
+    // if no body, all securities given
+    let params = new URLSearchParams({
+        'search': req.body.search, // isin, name, wkn contain
+        'order': req.body.order // string array,e.g. order by 'id', 'name', 'blz', 'bic' or 'popularity'
+    });
+    if (params.get('search') == "undefined") params.delete('search');
+    if (params.get('order') == "undefined") params.delete('order');
+
+    if (req.body.ids !== undefined) {
+        var ids = new URLSearchParams({});
+        for (let id of req.body.ids) {
+            ids.append("ids[]", id);
+        }
+    }
+
+    const api_url = `https://sandbox.finapi.io/api/v1/securities?${params}`;
 
     try {
         const api_response = await fetch(api_url, {
@@ -746,79 +807,122 @@ router.get('/securities', async(req, res) => {
         const json_response = await api_response.json();
         res.json(json_response);
 
-        var portfolioId = new mongoose.Types.ObjectId();
-
-        var positionCount = 0;
-        if (json_response.securities !== undefined) {
-            var positions = convertSecurities(json_response.securities);
-            positionCount = json_response.securities.length;
-        }
-
-        var tmpPortoflio = new Portfolio({
-            "id": portfolioId,
-            "userId": userId,
-            "portfolio": {
-                "overview": {
-                    "id": portfolioId,
-                    "name": "tmpPortfolio",
-                    "virtual": false,
-                    "positionCount": positionCount,
-                    "value": 0,
-                    "score": 0,
-                    "perf7d": 0,
-                    "perf1y": 0,
-                    "modified": 1617710040
-                },
-                "positions": positions,
-                "risk": {
-                    "countries": {
-                        "count": 0,
-                        "score": 0,
-                        "warnings": []
-                    },
-                    "segments": {
-                        "count": 0,
-                        "score": 0,
-                        "warnings": []
-                    },
-                    "currency": {
-                        "count": 0,
-                        "score": 0,
-                        "warnings": []
-                    }
-                },
-                "keyFigures": [{
-                    "year": 0,
-                    "pte": 0,
-                    "ptb": 0,
-                    "ptg": 0,
-                    "eps": 0,
-                    "div": 0,
-                    "dividendPayoutRatio": 0
-                }],
-                "nextDividend": 0,
-                "dividendPayoutRatio": 0,
-                "totalReturn": 0,
-                "totalReturnPercent": 0
-            }
-        });
-
-        // updates will come with checking for existing portfolios
-        tmpPortoflio.save(
-            function(err, portfolio) {
-                if (err) handle_database_error(res, err)
-                else {
-                    console.log('success');
-                }
-            }
-        )
-
     } catch (err) {
         console.log(err.message);
     }
 
 });
 
+router.post('/saveAllSecurities', (req, res) => {
+    var name = req.body.name;
+    var response = {};
+
+    if (!name) {
+        response.error = "PORTFOLIO_NAME_INVALID";
+        res.status(400).json(response);
+    } else {
+        var portfolioId = new mongoose.Types.ObjectId();
+        Portfolio.findOne({ "userId": userId, "portfolio.overview.name": name }).exec(async(err, result) => {
+            if (err) {
+                handle_database_error(res, err);
+            } else {
+                const api_url = `https://sandbox.finapi.io/api/v1/securities`;
+
+                try {
+                    const api_response = await fetch(api_url, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': token
+                        }
+                    });
+
+                    catchErrors(api_response);
+
+                    const json_response = await api_response.json();
+
+                    var positions = [];
+                    if (json_response.securities !== undefined)
+                        positions = convertSecurities(json_response.securities);
+
+                    if (!result) {
+                        var portfolio = new Portfolio({
+                            "id": portfolioId,
+                            "userId": userId,
+                            "portfolio": {
+                                "overview": {
+                                    "id": portfolioId,
+                                    "name": name,
+                                    "virtual": false,
+                                    "positionCount": json_response.paging.totalCount,
+                                    "value": 0,
+                                    "score": 0,
+                                    "perf7d": 0,
+                                    "perf1y": 0,
+                                    "modified": 1617710040
+                                },
+                                "positions": positions,
+                                "risk": {
+                                    "countries": {
+                                        "count": 0,
+                                        "score": 0,
+                                        "warnings": []
+                                    },
+                                    "segments": {
+                                        "count": 0,
+                                        "score": 0,
+                                        "warnings": []
+                                    },
+                                    "currency": {
+                                        "count": 0,
+                                        "score": 0,
+                                        "warnings": []
+                                    }
+                                },
+                                "keyFigures": [{
+                                    "year": 0,
+                                    "pte": 0,
+                                    "ptb": 0,
+                                    "ptg": 0,
+                                    "eps": 0,
+                                    "div": 0,
+                                    "dividendPayoutRatio": 0
+                                }],
+                                "nextDividend": 0,
+                                "dividendPayoutRatio": 0,
+                                "totalReturn": 0,
+                                "totalReturnPercent": 0
+                            }
+                        });
+
+                        portfolio.save(
+                            function(error, portfolioRes) {
+                                if (error) handle_database_error(res, error)
+                                else {
+                                    res.json(portfolioRes);
+                                    console.log('saved successfully');
+                                }
+                            }
+                        );
+                    } else {
+                        Portfolio.findOneAndUpdate({ "portfolio.overview.name": name, "userId": userId }, { "portfolio.positions": positions }, (error, portfolioRes) => {
+                            if (error) {
+                                handle_database_error(res, error2)
+                            } else {
+                                res.json(portfolioRes);
+                                console.log('updated successfully');
+                            }
+                        })
+                    }
+
+                } catch (error) {
+                    console.log(error.message);
+                }
+            }
+
+        });
+
+    }
+});
 
 // convert definitions of finapi into the mongodb schema, handling an array of securities 
 function convertSecurities(securities) {
@@ -843,7 +947,7 @@ function convertSecurities(securities) {
                 "industry": "industry",
                 "score": 0
             },
-            "qty": 0,
+            "qty": securities[i].quantityNominal,
             "quantityNominalType": securities[i].quantityNominalType,
             "totalReturn": 1,
             "totalReturnPercent": 0
@@ -861,5 +965,3 @@ function catchErrors(api_response) {
 }
 
 module.exports = router;
-
-module.exports = router
