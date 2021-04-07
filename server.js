@@ -1,26 +1,27 @@
 'use strict';
 
-const express = require('express');
-const bodyParser = require('body-parser');
-require('./auth/auth');
-
-const cors = require('cors');
-
-const getAnalyticsRoute = require('./routes/analyticsRoutes')
-const getUserRoute = require('./routes/user');
-const getPortfolioRoute = require('./routes/portfolio');
-const getStocksRoute = require('./routes/stocks');
-const swaggerJsDoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
-
 // init is required to access AWS Secret Manager before running any other code.
 const init = async () => {
     await require('./secret/secret')();
+
+    const express = require('express');
+    const bodyParser = require('body-parser');
+    const cors = require('cors');
+
+    const getAnalyticsRoute = require('./routes/analyticsRoutes')
+    const getUserRoute = require('./routes/user');
+    const getPortfolioRoute = require('./routes/portfolio');
+    const getStocksRoute = require('./routes/stocks');
+    const swaggerJsDoc = require('swagger-jsdoc');
+    const swaggerUi = require('swagger-ui-express');
+    require('./auth/auth');
 
     // Constants
     const { PORT = 3000 } = process.env;
     const HOST = '0.0.0.0';
     const app = express();
+
+    // swagger setup
     const swaggerOptions = {
         encoding: "utf-8",
         swaggerDefinition: {
@@ -36,13 +37,14 @@ const init = async () => {
         ]
     };
     const swaggerDocs = swaggerJsDoc(swaggerOptions);
-
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+    // database setup
     require( "./db/index.js" )( app );
 
     app.get('/', (req, res) => {
         res.statusCode = 200;
-        res.send('visit ' + req.protocol + '://' + req.get('host') + req.originalUrl + 'api-docs for documentation.')
+        res.redirect(req.protocol + '://' + req.get('host') + req.originalUrl + 'api-docs');
     })
 
     app.use(bodyParser.json());
