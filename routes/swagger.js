@@ -174,6 +174,21 @@
  *        type: array
  *        items:
  *          $ref: '#/definitions/rating'
+ *  news:
+ *    type: object
+ *    properties:
+ *      id:
+ *        type: string
+ *      headline:
+ *        type: string
+ *      summary:
+ *        type: string
+ *      url:
+ *        type: string
+ *  newsss:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/news'
  *
  *  portfolioOverview:
  *    type: object
@@ -644,6 +659,7 @@
  *   post:
  *     tags:
  *     - portfolio
+ *     - portfolio
  *     summary: Duplicate a portfolio
  *     description: Creates a new virtual portfolio as a duplicate of a real or virtual portfolio. Changes to a real portfolio will not be tracked in the duplicated version.
  *     operationId: duplicatePortfolio
@@ -682,7 +698,7 @@
  *         schema:
  *           $ref: '#/definitions/error'
  *
- * /stocks/list?{country}&{currency}&{industry}&{mc}:
+ * /stocks/list?country={country}&currency={currency}&industry={industry}&mc={mc}:
  *  get:
  *   summary: Returns a stock list according to filter.
  *   description: Returns a stock list according to filter.
@@ -722,7 +738,7 @@
  *    '400':
  *      description: Invalid
  *
- * /stocks/search?{id}:
+ * /stocks/search?id={id}:
  *  get:
  *   summary: Returns a stock with given id.
  *   description: Returns a stock with given id.
@@ -747,7 +763,7 @@
  *    '400':
  *      description: Invalid
  *
- * /stocks/details/search?{id}:
+ * /stocks/details/search?id={id}:
  *  get:
  *   summary: Returns details of a stock with given id.
  *   description: Returns details of a stock with given id.
@@ -769,7 +785,7 @@
  *    '400':
  *      description: Invalid
  *
- * /stocks/charts/historic/search?{id}&{max}:
+ * /stocks/charts/historic/search?id={id}&max={max}:
  *  get:
  *   summary: Get the performance of the stock from beginning or last 5 years.
  *   description: Get the performance of the stock from beginning or last 5 years.
@@ -799,7 +815,7 @@
  *    '400':
  *      description: Invalid
  *
- * /stocks/charts/key_figures/search?{id}&{max}:
+ * /stocks/charts/key_figures/search?id={id}&max={max}:
  *  get:
  *   summary: Get the key figures of the stock from beginning or last 5 years.
  *   description: Get the key figures of the stock from beginning or last 5 years.
@@ -829,7 +845,7 @@
  *    '400':
  *      description: Invalid
  *
- * /stocks/charts/dividend/search?{id}&{max}:
+ * /stocks/charts/dividend/search?id={id}&max={max}:
  *  get:
  *   summary: Get the key figures of the stock from beginning or last 5 years.
  *   description: Get the key figures of the stock from beginning or last 5 years.
@@ -863,7 +879,7 @@
  *    '400':
  *      description: Invalid
  *
- * stocks/charts/analysts/search?{id}:
+ * /stocks/charts/analysts/search?id={id}:
  *  get:
  *   summary: Get the analysts recommendation.
  *   description: Get the analysts recommendation.
@@ -887,6 +903,31 @@
  *                  $ref: '#/definitions/ratings'
  *              averageGoal:
  *                  type: string
+ *    '400':
+ *      description: Invalid
+ *
+ * /stocks/news/search?id={id}:
+ *  get:
+ *   summary: Returns news list with given stock id.
+ *   description: Returns news list with given stock id.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: symbol of stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *       type: object
+ *       properties:
+ *        stocks:
+ *         $ref: '#/definitions/newsss'
  *    '400':
  *      description: Invalid
  *

@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const stockModel = require("../models/stock");
+const fetch = require('node-fetch');
 
 const ibmStock = {
     "symbol": "IBM",
@@ -158,6 +159,16 @@ const sapStockDetails = {
     "assembly": "2021-05-23"
 }
 
+const excludeFields = {
+    _id: false,
+    founded: false,
+    intro: false,
+    employees: false,
+    website: false,
+    assembly: false,
+    address: false,
+};
+
 // /**
 //  * @swagger
 //  * /stocks/:
@@ -188,8 +199,7 @@ router.get('/list', async (req, res) => {
     let industry = req.query.industry;
     let mc = req.query.mc; // either small, medium or large market capitalization
     if (currency === undefined && country === undefined && industry === undefined && mc === undefined) {
-        //response = { "stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock, sapStock] };
-        const stocks = await stockModel.find({}, '-_id');
+        const stocks = await stockModel.find({}, excludeFields);
         res.json({ "stocks": stocks });
     } else {
         let query = {};
@@ -210,7 +220,7 @@ router.get('/list', async (req, res) => {
             }
         }
         if (industry != undefined) {
-            query["industry"] = { $regex: ".*" + industry + ".*" };
+            query["industry"] = { $regex: ".*" + industry + ".*", '$options': 'i' };
         }
         if (mc != undefined) {
             if (mc.includes(',')) {
@@ -241,7 +251,7 @@ router.get('/list', async (req, res) => {
                 }
             }
         }
-        const stocks = await stockModel.find(query, '-_id');
+        const stocks = await stockModel.find(query, excludeFields);
         res.json({ "stocks": stocks });
     }
 });
@@ -250,25 +260,18 @@ router.get('/search', async (req, res) => {
     let response;
     let isError = false;
 
-    let id = req.query.id;
+    let searchString = req.query.id;
+    let query = {};
+    query["$or"] = [
+        { "isin": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+        { "wkn": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+        { "name": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+        { "symbol": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+    ]
+    console.log(query)
+    const stocks = await stockModel.find(query, excludeFields);
 
-    if (id === "IBM" || id === "International Business Machines Corporation" || id === "US4592001014" || id === "851399") {
-        response = { "stocks": [ibmStock] };
-    } else if (id === "AAPL" || id === "Apple Inc" || id === "US0378331005" || id === "865985") {
-        response = { "stocks": [appleStock] };
-    } else if (id === "MSFT" || id === "Microsoft Corporation" || id === "US9278331005" || id === "358331") {
-        response = { "stocks": [microsoftStock] };
-    } else if (id === "MS" || id === "Morgan Stanley" || id === "US9383331005" || id === "871985") {
-        response = { "stocks": [morganStanleyStock] };
-    } else if (id === "SAP" || id === "SAP SE" || id === "US0378331013" || id === "865984") {
-        response = { "stocks": [sapStock] };
-    } else {
-        isError = true;
-        response = { "error": "STOCK_ID_INVALID" }
-    }
-
-    !isError && res.json(response);
-    isError && res.status(404).json(response);
+    res.json({ "stocks": stocks })
 });
 
 router.get('/details/search', (req, res) => {
@@ -371,10 +374,8 @@ router.get('/charts/historic/search', (req, res) => {
     } else {
         response = { "error": "STOCK_ID_INVALID" }
     }
-
     !isError && res.json(response);
     isError && res.status(404).json(response);
-
 });
 
 const keyFigure1 = { "date": "2021-01-19", "pte": "1.587", "PriceToBookRatio": "5.345", "ptg": "1.7978", "eps": "1.789" }
@@ -382,11 +383,23 @@ const keyFigure2 = { "date": "2021-01-20", "pte": "1.678", "PriceToBookRatio": "
 const keyFigure3 = { "date": "2021-01-21", "pte": "1.786", "PriceToBookRatio": "5.789", "ptg": "1.7897", "eps": "1.97" }
 const keyFigure4 = { "date": "2021-01-22", "pte": "1.543", "PriceToBookRatio": "5.34", "ptg": "1.798", "eps": "1.678" }
 const keyFigure5 = { "date": "2021-01-23", "pte": "1.687", "PriceToBookRatio": "5.435", "ptg": "1.978", "eps": "1.6798" }
-const keyFigure6 = { "date": "2021-01-24", "pte": "1.45654", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6798" }
+const keyFigure6 = {
+    "date": "2021-01-24",
+    "pte": "1.45654",
+    "PriceToBookRatio": "5.345",
+    "ptg": "1.789",
+    "eps": "1.6798"
+}
 const keyFigure7 = { "date": "2021-01-25", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6789" }
 const keyFigure8 = { "date": "2021-01-26", "pte": "1.456", "PriceToBookRatio": "5.435", "ptg": "1.97", "eps": "1.6789" }
 const keyFigure9 = { "date": "2021-01-27", "pte": "1.54", "PriceToBookRatio": "5.45", "ptg": "1.978", "eps": "1.956" }
-const keyFigure10 = { "date": "2021-01-28", "pte": "1.45654", "PriceToBookRatio": "5.786", "ptg": "1.789", "eps": "1.769" }
+const keyFigure10 = {
+    "date": "2021-01-28",
+    "pte": "1.45654",
+    "PriceToBookRatio": "5.786",
+    "ptg": "1.789",
+    "eps": "1.769"
+}
 const keyFigure11 = { "date": "2021-01-29", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.7698" }
 const keyFigure12 = { "date": "2021-01-30", "pte": "1.687", "PriceToBookRatio": "5.45", "ptg": "1.997", "eps": "1.67" }
 const keyFigure13 = { "date": "2021-01-31", "pte": "1.546", "PriceToBookRatio": "5.645", "ptg": "1.798", "eps": "1.6789" }
@@ -579,6 +592,50 @@ router.get('/charts/analysts/search', (req, res) => {
     !isError && res.json(response);
     isError && res.status(404).json(response);
 
+});
+
+router.get('/news/search', async (req, res) => {
+    var todayDate = new Date().toISOString().slice(0, 10);
+    var id = req.query.id;
+
+    let query = {};
+    query["symbol"] = id;
+    let stocks = await stockModel.find(query, '-_id');
+    let name;
+    try {
+        name = stocks[0]["name"];
+    } catch (e) {
+        res.status(404).json({ "error": "STOCK_ID_INVALID" });
+    }
+
+    var url = 'https://newsapi.org/v2/everything?' +
+        'q=' + name +
+        '&from=' + todayDate +
+        '&sortBy=popularity' +
+        '&apiKey=' + process.env.news_api_key;
+
+    await fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            let articles = data["articles"];
+            let news = []
+
+            articles.forEach(article => {
+                news.push(
+                    {
+                        "id": id,
+                        "headline": article["title"],
+                        "summary": article["description"].replace(/\n/g, ""),
+                        "url": article["url"]
+                    }
+                )
+            })
+            res.json({ "news": news });
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(404).json(err);
+        })
 });
 
 module.exports = router
