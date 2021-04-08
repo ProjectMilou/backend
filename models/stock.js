@@ -83,6 +83,9 @@ const StockSchema = new mongoose.Schema({
     },
     assembly: {
         type: String,
+    },
+    assetType: {
+        type: String,
     }
 }, {
     versionKey: false

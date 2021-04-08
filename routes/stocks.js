@@ -159,6 +159,16 @@ const sapStockDetails = {
     "assembly": "2021-05-23"
 }
 
+const excludeFields = {
+    _id: false,
+    founded: false,
+    intro: false,
+    employees: false,
+    website: false,
+    assembly: false,
+    address: false,
+};
+
 // /**
 //  * @swagger
 //  * /stocks/:
@@ -189,8 +199,7 @@ router.get('/list', async (req, res) => {
     let industry = req.query.industry;
     let mc = req.query.mc; // either small, medium or large market capitalization
     if (currency === undefined && country === undefined && industry === undefined && mc === undefined) {
-        //response = { "stocks": [ibmStock, appleStock, microsoftStock, morganStanleyStock, sapStock] };
-        const stocks = await stockModel.find({}, '-_id');
+        const stocks = await stockModel.find({}, excludeFields);
         res.json({ "stocks": stocks });
     } else {
         let query = {};
@@ -211,7 +220,7 @@ router.get('/list', async (req, res) => {
             }
         }
         if (industry != undefined) {
-            query["industry"] = { $regex: ".*" + industry + ".*" };
+            query["industry"] = { $regex: ".*" + industry + ".*", '$options': 'i' };
         }
         if (mc != undefined) {
             if (mc.includes(',')) {
@@ -242,7 +251,7 @@ router.get('/list', async (req, res) => {
                 }
             }
         }
-        const stocks = await stockModel.find(query, '-_id');
+        const stocks = await stockModel.find(query, excludeFields);
         res.json({ "stocks": stocks });
     }
 });
@@ -251,25 +260,18 @@ router.get('/search', async (req, res) => {
     let response;
     let isError = false;
 
-    let id = req.query.id;
+    let searchString = req.query.id;
+    let query = {};
+    query["$or"] = [
+        { "isin": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+        { "wkn": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+        { "name": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+        { "symbol": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+    ]
+    console.log(query)
+    const stocks = await stockModel.find(query, excludeFields);
 
-    if (id === "IBM" || id === "International Business Machines Corporation" || id === "US4592001014" || id === "851399") {
-        response = { "stocks": [ibmStock] };
-    } else if (id === "AAPL" || id === "Apple Inc" || id === "US0378331005" || id === "865985") {
-        response = { "stocks": [appleStock] };
-    } else if (id === "MSFT" || id === "Microsoft Corporation" || id === "US9278331005" || id === "358331") {
-        response = { "stocks": [microsoftStock] };
-    } else if (id === "MS" || id === "Morgan Stanley" || id === "US9383331005" || id === "871985") {
-        response = { "stocks": [morganStanleyStock] };
-    } else if (id === "SAP" || id === "SAP SE" || id === "US0378331013" || id === "865984") {
-        response = { "stocks": [sapStock] };
-    } else {
-        isError = true;
-        response = { "error": "STOCK_ID_INVALID" }
-    }
-
-    !isError && res.json(response);
-    isError && res.status(404).json(response);
+    res.json({ "stocks": stocks })
 });
 
 router.get('/details/search', (req, res) => {
@@ -372,10 +374,8 @@ router.get('/charts/historic/search', (req, res) => {
     } else {
         response = { "error": "STOCK_ID_INVALID" }
     }
-
     !isError && res.json(response);
     isError && res.status(404).json(response);
-
 });
 
 const keyFigure1 = { "date": "2021-01-19", "pte": "1.587", "PriceToBookRatio": "5.345", "ptg": "1.7978", "eps": "1.789" }
