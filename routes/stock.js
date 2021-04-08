@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const stockModel = require("../models/stock");
+const dataPointModel = require('../models/dataPoint');
 
 router.get('/overview', async (req, res) => {
     let response;
@@ -35,6 +36,32 @@ router.get('/details', async (req, res) => {
         assembly: true,
     });
     res.json({ "stocks": stock });
+});
+
+router.get('/charts/historic', async (req, res) => {
+    let symbol = req.query.id;
+    let maxParam = req.query.max;
+    let dataPoints;
+    if (maxParam === 'false') {
+        dataPoints = await dataPointModel.find({ "symbol": symbol }, {
+            symbol: false,
+            _id: false
+        });
+        dataPoints = { "dataPoints": dataPoints[0]["dataPoints"].slice(0, 1260) };
+    } else {
+        dataPoints = await dataPointModel.find({ "symbol": symbol }, {
+            symbol: false,
+            _id: false
+        });
+        dataPoints = dataPoints[0]
+    }
+
+    if (dataPoints) {
+        res.json(dataPoints);
+    } else {
+        res.json({ "error": "STOCK_ID_INVALID" })
+    }
+
 });
 
 module.exports = router
