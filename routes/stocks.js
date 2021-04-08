@@ -169,25 +169,6 @@ const excludeFields = {
     address: false,
 };
 
-// /**
-//  * @swagger
-//  * /stocks/:
-//  *  get:
-//  *   summary: Returnsb a list of all stocks.
-//  *   description: Returns a list of all stocks.
-//  *   produces:
-//  *     - application/json
-//  *   tags:
-//  *    - stocks
-//  *   responses:
-//  *    '200':
-//  *      description: Successful operation
-//  *      schema:
-//  *          $ref: '#/definitions/stockks'
-//  *    '400':
-//  *      description: Invalid
-//  */
-
 // fixme: stocks from database are reformated wrongly
 
 router.get('/list', async (req, res) => {
@@ -473,80 +454,6 @@ router.get('/charts/key_figures/search', (req, res) => {
 
 });
 
-const dp1 = {"date": "2021-01-19", "div": "0.0770"}
-const dp2 = {"date": "2021-01-20", "div": "0.0727"}
-const dp3 = {"date": "2021-01-21", "div": "0.0718"}
-const dp4 = {"date": "2021-01-22", "div": "0.0766"}
-const dp5 = {"date": "2021-01-23", "div": "0.0793"}
-const dp6 = {"date": "2021-01-24", "div": "0.0768"}
-const dp7 = {"date": "2021-01-25", "div": "0.0812"}
-const dp8 = {"date": "2021-01-26", "div": "0.0849"}
-const dp9 = {"date": "2021-01-27", "div": "0.0932"}
-const dp10 = {"date": "2021-01-28", "div": "0.0904"}
-const dp11 = {"date": "2021-01-29", "div": "0.0912"}
-const dp12 = {"date": "2021-01-30", "div": "0.0770"}
-const dp13 = {"date": "2021-01-31", "div": "0.0727"}
-const dp14 = {"date": "2021-02-01", "div": "0.0718"}
-const dp15 = {"date": "2021-02-02", "div": "0.0766"}
-const dp16 = {"date": "2021-02-03", "div": "0.0793"}
-const dp17 = {"date": "2021-02-04", "div": "0.0768"}
-const dp18 = {"date": "2021-02-05", "div": "0.0812"}
-const dp19 = {"date": "2021-02-06", "div": "0.0849"}
-const dp20 = {"date": "2021-02-07", "div": "0.0932"}
-const dp21 = {"date": "2021-02-08", "div": "0.0904"}
-const dp22 = {"date": "2021-02-09", "div": "0.0912"}
-
-const dpLess = [dp1, dp2, dp3, dp4, dp5, dp6, dp7, dp8, dp9, dp10, dp11];
-const dpMore = [dp1, dp2, dp3, dp4, dp5, dp6, dp7, dp8, dp9, dp10, dp11,
-    dp12, dp13, dp14, dp15, dp16, dp17, dp18, dp19, dp20, dp21, dp22];
-
-// router.get('/charts/dividend/search', (req, res) => {
-//     let isError = false;
-//     let id = req.query.id;
-//     let max = req.query.max;
-//     let response;
-//
-//     if (id !== undefined && max !== undefined) {
-//
-//         if (max === "false") {
-//             if (id === "IBM") {
-//                 response = { "dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03" };
-//             } else if (id === "AAPL") {
-//                 response = { "dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03" };
-//             } else if (id === "MSFT") {
-//                 response = { "dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03" };
-//             } else if (id === "MS") {
-//                 response = { "dataPoints": dpLess, "date": "2021-05-03", "quota": "0.03" };
-//             } else {
-//                 isError = true;
-//                 response = { "error": "STOCK_ID_INVALID" }
-//             }
-//         } else if (max === "true") {
-//             if (id === "IBM") {
-//                 response = { "dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03" };
-//             } else if (id === "AAPL") {
-//                 response = { "dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03" };
-//             } else if (id === "MSFT") {
-//                 response = { "dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03" };
-//             } else if (id === "MS") {
-//                 response = { "dataPoints": dpMore, "date": "2021-05-03", "quota": "0.03" };
-//             } else {
-//                 isError = true;
-//                 response = { "error": "STOCK_ID_INVALID" }
-//             }
-//         } else {
-//             isError = true;
-//             response = { "error": "STOCK_ID_INVALID" }
-//         }
-//     } else {
-//         response = { "error": "STOCK_ID_INVALID" }
-//     }
-//
-//     !isError && res.json(response);
-//     isError && res.status(404).json(response);
-//
-// });
-
 
 const rating1 = {"date": "2021-01-19", "goal": "345770", "strategy": "buy", "source": "investing.com"}
 const rating2 = {"date": "2021-01-20", "goal": "345727", "strategy": "hold", "source": "investing.com"}
@@ -595,7 +502,7 @@ router.get('/charts/analysts/search', (req, res) => {
 
 });
 
-router.get('/charts/dividend/search', async (req, res) => {
+router.get('/charts/dividend/search', async (req, res) => { //fixme: sometimes inconsistent
     let id = req.query.id;
     let max = req.query.max;
 
@@ -645,65 +552,6 @@ router.get('/charts/dividend/search', async (req, res) => {
     } else {
         res.status(404).json({"error": "STOCK_ID_INVALID"});
     }
-
-    ///////////////////////////////////////////////
-    // if (!!id && !!max) {
-    //
-    //     let dividendDate;
-    //     let quota;
-    //     let dataPoints = [];
-    //     let isExist = false;
-    //
-    //     // let query = {};
-    //     // query["symbol"] = id;
-    //     // let stocks = await stockModel.find(query, '-_id');
-    //     // try {
-    //     //     stocks[0]["name"];
-    //     //     isExist = true;
-    //     // } catch (e) {
-    //     //     res.status(404).json({"error": "STOCK_ID_INVALID"});
-    //     // }
-    //     fetch(urlOverview)
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             dividendDate = data['DividendDate']
-    //             quota = data['PayoutRatio']
-    //         })
-    //         .catch(err => {
-    //             console.log(err);
-    //             res.status(404).json(err);
-    //         })
-    //
-    //     fetch(urlCashFlow)
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             let annualReports = data['annualReports']
-    //             let counter = 0;
-    //             annualReports.forEach(annualReport => {
-    //                 if (counter < 5) {
-    //                     console.log(counter);
-    //                     dataPoints.push(
-    //                         {
-    //                             "date": annualReport['fiscalDateEnding'],
-    //                             "div": annualReport['dividendPayout'] / annualReport['netIncome']
-    //                         }
-    //                     )
-    //                 }
-    //                 if (max === 'false') counter++;
-    //             })
-    //         })
-    //         .catch(err => {
-    //             console.log(err);
-    //             // res.status(404).json(err);
-    //         })
-    //
-    //
-    //     res.json({"dataPoints": dataPoints, "date": dividendDate, "quota": quota});
-    //     // !isExist && res.status(404).json({"error": "STOCK_ID_INVALID"});
-    //
-    // } else {
-    //     res.status(404).json({"error": "STOCK_ID_INVALID"});
-    // }
 
 });
 
