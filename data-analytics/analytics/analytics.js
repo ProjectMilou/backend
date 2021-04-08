@@ -17,14 +17,16 @@ const DE = require("./javascript-analysis/debt-equity")
  * @param {{symbol: {date: {"1. open": "20.6350", "2. high": "71.7300", "3. low": "70.5200","4. close": "71.4900", "5. volume": "114923"}}}} stocksData Stocks data according to symbols
  * @returns An object containing the analyzed data
  */
-function backtest(portfolio, stocksData) {
-    const MDD = backtesting.mdd(portfolio, stocksData);
-    const BWY = backtesting.bestAndWorstYear(portfolio, stocksData);
-    const FPV = backtesting.finalPortfolioBalance(portfolio, stocksData);
+function backtest(portfolio, stocksData, fromDate, toDate) {
+    const namesToSymbols = extractNamesToSymbolsMapping(portfolio)
+    const filteredStocksData = filterStocksDataForBackTesting(stocksData, fromDate, toDate)
+    const MDD = backtesting.mdd(portfolio, filteredStocksData, namesToSymbols);
+    const BWY = backtesting.bestAndWorstYear(portfolio, filteredStocksData, namesToSymbols);
+    const FPV = backtesting.finalPortfolioBalance(portfolio, filteredStocksData, namesToSymbols);
 
-    const CAGR = backtesting.compoundAnnualGrowthRate(portfolio, stocksData);
-    const standardDeviation = backtesting.standardDeviation(portfolio, stocksData);
-    const sharpeRatio = backtesting.sharpeRatio(portfolio, stocksData);
+    const CAGR = backtesting.compoundAnnualGrowthRate(portfolio, filteredStocksData, namesToSymbols);
+    const standardDeviation = backtesting.standardDeviation(portfolio, filteredStocksData, namesToSymbols);
+    const sharpeRatio = backtesting.sharpeRatio(portfolio, filteredStocksData, namesToSymbols);
 
     const backTestedPortfolio = {
         ...MDD,
@@ -52,15 +54,18 @@ function calculateDividendYields(portfolio, symbolCompanyOverviews) {
 }
 
 function calculateSDAndCorrelationAndVolatility(portfolio, stocksData) {
-    return stockStandardDeviationAndCorrelation.standardDeviationAndCorrelation(portfolio, stocksData);
+    const namesToSymbols = extractNamesToSymbolsMapping(portfolio)
+    return stockStandardDeviationAndCorrelation.standardDeviationAndCorrelation(portfolio, stocksData, namesToSymbols);
 }
 
 function calculateSharpeRatio(portfolio, stocksData) {
-    return stockStandardDeviationAndCorrelation.sharpeRatioStocks(portfolio, stocksData);
+    const namesToSymbols = extractNamesToSymbolsMapping(portfolio)
+    return stockStandardDeviationAndCorrelation.sharpeRatioStocks(portfolio, stocksData, namesToSymbols);
 }
 
 function calculateGainAndLoss(portfolio, stocksData) {
-    return GL.gainOrLossLastYearOrMonth(portfolio, stocksData);
+    const namesToSymbols = extractNamesToSymbolsMapping(portfolio)
+    return GL.gainOrLossLastYearOrMonth(portfolio, stocksData, namesToSymbols);
 }
 
 function calculateDebtEquity(portfolio, balanceSheetPerSymbol) {
@@ -73,6 +78,20 @@ function extractNamesToSymbolsMapping(portfolio) {
         namesToSymbols[security.name] = security.symbol;
     })
     return namesToSymbols;
+}
+
+function filterStocksDataForBackTesting(stocksData, fromDate, toDate) {
+    const filteredData = {};
+    Object.keys(stocksData).forEach(symbol => {
+        filteredData[symbol] = {};
+        for (const [date, value] of Object.entries(stocksData[symbol])) {
+            const currDate = new Date(date)
+            if(currDate >= fromDate && currDate <= toDate) {
+                filteredData[symbol][date] = value;
+            }
+        }
+    })
+    return filteredData;
 }
 
 exports.backtest = backtest;

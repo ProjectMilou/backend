@@ -3,6 +3,7 @@ const express = require('express');
 const analytics = require('../data-analytics/analytics/analytics');
 const portfolioFetcher = require('../data-analytics/dynamic_data/portfolio-fetcher');
 const companyOverviews = require('../data-analytics/dynamic_data/company-overviews');
+const stockTimeSeries = require('../data-analytics/dynamic_data/stock-time-series');
 // Require analytics, alphaVantageAPI, dbConnection and data filtering module.
 
 
@@ -16,10 +17,29 @@ router.get('/backtest/:id', async (req, res) => {
         response.error="Portfolio with ID: " + id + " was not found!"
         return res.json(response)
     }
-    response.success = currPortfolio;
-    
+    const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
+    const currStocksData = await stockTimeSeries.getStocksDataForSymbols(currSymbols);
+    if (!currStocksData) {
+        response.error = "No data for all the stocks in the given portfolio."
+        return res.json(response)
+    }
+    let fromDate = req.query.fromDate;
+    let toDate = req.query.toDate;
+    if (!fromDate || !toDate) {
+        response.error = "Please provide fromDate and toDate as query parameters"
+        return res.json(response)
+    }
+    fromDate = new Date(fromDate)
+    toDate = new Date(toDate)
+    if(fromDate.toString() === 'Invalid Date' || toDate.toString() === 'Invalid Date') {
+        response.error = "Dates are not in the correct format"
+        return res.json(response)
+    }
+    const analyzedData = analytics.backtest(currPortfolio, currStocksData, fromDate, toDate)
+    response.success = analyzedData;
 
     return res.json(response)
+    
     // Extract parameters from request body
 
     // Fetch time series data from DB, if data does not exist there or it's not enough
@@ -40,7 +60,12 @@ router.get('/backtest/:id', async (req, res) => {
         response.error="Portfolio with ID: " + id + " was not found!"
         return res.json(response)
     }
-    response.success = currPortfolio;
+    const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
+    const currCompanyOverviews = await companyOverviews.getCompanyOverviewForSymbols(currSymbols);
+    if (!currCompanyOverviews) {
+        response.error = "No data for all the stocks in the given portfolio."
+        return res.json(response)
+    }
     
 
     return res.json(response)
@@ -125,7 +150,14 @@ router.get('/backtest/:id', async (req, res) => {
     }
     response.success = currPortfolio;
     
-
+    const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
+    const currStocksData = await stockTimeSeries.getStocksDataForSymbols(currSymbols);
+    if(!currStocksData) {
+        response.error = "No stock time series data for some of the stocks"
+        return res.json(response);
+    }
+    const analyzedData = analytics.calculateGainAndLoss(currPortfolio, currStocksData);
+    response.success= analyzedData;
     return res.json(response)
     // Extract parameters from request path
 
@@ -148,9 +180,15 @@ router.get('/backtest/:id', async (req, res) => {
         response.error="Portfolio with ID: " + id + " was not found!"
         return res.json(response)
     }
-    response.success = currPortfolio;
     
-
+    const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
+    const currStocksData = await stockTimeSeries.getStocksDataForSymbols(currSymbols);
+    if(!currStocksData) {
+        response.error = "No stock time series data for some of the stocks"
+        return res.json(response);
+    }
+    const analyzedData = analytics.calculateSDAndCorrelationAndVolatility(currPortfolio, currStocksData);
+    response.success= analyzedData;
     return res.json(response)
     // Extract parameters from request path
 
@@ -173,9 +211,15 @@ router.get('/backtest/:id', async (req, res) => {
         response.error="Portfolio with ID: " + id + " was not found!"
         return res.json(response)
     }
-    response.success = currPortfolio;
     
-
+    const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
+    const currStocksData = await stockTimeSeries.getStocksDataForSymbols(currSymbols);
+    if(!currStocksData) {
+        response.error = "No stock time series data for some of the stocks"
+        return res.json(response);
+    }
+    const analyzedData = analytics.calculateSharpeRatio(currPortfolio, currStocksData);
+    response.success= analyzedData;
     return res.json(response)
     // Extract parameters from request path
 
