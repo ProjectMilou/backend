@@ -2,6 +2,7 @@
 const express = require('express');
 const analytics = require('../data-analytics/analytics/analytics');
 const portfolioFetcher = require('../data-analytics/dynamic_data/portfolio-fetcher');
+const companyOverviews = require('../data-analytics/dynamic_data/company-overviews');
 // Require analytics, alphaVantageAPI, dbConnection and data filtering module.
 
 
@@ -58,6 +59,7 @@ router.get('/backtest/:id', async (req, res) => {
  router.get('/dividends/:id', async (req, res) => {
     let response = {error: "", success: {}};
     const id = req.params.id;
+    
     const currPortfolio = await portfolioFetcher.findPortfolioByID(id)
     if (!currPortfolio) {
         response.error="Portfolio with ID: " + id + " was not found!"
@@ -65,6 +67,15 @@ router.get('/backtest/:id', async (req, res) => {
     }
     response.success = currPortfolio;
     
+    const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
+    const currCompanyOverviews = await companyOverviews.getCompanyOverviewForSymbols(currSymbols);
+    if (!currCompanyOverviews) {
+        response.error = "No data for all the stocks in the given portfolio."
+        return res.json(response)
+    }
+
+    const analyzedData = analytics.calculateDividendYields(currPortfolio, currCompanyOverviews)
+    response.success = analyzedData;
 
     return res.json(response)
     // Extract parameters from request path

@@ -47,7 +47,8 @@ function calculatePERatios(portfolio, symbolCompanyOverviews) {
 }
 
 function calculateDividendYields(portfolio, symbolCompanyOverviews) {
-    return dividendYield.getDividendyield(portfolio, symbolCompanyOverviews);
+    const namesToSymbols = extractNamesToSymbolsMapping(portfolio)
+    return dividendYield.getDividendyield(portfolio, symbolCompanyOverviews, namesToSymbols);
 }
 
 function calculateSDAndCorrelationAndVolatility(portfolio, stocksData) {
@@ -66,6 +67,13 @@ function calculateDebtEquity(portfolio, balanceSheetPerSymbol) {
     return DE.debtEquity(portfolio, balanceSheetPerSymbol);
 }
 
+function extractNamesToSymbolsMapping(portfolio) {
+    const namesToSymbols = {}
+    portfolio.securities.forEach(security => {
+        namesToSymbols[security.name] = security.symbol;
+    })
+    return namesToSymbols;
+}
 
 exports.backtest = backtest;
 exports.calculateDebtEquity = calculateDebtEquity;

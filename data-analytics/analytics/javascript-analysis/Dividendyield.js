@@ -1,4 +1,3 @@
-const { namesToSymbols } = require("../../static/names-symbols-mapping")
 /**
  * Returns the average and the dividendyield in % of the company overview
  * regarding the quantity of stocks bought
@@ -9,10 +8,9 @@ const { namesToSymbols } = require("../../static/names-symbols-mapping")
  * averageDividendyield: {averageDividendyield: totalDividendyield}
  * }}
  */
-function getDividendyield(portfolio, symbolCompanyOverview) {
+function getDividendyield(portfolio, symbolCompanyOverview, namesToSymbols) {
     let dividendyield = {};
     let totalDividendyield = 0;
-    let averageDividendyield = 0;
 
     let symbolsToQuantity = {};
     let totalQuantity = 0;
@@ -35,10 +33,7 @@ function getDividendyield(portfolio, symbolCompanyOverview) {
         dividendyield[symbol] = parseFloat(content);
 
     });
-    averageDividendyield = totalDividendyield / totalQuantity;
-
     // Why converting everything to strings ?
-    totalDividendyield = totalDividendyield;
     return {
         dividendyield,
         averageDividendyield: totalDividendyield
