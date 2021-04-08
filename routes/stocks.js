@@ -595,7 +595,10 @@ router.get('/charts/analysts/search', (req, res) => {
 });
 
 router.get('/news/search', async (req, res) => {
-    var todayDate = new Date().toISOString().slice(0, 10);
+    var date = new Date();
+    date.setDate(date.getDate() - 3);
+    var threeDaysAgoString = date.toISOString().slice(0, 10);
+
     var id = req.query.id;
 
     let query = {};
@@ -610,8 +613,10 @@ router.get('/news/search', async (req, res) => {
 
     var url = 'https://newsapi.org/v2/everything?' +
         'q=' + name +
-        '&from=' + todayDate +
+        '&from=' + threeDaysAgoString +
         '&sortBy=popularity' +
+        '&language=en' +
+        '&domains=yahoo.com,seekingalpha.com,marketwatch.com,investors.com,bloomberg.com' +
         '&apiKey=' + process.env.news_api_key;
 
     await fetch(url)
