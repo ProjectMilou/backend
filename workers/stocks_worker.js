@@ -21,11 +21,12 @@ module.exports.updateAllStocks = async function () {
 
     const startFetching = async () => {
         for await (const symbol of rl) {
+            console.log(symbol)
             await getStockOverview(symbol, api_key_alphavantage);
             // await getTimeIntervalPerformance(symbol, api_key_alphavantage);
             // await getYearlyPerformance(symbol, api_key_alphavantage);
-            await getImage(symbol, api_key_finhub);
-            await sleep(500)
+            // await getImage(symbol, api_key_finhub);
+            await sleep(1200)
         }
         rl.close()
         return
@@ -87,6 +88,7 @@ async function getStockOverview(symbol, api_key) {
                         "address": data.Address,
                         "assembly": "",
                         "picture": "",
+                        "assetType": data.AssetType,
                     },
                 },
                 {
