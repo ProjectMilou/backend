@@ -86,6 +86,9 @@ const StockSchema = new mongoose.Schema({
     },
     assetType: {
         type: String,
+    },
+    peRatio: {
+        type: String,
     }
 }, {
     versionKey: false
