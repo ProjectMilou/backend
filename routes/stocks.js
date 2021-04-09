@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const stockModel = require("../models/stock");
+const dataPointModel = require('../models/dataPoint');
 const fetch = require('node-fetch');
 
 const ibmStock = {
@@ -255,108 +256,168 @@ router.get('/search', async (req, res) => {
     res.json({"stocks": stocks})
 });
 
-router.get('/details/search', (req, res) => {
-    let isError = false;
-    let id = req.query.id;
+// router.get('/details/search', (req, res) => {
+//     let isError = false;
+//     let id = req.query.id;
+//     let response;
+//     if (id === "IBM") {
+//         response = ibmStockDetails;
+//     } else if (id === "AAPL") {
+//         response = appleStockDetails;
+//     } else if (id === "MSFT") {
+//         response = microsoftStockDetails;
+//     } else if (id === "MS") {
+//         response = morganStanleyStockDetails;
+//     } else if (id === "SAP") {
+//         response = sapStockDetails;
+//     } else {
+//         isError = true;
+//         response = {"error": "STOCK_ID_INVALID"}
+//     }
+//     !isError && res.json(response);
+//     isError && res.status(404).json(response);
+// });
+
+// const dataPoint1 = {"date": "2021-01-19", "close": "1.1770"}
+// const dataPoint2 = {"date": "2021-01-20", "close": "1.1727"}
+// const dataPoint3 = {"date": "2021-01-21", "close": "1.1718"}
+// const dataPoint4 = {"date": "2021-01-22", "close": "1.1766"}
+// const dataPoint5 = {"date": "2021-01-23", "close": "1.1793"}
+// const dataPoint6 = {"date": "2021-01-24", "close": "1.1768"}
+// const dataPoint7 = {"date": "2021-01-25", "close": "1.1812"}
+// const dataPoint8 = {"date": "2021-01-26", "close": "1.1849"}
+// const dataPoint9 = {"date": "2021-01-27", "close": "1.1932"}
+// const dataPoint10 = {"date": "2021-01-28", "close": "1.1904"}
+// const dataPoint11 = {"date": "2021-01-29", "close": "1.1912"}
+// const dataPoint12 = {"date": "2021-01-30", "close": "1.1770"}
+// const dataPoint13 = {"date": "2021-01-31", "close": "1.1727"}
+// const dataPoint14 = {"date": "2021-02-01", "close": "1.1718"}
+// const dataPoint15 = {"date": "2021-02-02", "close": "1.1766"}
+// const dataPoint16 = {"date": "2021-02-03", "close": "1.1793"}
+// const dataPoint17 = {"date": "2021-02-04", "close": "1.1768"}
+// const dataPoint18 = {"date": "2021-02-05", "close": "1.1812"}
+// const dataPoint19 = {"date": "2021-02-06", "close": "1.1849"}
+// const dataPoint20 = {"date": "2021-02-07", "close": "1.1932"}
+// const dataPoint21 = {"date": "2021-02-08", "close": "1.1904"}
+// const dataPoint22 = {"date": "2021-02-09", "close": "1.1912"}
+//
+// const dataPointsLess = {
+//     "dataPoints": [dataPoint1, dataPoint2, dataPoint3, dataPoint4, dataPoint5,
+//         dataPoint6, dataPoint7, dataPoint8, dataPoint9, dataPoint10, dataPoint11]
+// };
+// const dataPointsMore = {
+//     "dataPoints": [dataPoint1, dataPoint2, dataPoint3, dataPoint4, dataPoint5, dataPoint6,
+//         dataPoint7, dataPoint8, dataPoint9, dataPoint10, dataPoint11, dataPoint12, dataPoint13, dataPoint14,
+//         dataPoint15, dataPoint16, dataPoint17, dataPoint18, dataPoint19, dataPoint20, dataPoint21, dataPoint22]
+// };
+//
+// router.get('/charts/historic/search', (req, res) => {
+//     let isError = false;
+//     let id = req.query.id;
+//     let max = req.query.max;
+//     let response;
+//
+//     if (id !== undefined && max !== undefined) {
+//
+//         if (max === "false") {
+//             if (id === "IBM") {
+//                 response = dataPointsLess;
+//             } else if (id === "AAPL") {
+//                 response = dataPointsLess;
+//             } else if (id === "MSFT") {
+//                 response = dataPointsLess;
+//             } else if (id === "MS") {
+//                 response = dataPointsLess;
+//             } else if (id === "SAP") {
+//                 response = dataPointsLess;
+//             } else {
+//                 isError = true;
+//                 response = {"error": "STOCK_ID_INVALID"}
+//             }
+//         } else if (max === "true") {
+//             if (id === "IBM") {
+//                 response = dataPointsMore;
+//             } else if (id === "AAPL") {
+//                 response = dataPointsMore;
+//             } else if (id === "MSFT") {
+//                 response = dataPointsMore;
+//             } else if (id === "MS") {
+//                 response = dataPointsMore;
+//             } else if (id === "SAP") {
+//                 response = dataPointsMore;
+//             } else {
+//                 isError = true;
+//                 response = {"error": "STOCK_ID_INVALID"}
+//             }
+//         } else {
+//             isError = true;
+//             response = {"error": "STOCK_ID_INVALID"}
+//         }
+//     } else {
+//         response = {"error": "STOCK_ID_INVALID"}
+//     }
+//     !isError && res.json(response);
+//     isError && res.status(404).json(response);
+// });
+
+router.get('/overview', async (req, res) => {
     let response;
-    if (id === "IBM") {
-        response = ibmStockDetails;
-    } else if (id === "AAPL") {
-        response = appleStockDetails;
-    } else if (id === "MSFT") {
-        response = microsoftStockDetails;
-    } else if (id === "MS") {
-        response = morganStanleyStockDetails;
-    } else if (id === "SAP") {
-        response = sapStockDetails;
-    } else {
-        isError = true;
-        response = {"error": "STOCK_ID_INVALID"}
-    }
-    !isError && res.json(response);
-    isError && res.status(404).json(response);
+    let isError = false;
+
+    let symbol = req.query.id;
+    const stock = await stockModel.find({ "symbol": symbol }, {
+        _id: false,
+        founded: false,
+        intro: false,
+        employees: false,
+        website: false,
+        assembly: false,
+        address: false,
+    });
+    res.json({ "stocks": stock });
 });
 
-const dataPoint1 = {"date": "2021-01-19", "close": "1.1770"}
-const dataPoint2 = {"date": "2021-01-20", "close": "1.1727"}
-const dataPoint3 = {"date": "2021-01-21", "close": "1.1718"}
-const dataPoint4 = {"date": "2021-01-22", "close": "1.1766"}
-const dataPoint5 = {"date": "2021-01-23", "close": "1.1793"}
-const dataPoint6 = {"date": "2021-01-24", "close": "1.1768"}
-const dataPoint7 = {"date": "2021-01-25", "close": "1.1812"}
-const dataPoint8 = {"date": "2021-01-26", "close": "1.1849"}
-const dataPoint9 = {"date": "2021-01-27", "close": "1.1932"}
-const dataPoint10 = {"date": "2021-01-28", "close": "1.1904"}
-const dataPoint11 = {"date": "2021-01-29", "close": "1.1912"}
-const dataPoint12 = {"date": "2021-01-30", "close": "1.1770"}
-const dataPoint13 = {"date": "2021-01-31", "close": "1.1727"}
-const dataPoint14 = {"date": "2021-02-01", "close": "1.1718"}
-const dataPoint15 = {"date": "2021-02-02", "close": "1.1766"}
-const dataPoint16 = {"date": "2021-02-03", "close": "1.1793"}
-const dataPoint17 = {"date": "2021-02-04", "close": "1.1768"}
-const dataPoint18 = {"date": "2021-02-05", "close": "1.1812"}
-const dataPoint19 = {"date": "2021-02-06", "close": "1.1849"}
-const dataPoint20 = {"date": "2021-02-07", "close": "1.1932"}
-const dataPoint21 = {"date": "2021-02-08", "close": "1.1904"}
-const dataPoint22 = {"date": "2021-02-09", "close": "1.1912"}
-
-const dataPointsLess = {
-    "dataPoints": [dataPoint1, dataPoint2, dataPoint3, dataPoint4, dataPoint5,
-        dataPoint6, dataPoint7, dataPoint8, dataPoint9, dataPoint10, dataPoint11]
-};
-const dataPointsMore = {
-    "dataPoints": [dataPoint1, dataPoint2, dataPoint3, dataPoint4, dataPoint5, dataPoint6,
-        dataPoint7, dataPoint8, dataPoint9, dataPoint10, dataPoint11, dataPoint12, dataPoint13, dataPoint14,
-        dataPoint15, dataPoint16, dataPoint17, dataPoint18, dataPoint19, dataPoint20, dataPoint21, dataPoint22]
-};
-
-router.get('/charts/historic/search', (req, res) => {
-    let isError = false;
-    let id = req.query.id;
-    let max = req.query.max;
+router.get('/details', async (req, res) => {
     let response;
+    let isError = false;
 
-    if (id !== undefined && max !== undefined) {
+    let symbol = req.query.id;
+    const stock = await stockModel.find({ "symbol": symbol }, {
+        symbol: true,
+        intro: true,
+        founded: true,
+        website: true,
+        employees: true,
+        address: true,
+        assembly: true,
+    });
+    res.json({ "stocks": stock });
+});
 
-        if (max === "false") {
-            if (id === "IBM") {
-                response = dataPointsLess;
-            } else if (id === "AAPL") {
-                response = dataPointsLess;
-            } else if (id === "MSFT") {
-                response = dataPointsLess;
-            } else if (id === "MS") {
-                response = dataPointsLess;
-            } else if (id === "SAP") {
-                response = dataPointsLess;
-            } else {
-                isError = true;
-                response = {"error": "STOCK_ID_INVALID"}
-            }
-        } else if (max === "true") {
-            if (id === "IBM") {
-                response = dataPointsMore;
-            } else if (id === "AAPL") {
-                response = dataPointsMore;
-            } else if (id === "MSFT") {
-                response = dataPointsMore;
-            } else if (id === "MS") {
-                response = dataPointsMore;
-            } else if (id === "SAP") {
-                response = dataPointsMore;
-            } else {
-                isError = true;
-                response = {"error": "STOCK_ID_INVALID"}
-            }
-        } else {
-            isError = true;
-            response = {"error": "STOCK_ID_INVALID"}
-        }
+router.get('/charts/historic', async (req, res) => {
+    let symbol = req.query.id;
+    let maxParam = req.query.max;
+    let dataPoints;
+    if (maxParam === 'false') {
+        dataPoints = await dataPointModel.find({ "symbol": symbol }, {
+            symbol: false,
+            _id: false
+        });
+        dataPoints = { "dataPoints": dataPoints[0]["dataPoints"].slice(0, 1260) };
     } else {
-        response = {"error": "STOCK_ID_INVALID"}
+        dataPoints = await dataPointModel.find({ "symbol": symbol }, {
+            symbol: false,
+            _id: false
+        });
+        dataPoints = dataPoints[0]
     }
-    !isError && res.json(response);
-    isError && res.status(404).json(response);
+
+    if (dataPoints) {
+        res.json(dataPoints);
+    } else {
+        res.json({ "error": "STOCK_ID_INVALID" })
+    }
+
 });
 
 const keyFigure1 = {"date": "2021-01-19", "pte": "1.587", "PriceToBookRatio": "5.345", "ptg": "1.7978", "eps": "1.789"}
@@ -403,7 +464,7 @@ const keyFiguresMore = {
         keyFigure16, keyFigure17, keyFigure18, keyFigure19, keyFigure20]
 };
 
-router.get('/charts/key_figures/search', (req, res) => {
+router.get('/charts/key_figures', (req, res) => {
     let isError = false;
     let id = req.query.id;
     let max = req.query.max;
@@ -479,7 +540,7 @@ const rating20 = {"date": "2021-02-07", "goal": "345932", "strategy": "sell", "s
 const ratings = [rating1, rating2, rating3, rating4, rating5, rating6, rating7, rating8, rating9, rating10, rating11,
     rating12, rating13, rating14, rating15, rating16, rating17, rating18, rating19, rating20];
 
-router.get('/charts/analysts/search', (req, res) => {
+router.get('/charts/analysts', (req, res) => {
     let isError = false;
     let id = req.query.id;
     let response;
@@ -502,7 +563,7 @@ router.get('/charts/analysts/search', (req, res) => {
 
 });
 
-router.get('/charts/dividend/search', async (req, res) => { //fixme: sometimes inconsistent
+router.get('/charts/dividend', async (req, res) => { //fixme: sometimes inconsistent
     let id = req.query.id;
     let max = req.query.max;
 
@@ -555,7 +616,7 @@ router.get('/charts/dividend/search', async (req, res) => { //fixme: sometimes i
 
 });
 
-router.get('/news/search', async (req, res) => {
+router.get('/news', async (req, res) => {
     var date = new Date();
     date.setDate(date.getDate() - 3);
     var threeDaysAgoString = date.toISOString().slice(0, 10);
@@ -604,7 +665,7 @@ router.get('/news/search', async (req, res) => {
         })
 });
 
-router.get('/stock/balanceSheet/search', async (req, res) => {
+router.get('/stock/balanceSheet', async (req, res) => {
     var id = req.query.id;
 
     let query = {};
