@@ -417,88 +417,88 @@ router.get('/charts/historic', async (req, res) => {
 
 });
 
-const keyFigure1 = {"date": "2021-01-19", "pte": "1.587", "PriceToBookRatio": "5.345", "ptg": "1.7978", "eps": "1.789"}
-const keyFigure2 = {"date": "2021-01-20", "pte": "1.678", "PriceToBookRatio": "5.645", "ptg": "1.789", "eps": "1.789"}
-const keyFigure3 = {"date": "2021-01-21", "pte": "1.786", "PriceToBookRatio": "5.789", "ptg": "1.7897", "eps": "1.97"}
-const keyFigure4 = {"date": "2021-01-22", "pte": "1.543", "PriceToBookRatio": "5.34", "ptg": "1.798", "eps": "1.678"}
-const keyFigure5 = {"date": "2021-01-23", "pte": "1.687", "PriceToBookRatio": "5.435", "ptg": "1.978", "eps": "1.6798"}
-const keyFigure6 = {"date": "2021-01-24", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6798"}
-const keyFigure7 = {"date": "2021-01-25", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6789"}
-const keyFigure8 = {"date": "2021-01-26", "pte": "1.456", "PriceToBookRatio": "5.435", "ptg": "1.97", "eps": "1.6789"}
-const keyFigure9 = {"date": "2021-01-27", "pte": "1.54", "PriceToBookRatio": "5.45", "ptg": "1.978", "eps": "1.956"}
-const keyFigure10 = {"date": "2021-01-28", "pte": "1.456", "PriceToBookRatio": "5.786", "ptg": "1.789", "eps": "1.769"}
-const keyFigure11 = {"date": "2021-01-29", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.7698"}
-const keyFigure12 = {"date": "2021-01-30", "pte": "1.687", "PriceToBookRatio": "5.45", "ptg": "1.997", "eps": "1.67"}
-const keyFigure13 = {"date": "2021-01-31", "pte": "1.546", "PriceToBookRatio": "5.645", "ptg": "1.798", "eps": "1.6789"}
-const keyFigure14 = {"date": "2021-02-01", "pte": "1.768", "PriceToBookRatio": "5.786", "ptg": "1.789", "eps": "1.7689"}
-const keyFigure15 = {"date": "2021-02-02", "pte": "1.354", "PriceToBookRatio": "5.456", "ptg": "1.78", "eps": "1.7698"}
-const keyFigure16 = {"date": "2021-02-03", "pte": "1.678", "PriceToBookRatio": "5.245", "ptg": "1.789", "eps": "1.7698"}
-const keyFigure17 = {"date": "2021-02-04", "pte": "1.876", "PriceToBookRatio": "5.786", "ptg": "1.978", "eps": "1.7689"}
-const keyFigure18 = {"date": "2021-02-05", "pte": "1.645", "PriceToBookRatio": "5.94", "ptg": "1.789", "eps": "1.97"}
-const keyFigure19 = {"date": "2021-02-06", "pte": "1.786", "PriceToBookRatio": "5.78", "ptg": "1.978", "eps": "1.7"}
-const keyFigure20 = {"date": "2021-02-07", "pte": "1.456", "PriceToBookRatio": "5.456", "ptg": "1.789", "eps": "1.68"}
-
-const keyFiguresLess = {
-    "keyFigures": [keyFigure1, keyFigure2, keyFigure3, keyFigure4, keyFigure5, keyFigure6,
-        keyFigure7, keyFigure8, keyFigure9, keyFigure10]
-};
-const keyFiguresMore = {
-    "keyFigures": [keyFigure1, keyFigure2, keyFigure3, keyFigure4, keyFigure5, keyFigure6,
-        keyFigure7, keyFigure8, keyFigure9, keyFigure10,
-        keyFigure11, keyFigure12, keyFigure13, keyFigure14, keyFigure15,
-        keyFigure16, keyFigure17, keyFigure18, keyFigure19, keyFigure20]
-};
-
-router.get('/charts/key_figures', (req, res) => {
-    let isError = false;
-    let id = req.query.id;
-    let max = req.query.max;
-    let response;
-
-    if (id !== undefined && max !== undefined) {
-
-        if (max === "false") {
-            if (id === "IBM") {
-                response = keyFiguresLess;
-            } else if (id === "AAPL") {
-                response = keyFiguresLess;
-            } else if (id === "MSFT") {
-                response = keyFiguresLess;
-            } else if (id === "MS") {
-                response = keyFiguresLess;
-            } else if (id === "SAP") {
-                response = keyFiguresLess;
-            } else {
-                isError = true;
-                response = {"error": "STOCK_ID_INVALID"}
-            }
-        } else if (max === "true") {
-            if (id === "IBM") {
-                response = keyFiguresMore;
-            } else if (id === "AAPL") {
-                response = keyFiguresMore;
-            } else if (id === "MSFT") {
-                response = keyFiguresMore;
-            } else if (id === "MS") {
-                response = keyFiguresMore;
-            } else if (id === "SAP") {
-                response = keyFiguresMore;
-            } else {
-                isError = true;
-                response = {"error": "STOCK_ID_INVALID"}
-            }
-        } else {
-            isError = true;
-            response = {"error": "STOCK_ID_INVALID"}
-        }
-    } else {
-        response = {"error": "STOCK_ID_INVALID"}
-    }
-
-    !isError && res.json(response);
-    isError && res.status(404).json(response);
-
-});
+// const keyFigure1 = {"date": "2021-01-19", "pte": "1.587", "PriceToBookRatio": "5.345", "ptg": "1.7978", "eps": "1.789"}
+// const keyFigure2 = {"date": "2021-01-20", "pte": "1.678", "PriceToBookRatio": "5.645", "ptg": "1.789", "eps": "1.789"}
+// const keyFigure3 = {"date": "2021-01-21", "pte": "1.786", "PriceToBookRatio": "5.789", "ptg": "1.7897", "eps": "1.97"}
+// const keyFigure4 = {"date": "2021-01-22", "pte": "1.543", "PriceToBookRatio": "5.34", "ptg": "1.798", "eps": "1.678"}
+// const keyFigure5 = {"date": "2021-01-23", "pte": "1.687", "PriceToBookRatio": "5.435", "ptg": "1.978", "eps": "1.6798"}
+// const keyFigure6 = {"date": "2021-01-24", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6798"}
+// const keyFigure7 = {"date": "2021-01-25", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6789"}
+// const keyFigure8 = {"date": "2021-01-26", "pte": "1.456", "PriceToBookRatio": "5.435", "ptg": "1.97", "eps": "1.6789"}
+// const keyFigure9 = {"date": "2021-01-27", "pte": "1.54", "PriceToBookRatio": "5.45", "ptg": "1.978", "eps": "1.956"}
+// const keyFigure10 = {"date": "2021-01-28", "pte": "1.456", "PriceToBookRatio": "5.786", "ptg": "1.789", "eps": "1.769"}
+// const keyFigure11 = {"date": "2021-01-29", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.7698"}
+// const keyFigure12 = {"date": "2021-01-30", "pte": "1.687", "PriceToBookRatio": "5.45", "ptg": "1.997", "eps": "1.67"}
+// const keyFigure13 = {"date": "2021-01-31", "pte": "1.546", "PriceToBookRatio": "5.645", "ptg": "1.798", "eps": "1.6789"}
+// const keyFigure14 = {"date": "2021-02-01", "pte": "1.768", "PriceToBookRatio": "5.786", "ptg": "1.789", "eps": "1.7689"}
+// const keyFigure15 = {"date": "2021-02-02", "pte": "1.354", "PriceToBookRatio": "5.456", "ptg": "1.78", "eps": "1.7698"}
+// const keyFigure16 = {"date": "2021-02-03", "pte": "1.678", "PriceToBookRatio": "5.245", "ptg": "1.789", "eps": "1.7698"}
+// const keyFigure17 = {"date": "2021-02-04", "pte": "1.876", "PriceToBookRatio": "5.786", "ptg": "1.978", "eps": "1.7689"}
+// const keyFigure18 = {"date": "2021-02-05", "pte": "1.645", "PriceToBookRatio": "5.94", "ptg": "1.789", "eps": "1.97"}
+// const keyFigure19 = {"date": "2021-02-06", "pte": "1.786", "PriceToBookRatio": "5.78", "ptg": "1.978", "eps": "1.7"}
+// const keyFigure20 = {"date": "2021-02-07", "pte": "1.456", "PriceToBookRatio": "5.456", "ptg": "1.789", "eps": "1.68"}
+//
+// const keyFiguresLess = {
+//     "keyFigures": [keyFigure1, keyFigure2, keyFigure3, keyFigure4, keyFigure5, keyFigure6,
+//         keyFigure7, keyFigure8, keyFigure9, keyFigure10]
+// };
+// const keyFiguresMore = {
+//     "keyFigures": [keyFigure1, keyFigure2, keyFigure3, keyFigure4, keyFigure5, keyFigure6,
+//         keyFigure7, keyFigure8, keyFigure9, keyFigure10,
+//         keyFigure11, keyFigure12, keyFigure13, keyFigure14, keyFigure15,
+//         keyFigure16, keyFigure17, keyFigure18, keyFigure19, keyFigure20]
+// };
+//
+// router.get('/charts/key_figures', (req, res) => {
+//     let isError = false;
+//     let id = req.query.id;
+//     let max = req.query.max;
+//     let response;
+//
+//     if (id !== undefined && max !== undefined) {
+//
+//         if (max === "false") {
+//             if (id === "IBM") {
+//                 response = keyFiguresLess;
+//             } else if (id === "AAPL") {
+//                 response = keyFiguresLess;
+//             } else if (id === "MSFT") {
+//                 response = keyFiguresLess;
+//             } else if (id === "MS") {
+//                 response = keyFiguresLess;
+//             } else if (id === "SAP") {
+//                 response = keyFiguresLess;
+//             } else {
+//                 isError = true;
+//                 response = {"error": "STOCK_ID_INVALID"}
+//             }
+//         } else if (max === "true") {
+//             if (id === "IBM") {
+//                 response = keyFiguresMore;
+//             } else if (id === "AAPL") {
+//                 response = keyFiguresMore;
+//             } else if (id === "MSFT") {
+//                 response = keyFiguresMore;
+//             } else if (id === "MS") {
+//                 response = keyFiguresMore;
+//             } else if (id === "SAP") {
+//                 response = keyFiguresMore;
+//             } else {
+//                 isError = true;
+//                 response = {"error": "STOCK_ID_INVALID"}
+//             }
+//         } else {
+//             isError = true;
+//             response = {"error": "STOCK_ID_INVALID"}
+//         }
+//     } else {
+//         response = {"error": "STOCK_ID_INVALID"}
+//     }
+//
+//     !isError && res.json(response);
+//     isError && res.status(404).json(response);
+//
+// });
 
 
 const rating1 = {"date": "2021-01-19", "goal": "345770", "strategy": "buy", "source": "investing.com"}
