@@ -89,6 +89,7 @@ async function getStockOverview(symbol, api_key) {
                         "assembly": "",
                         "picture": "",
                         "assetType": data.AssetType,
+                        "peRatio": data.PERatio
                     },
                 },
                 {
@@ -109,6 +110,7 @@ async function getImage(symbol, api_key) {
     await fetch(url)
         .then(response => response.json())
         .then(data => {
+            console.log(data)
             console.log(data.weburl)
             let stock = stockModel.findOneAndUpdate(
                 { symbol: symbol },
