@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const fs = require('fs');
 const readline = require('readline');
 const stockModel = require("../models/stock");
+const balanceSheetModel = require("../models/balanceSheet");
 const db = require('../db/worker_index.js');
 dotenv.config();
 
@@ -26,7 +27,8 @@ module.exports.updateAllStocks = async function () {
             // await getTimeIntervalPerformance(symbol, api_key_alphavantage);
             // await getYearlyPerformance(symbol, api_key_alphavantage);
             // await getImage(symbol, api_key_finhub);
-            await sleep(1200)
+            await getBalanceSheet(symbol, api_key_alphavantage);
+            await sleep(3000)
         }
         rl.close()
         return
@@ -215,6 +217,35 @@ async function getTimeIntervalPerformance(symbol, api_key) {
         .catch(err => {
             // console.log(err)
         })
+}
+
+async function getBalanceSheet(symbol, api_key) {
+    let url = 'https://www.alphavantage.co/query?function=BALANCE_SHEET' +
+        '&symbol=' + symbol +
+        '&apikey='+ api_key;
+
+    await fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            let balanceSheet = balanceSheetModel.findOneAndUpdate(
+                { symbol: data['symbol'] },
+                {
+                    $set:
+                        {
+                            "totalAssets": data['annualReports'][0]['totalAssets'],
+                            "totalLiabilities": data['annualReports'][0]['totalLiabilities'],
+                        },
+                },
+                {
+                    upsert: true,
+                    new: true
+                },
+                function (err, _stockInstance) {
+                    if (err)
+                        console.log(err)
+                });
+        })
+        .catch(err => console.log(err))
 }
 
 function sleep(ms) {
