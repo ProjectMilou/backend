@@ -983,7 +983,8 @@
  *       type: string
  *   responses:
  *      '200':
- *          description: Success.*      '404':
+ *          description: Success.*
+ *      '404':
  *          description: Either portfolio ID is not correct or there is no data for the stocks
  *
  * /analytics/dividends/{portfolioId}:
