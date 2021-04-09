@@ -227,7 +227,7 @@ async function getBalanceSheet(symbol, api_key) {
     await fetch(url)
         .then(response => response.json())
         .then(data => {
-            let balanceSheet = balanceSheetModel.findOneAndUpdate(
+            let balanceSheet = await balanceSheetModel.findOneAndUpdate(
                 { symbol: data['symbol'] },
                 {
                     $set:
