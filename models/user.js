@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const bcrypt = require('bcrypt');
+const {encrypt, decrypt, hash} = require('../encryption/encryption')
 
 // adapted from https://www.digitalocean.com/community/tutorials/api-authentication-with-json-web-tokensjwt-and-passport
 
@@ -67,14 +67,14 @@ UserSchema.pre(
     'save',
     async function(next) {
         const user = this;
-        this.password = await bcrypt.hash(this.password, 10);
+        this.password = await hash(this.password);
         next();
     }
 );
 
 UserSchema.methods.isValidPassword = async function(password) {
     const user = this;
-    return await bcrypt.compare(password, user.password);
+    return (await hash(password) === user.password);
 }
 
 const User = mongoose.model("User", UserSchema);
