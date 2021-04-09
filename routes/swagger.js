@@ -763,7 +763,7 @@
  *    '400':
  *      description: Invalid
  *
- * /stocks/details/search?id={id}:
+ * /stocks/details?id={id}:
  *  get:
  *   summary: Returns details of a stock with given id.
  *   description: Returns details of a stock with given id.
@@ -785,7 +785,7 @@
  *    '400':
  *      description: Invalid
  *
- * /stocks/charts/historic/search?id={id}&max={max}:
+ * /stocks/charts/historic?id={id}&max={max}:
  *  get:
  *   summary: Get the performance of the stock from beginning or last 5 years.
  *   description: Get the performance of the stock from beginning or last 5 years.
@@ -815,7 +815,7 @@
  *    '400':
  *      description: Invalid
  *
- * /stocks/charts/key_figures/search?id={id}&max={max}:
+ * /stocks/charts/key_figures?id={id}&max={max}:
  *  get:
  *   summary: Get the key figures of the stock from beginning or last 5 years.
  *   description: Get the key figures of the stock from beginning or last 5 years.
@@ -845,7 +845,7 @@
  *    '400':
  *      description: Invalid
  *
- * /stocks/charts/dividend/search?id={id}&max={max}:
+ * /stocks/charts/dividend?id={id}&max={max}:
  *  get:
  *   summary: Get the key figures of the stock from beginning or last 5 years.
  *   description: Get the key figures of the stock from beginning or last 5 years.
@@ -879,7 +879,7 @@
  *    '400':
  *      description: Invalid
  *
- * /stocks/charts/analysts/search?id={id}:
+ * /stocks/charts/analysts?id={id}:
  *  get:
  *   summary: Get the analysts recommendation.
  *   description: Get the analysts recommendation.
@@ -906,7 +906,7 @@
  *    '400':
  *      description: Invalid
  *
- * /stocks/news/search?id={id}:
+ * /stocks/news?id={id}:
  *  get:
  *   summary: Returns news list with given stock id.
  *   description: Returns news list with given stock id.
