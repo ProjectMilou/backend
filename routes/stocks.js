@@ -705,7 +705,7 @@ router.get('/charts/key_figures', async (req, res) => {
             let counter = 0;
 
             quarterlyEarnings.forEach(quarterlyEarning => {
-                if (counter < 5*4) keyFigures.push({"keyFigure": quarterlyEarning})
+                if (counter < 5*4) keyFigures.push(quarterlyEarning)
                 if (max !== 'true') counter++;
             })
             res.json({"symbol": symbol, "keyFigures" : keyFigures});
