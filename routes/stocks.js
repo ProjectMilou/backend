@@ -552,6 +552,16 @@ router.get('/charts/dividend', async (req, res) => { //fixme: sometimes inconsis
     let id = req.query.id;
     let max = req.query.max;
 
+    let query = {};
+    query["symbol"] = id;
+    let stocks = await stockModel.find(query, '-_id');
+    let name;
+    try {
+        name = stocks[0]["name"];
+    } catch (e) {
+        res.status(404).json({"error": "STOCK_ID_INVALID"});
+    }
+
     let urlOverview = 'https://www.alphavantage.co/query?' +
         'function=OVERVIEW' +
         '&symbol=' + id +
