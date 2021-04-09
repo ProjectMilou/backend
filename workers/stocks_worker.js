@@ -9,7 +9,7 @@ dotenv.config();
 
 module.exports.updateAllStocks = async function () {
 
-    let api_key_alphavantage = process.env.alpha_ventage_key;
+    let api_key_alphavantage = process.env.alpha_vantage_key;
     let api_key_finhub = process.env.finnhub_key;
 
     const fileStream = fs.createReadStream('./public/assets/company_symbols.txt');
@@ -22,13 +22,12 @@ module.exports.updateAllStocks = async function () {
 
     const startFetching = async () => {
         for await (const symbol of rl) {
-            console.log(symbol)
-            await getStockOverview(symbol, api_key_alphavantage);
+            // await getStockOverview(symbol, api_key_alphavantage);
             // await getTimeIntervalPerformance(symbol, api_key_alphavantage);
             // await getYearlyPerformance(symbol, api_key_alphavantage);
             // await getImage(symbol, api_key_finhub);
             await getBalanceSheet(symbol, api_key_alphavantage);
-            await sleep(3000)
+            await sleep(1200)
         }
         rl.close()
         return
@@ -227,7 +226,8 @@ async function getBalanceSheet(symbol, api_key) {
     await fetch(url)
         .then(response => response.json())
         .then(data => {
-            let balanceSheet = await balanceSheetModel.findOneAndUpdate(
+            console.log(data['symbol']);
+            let balanceSheet = balanceSheetModel.findOneAndUpdate(
                 { symbol: data['symbol'] },
                 {
                     $set:
