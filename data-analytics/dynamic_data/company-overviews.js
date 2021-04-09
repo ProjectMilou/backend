@@ -9,11 +9,12 @@ async function getCompanyOverviewBySymbol(symbol) {
         return undefined;
     }
     const companyOverview = {};
-    // TODO: Other fields have to be included: Asset Type, PERatios
+    // TODO: Other fields have to be included: PERatios
     companyOverview["Country"] = data.country;
     companyOverview["Currency"] = data.currency;
     companyOverview["Industry"] = data.industry;
     companyOverview["DividendYield"] = data.div;
+    companyOverview["AssetType"] = data.assetType;
     return companyOverview;
 }
 

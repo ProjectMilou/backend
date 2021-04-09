@@ -20,10 +20,10 @@ const DE = require("./javascript-analysis/debt-equity")
 function backtest(portfolio, stocksData, fromDate, toDate) {
     const namesToSymbols = extractNamesToSymbolsMapping(portfolio)
     const filteredStocksData = filterStocksDataForBackTesting(stocksData, fromDate, toDate)
+    
     const MDD = backtesting.mdd(portfolio, filteredStocksData, namesToSymbols);
     const BWY = backtesting.bestAndWorstYear(portfolio, filteredStocksData, namesToSymbols);
     const FPV = backtesting.finalPortfolioBalance(portfolio, filteredStocksData, namesToSymbols);
-
     const CAGR = backtesting.compoundAnnualGrowthRate(portfolio, filteredStocksData, namesToSymbols);
     const standardDeviation = backtesting.standardDeviation(portfolio, filteredStocksData, namesToSymbols);
     const sharpeRatio = backtesting.sharpeRatio(portfolio, filteredStocksData, namesToSymbols);
@@ -41,11 +41,13 @@ function backtest(portfolio, stocksData, fromDate, toDate) {
 }
 
 function calculateDiversification(portfolio, symbolCompanyOverviews) {
-    return diversification.getDiversification(portfolio, symbolCompanyOverviews);
+    const namesToSymbols = extractNamesToSymbolsMapping(portfolio)
+    return diversification.getDiversification(portfolio, symbolCompanyOverviews, namesToSymbols);
 }
 
 function calculatePERatios(portfolio, symbolCompanyOverviews) {
-    return priceEarningRatio.getPriceEarningRatio(portfolio, symbolCompanyOverviews);
+    const namesToSymbols = extractNamesToSymbolsMapping(portfolio)
+    return priceEarningRatio.getPriceEarningRatio(portfolio, symbolCompanyOverviews, namesToSymbols);
 }
 
 function calculateDividendYields(portfolio, symbolCompanyOverviews) {
@@ -69,7 +71,8 @@ function calculateGainAndLoss(portfolio, stocksData) {
 }
 
 function calculateDebtEquity(portfolio, balanceSheetPerSymbol) {
-    return DE.debtEquity(portfolio, balanceSheetPerSymbol);
+    const namesToSymbols = extractNamesToSymbolsMapping(portfolio)
+    return DE.debtEquity(portfolio, balanceSheetPerSymbol, namesToSymbols);
 }
 
 function extractNamesToSymbolsMapping(portfolio) {

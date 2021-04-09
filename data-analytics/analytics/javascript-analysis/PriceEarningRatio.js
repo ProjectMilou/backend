@@ -1,4 +1,3 @@
-const { namesToSymbols } = require("../../static/names-symbols-mapping")
 /**
  * Returns the price-earning and average  ratio from the company overview
  * regarding the quantity of stocks bought
@@ -9,7 +8,7 @@ const { namesToSymbols } = require("../../static/names-symbols-mapping")
  * averagePEration: {averagePEration: totalPEratio}
  * }}
  */
-function getPriceEarningRatio(portfolio, symbolCompanyOverview) {
+function getPriceEarningRatio(portfolio, symbolCompanyOverview, namesToSymbols) {
     let peRation = {};
     let totalPEratio = 0;
     let symbolsToQuantity = {};

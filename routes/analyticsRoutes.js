@@ -33,7 +33,7 @@ router.get('/backtest/:id', async (req, res) => {
     toDate = new Date(toDate)
     if(fromDate.toString() === 'Invalid Date' || toDate.toString() === 'Invalid Date') {
         response.error = "Dates are not in the correct format"
-        return res.json(response)
+        return res.status(404).json(response)
     }
     const analyzedData = analytics.backtest(currPortfolio, currStocksData, fromDate, toDate)
     response.success = analyzedData;
@@ -58,15 +58,17 @@ router.get('/backtest/:id', async (req, res) => {
     const currPortfolio = await portfolioFetcher.findPortfolioByID(id)
     if (!currPortfolio) {
         response.error="Portfolio with ID: " + id + " was not found!"
-        return res.json(response)
+        return res.status(404).json(response)
     }
     const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
     const currCompanyOverviews = await companyOverviews.getCompanyOverviewForSymbols(currSymbols);
     if (!currCompanyOverviews) {
         response.error = "No data for all the stocks in the given portfolio."
-        return res.json(response)
+        return res.status(404).json(response)
     }
     
+    const analyzedData = analytics.calculateDiversification(currPortfolio, currCompanyOverviews);
+    response.success = analyzedData;
 
     return res.json(response)
     // Extract parameters from request path
@@ -88,7 +90,7 @@ router.get('/backtest/:id', async (req, res) => {
     const currPortfolio = await portfolioFetcher.findPortfolioByID(id)
     if (!currPortfolio) {
         response.error="Portfolio with ID: " + id + " was not found!"
-        return res.json(response)
+        return res.status(404).json(response)
     }
     response.success = currPortfolio;
     
@@ -96,7 +98,7 @@ router.get('/backtest/:id', async (req, res) => {
     const currCompanyOverviews = await companyOverviews.getCompanyOverviewForSymbols(currSymbols);
     if (!currCompanyOverviews) {
         response.error = "No data for all the stocks in the given portfolio."
-        return res.json(response)
+        return res.status(404).json(response)
     }
 
     const analyzedData = analytics.calculateDividendYields(currPortfolio, currCompanyOverviews)
@@ -122,12 +124,12 @@ router.get('/backtest/:id', async (req, res) => {
     const currPortfolio = await portfolioFetcher.findPortfolioByID(id)
     if (!currPortfolio) {
         response.error="Portfolio with ID: " + id + " was not found!"
-        return res.json(response)
+        return res.status(404).json(response)
     }
     response.success = currPortfolio;
     
 
-    return res.json(response)
+    return res.status(404).json(response)
     // Extract parameters from request path
 
     // Fetch company overviews data from DB, if data does not exist there or it's not enough
@@ -146,7 +148,7 @@ router.get('/backtest/:id', async (req, res) => {
     const currPortfolio = await portfolioFetcher.findPortfolioByID(id)
     if (!currPortfolio) {
         response.error="Portfolio with ID: " + id + " was not found!"
-        return res.json(response)
+        return res.status(404).json(response)
     }
     response.success = currPortfolio;
     
@@ -154,7 +156,7 @@ router.get('/backtest/:id', async (req, res) => {
     const currStocksData = await stockTimeSeries.getStocksDataForSymbols(currSymbols);
     if(!currStocksData) {
         response.error = "No stock time series data for some of the stocks"
-        return res.json(response);
+        return res.status(404).json(response)
     }
     const analyzedData = analytics.calculateGainAndLoss(currPortfolio, currStocksData);
     response.success= analyzedData;
@@ -178,14 +180,14 @@ router.get('/backtest/:id', async (req, res) => {
     const currPortfolio = await portfolioFetcher.findPortfolioByID(id)
     if (!currPortfolio) {
         response.error="Portfolio with ID: " + id + " was not found!"
-        return res.json(response)
+        return res.status(404).json(response)
     }
     
     const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
     const currStocksData = await stockTimeSeries.getStocksDataForSymbols(currSymbols);
     if(!currStocksData) {
         response.error = "No stock time series data for some of the stocks"
-        return res.json(response);
+        return res.status(404).json(response)
     }
     const analyzedData = analytics.calculateSDAndCorrelationAndVolatility(currPortfolio, currStocksData);
     response.success= analyzedData;
@@ -209,14 +211,14 @@ router.get('/backtest/:id', async (req, res) => {
     const currPortfolio = await portfolioFetcher.findPortfolioByID(id)
     if (!currPortfolio) {
         response.error="Portfolio with ID: " + id + " was not found!"
-        return res.json(response)
+        return res.status(404).json(response)
     }
     
     const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
     const currStocksData = await stockTimeSeries.getStocksDataForSymbols(currSymbols);
     if(!currStocksData) {
         response.error = "No stock time series data for some of the stocks"
-        return res.json(response);
+        return res.status(404).json(response)
     }
     const analyzedData = analytics.calculateSharpeRatio(currPortfolio, currStocksData);
     response.success= analyzedData;
@@ -239,12 +241,12 @@ router.get('/backtest/:id', async (req, res) => {
     const currPortfolio = await portfolioFetcher.findPortfolioByID(id)
     if (!currPortfolio) {
         response.error="Portfolio with ID: " + id + " was not found!"
-        return res.json(response)
+        return res.status(404).json(response)
     }
     response.success = currPortfolio;
     
 
-    return res.json(response)
+    return res.status(404).json(response)
     // Extract parameters from request path
 
     // Fetch company overviews data from DB, if data does not exist there or it's not enough

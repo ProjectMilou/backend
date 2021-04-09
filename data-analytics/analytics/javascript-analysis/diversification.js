@@ -1,5 +1,3 @@
-const { namesToSymbols } = require("../../static/names-symbols-mapping")
-
 /**
  * Returns the distribution of a portfolio over different 
  * industries, countries, currencies, asset classes and sectors.
@@ -13,7 +11,7 @@ const { namesToSymbols } = require("../../static/names-symbols-mapping")
  * sectors: {sector: number}
  * }} Diversification among different criterion
  */
-function getDiversification(portfolio, symbolCompanyOverview) {
+function getDiversification(portfolio, symbolCompanyOverview, namesToSymbols) {
     let symbolsToQuantity = {};
 
     let totalQuantity = 0;
