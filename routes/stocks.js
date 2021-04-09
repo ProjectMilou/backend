@@ -589,7 +589,7 @@ router.get('/charts/dividend', async (req, res) => { //fixme: sometimes inconsis
                             }
                         )
                     }
-                    if (max === 'false') counter++;
+                    if (max !== 'true') counter++;
                 })
 
             });
@@ -671,6 +671,44 @@ router.get('/balanceSheet', async (req, res) => {
         .then(response => response.json())
         .then(data => {
             res.json(data);
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(404).json(err);
+        })
+});
+
+router.get('/charts/key_figures', async (req, res) => {
+    var id = req.query.id;
+    var max = req.query.max;
+
+    let query = {};
+    query["symbol"] = id;
+    let stocks = await stockModel.find(query, '-_id');
+    let name;
+    try {
+        name = stocks[0]["name"];
+    } catch (e) {
+        res.status(404).json({"error": "STOCK_ID_INVALID"});
+    }
+
+    let url = 'https://www.alphavantage.co/query?function=EARNINGS' +
+        '&symbol=' + id +
+        '&apikey=' + process.env.alpha_vantage_key;
+
+    await fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            let symbol = data["symbol"];
+            let quarterlyEarnings = data["quarterlyEarnings"];
+            let keyFigures = []
+            let counter = 0;
+
+            quarterlyEarnings.forEach(quarterlyEarning => {
+                if (counter < 5*4) keyFigures.push({"keyFigure": quarterlyEarning})
+                if (max !== 'true') counter++;
+            })
+            res.json({"symbol": symbol, "keyFigures" : keyFigures});
         })
         .catch(err => {
             console.log(err);
