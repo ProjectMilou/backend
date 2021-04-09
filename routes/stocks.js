@@ -555,12 +555,12 @@ router.get('/charts/dividend', async (req, res) => { //fixme: sometimes inconsis
     let urlOverview = 'https://www.alphavantage.co/query?' +
         'function=OVERVIEW' +
         '&symbol=' + id +
-        '&apikey=' + process.env.alpha_ventage_key;
+        '&apikey=' + process.env.alpha_vantage_key;
 
     let urlCashFlow = 'https://www.alphavantage.co/query?' +
         'function=CASH_FLOW' +
         '&symbol=' + id +
-        '&apikey=' + process.env.alpha_ventage_key;
+        '&apikey=' + process.env.alpha_vantage_key;
 
     let settings = {method: "Get"};
 
@@ -665,7 +665,7 @@ router.get('/balanceSheet', async (req, res) => {
 
     let url = 'https://www.alphavantage.co/query?function=BALANCE_SHEET' +
         '&symbol=' + id +
-        '&apikey=' + process.env.alpha_ventage_key;
+        '&apikey=' + process.env.alpha_vantage_key;
 
     await fetch(url)
         .then(response => response.json())
