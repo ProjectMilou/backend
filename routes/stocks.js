@@ -120,7 +120,6 @@ const ibmStockDetails = {
     "address": "One New Orchard Road, Armonk, NY, United States, 10504",
     "assembly": "2021-04-19"
 }
-
 const appleStockDetails = {
     "symbol": "AAPL",
     "intro": "Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide.",
@@ -139,7 +138,6 @@ const microsoftStockDetails = {
     "address": "Kensel Street, Boston, United States, 10504",
     "assembly": "2021-06-05"
 }
-
 const morganStanleyStockDetails = {
     "symbol": "MS",
     "intro": "Morgan Stanley, a financial holding company, provides various financial products and services to corporations, governments, financial institutions worldwide.",
@@ -149,7 +147,6 @@ const morganStanleyStockDetails = {
     "address": "One New Worshe Road, Armark, NY, United States, 10514",
     "assembly": "2021-05-19"
 }
-
 const sapStockDetails = {
     "symbol": "SAP",
     "intro": "SAP, software services company",
@@ -365,7 +362,7 @@ router.get('/overview', async (req, res) => {
     let isError = false;
 
     let symbol = req.query.id;
-    const stock = await stockModel.find({ "symbol": symbol }, {
+    const stock = await stockModel.find({"symbol": symbol}, {
         _id: false,
         founded: false,
         intro: false,
@@ -374,7 +371,7 @@ router.get('/overview', async (req, res) => {
         assembly: false,
         address: false,
     });
-    res.json({ "stocks": stock });
+    res.json({"stocks": stock});
 });
 
 router.get('/details', async (req, res) => {
@@ -382,7 +379,7 @@ router.get('/details', async (req, res) => {
     let isError = false;
 
     let symbol = req.query.id;
-    const stock = await stockModel.find({ "symbol": symbol }, {
+    const stock = await stockModel.find({"symbol": symbol}, {
         symbol: true,
         intro: true,
         founded: true,
@@ -391,7 +388,7 @@ router.get('/details', async (req, res) => {
         address: true,
         assembly: true,
     });
-    res.json({ "stocks": stock });
+    res.json({"stocks": stock});
 });
 
 router.get('/charts/historic', async (req, res) => {
@@ -399,13 +396,13 @@ router.get('/charts/historic', async (req, res) => {
     let maxParam = req.query.max;
     let dataPoints;
     if (maxParam === 'false') {
-        dataPoints = await dataPointModel.find({ "symbol": symbol }, {
+        dataPoints = await dataPointModel.find({"symbol": symbol}, {
             symbol: false,
             _id: false
         });
-        dataPoints = { "dataPoints": dataPoints[0]["dataPoints"].slice(0, 1260) };
+        dataPoints = {"dataPoints": dataPoints[0]["dataPoints"].slice(0, 1260)};
     } else {
-        dataPoints = await dataPointModel.find({ "symbol": symbol }, {
+        dataPoints = await dataPointModel.find({"symbol": symbol}, {
             symbol: false,
             _id: false
         });
@@ -415,7 +412,7 @@ router.get('/charts/historic', async (req, res) => {
     if (dataPoints) {
         res.json(dataPoints);
     } else {
-        res.json({ "error": "STOCK_ID_INVALID" })
+        res.json({"error": "STOCK_ID_INVALID"})
     }
 
 });
@@ -425,23 +422,11 @@ const keyFigure2 = {"date": "2021-01-20", "pte": "1.678", "PriceToBookRatio": "5
 const keyFigure3 = {"date": "2021-01-21", "pte": "1.786", "PriceToBookRatio": "5.789", "ptg": "1.7897", "eps": "1.97"}
 const keyFigure4 = {"date": "2021-01-22", "pte": "1.543", "PriceToBookRatio": "5.34", "ptg": "1.798", "eps": "1.678"}
 const keyFigure5 = {"date": "2021-01-23", "pte": "1.687", "PriceToBookRatio": "5.435", "ptg": "1.978", "eps": "1.6798"}
-const keyFigure6 = {
-    "date": "2021-01-24",
-    "pte": "1.45654",
-    "PriceToBookRatio": "5.345",
-    "ptg": "1.789",
-    "eps": "1.6798"
-}
+const keyFigure6 = {"date": "2021-01-24", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6798"}
 const keyFigure7 = {"date": "2021-01-25", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6789"}
 const keyFigure8 = {"date": "2021-01-26", "pte": "1.456", "PriceToBookRatio": "5.435", "ptg": "1.97", "eps": "1.6789"}
 const keyFigure9 = {"date": "2021-01-27", "pte": "1.54", "PriceToBookRatio": "5.45", "ptg": "1.978", "eps": "1.956"}
-const keyFigure10 = {
-    "date": "2021-01-28",
-    "pte": "1.45654",
-    "PriceToBookRatio": "5.786",
-    "ptg": "1.789",
-    "eps": "1.769"
-}
+const keyFigure10 = {"date": "2021-01-28", "pte": "1.456", "PriceToBookRatio": "5.786", "ptg": "1.789", "eps": "1.769"}
 const keyFigure11 = {"date": "2021-01-29", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.7698"}
 const keyFigure12 = {"date": "2021-01-30", "pte": "1.687", "PriceToBookRatio": "5.45", "ptg": "1.997", "eps": "1.67"}
 const keyFigure13 = {"date": "2021-01-31", "pte": "1.546", "PriceToBookRatio": "5.645", "ptg": "1.798", "eps": "1.6789"}
@@ -665,7 +650,7 @@ router.get('/news', async (req, res) => {
         })
 });
 
-router.get('/stock/balanceSheet', async (req, res) => {
+router.get('/balanceSheet', async (req, res) => {
     var id = req.query.id;
 
     let query = {};
