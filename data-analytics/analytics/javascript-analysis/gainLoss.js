@@ -1,4 +1,3 @@
-const { namesToSymbols } = require("../../static/names-symbols-mapping")
 /**
  * Calculates the total and per stock gain or loss by comparing the buying price
  * and the price at which the stock can be sold today
@@ -7,7 +6,7 @@ const { namesToSymbols } = require("../../static/names-symbols-mapping")
  * @returns {{totalGainLoss: number, symbol:{symbolGainLoss: number}}} The gain or loss for a portfolio.
  * 
  */
-function gainOrLossLastYearOrMonth(portfolio, stocksData) {
+function gainOrLossLastYearOrMonth(portfolio, stocksData, namesToSymbols) {
     let symbolsToQuantity = {};
 
     let stockEntryQuote = {

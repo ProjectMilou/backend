@@ -1,14 +1,13 @@
 const stats = require("stats-lite");
 const calculateCorrelation = require("calculate-correlation");
 const backtesting = require('../backtesting/backtesting.js');
-const { namesToSymbols } = require("../../static/names-symbols-mapping")
 //needs daily data
-function standardDeviationAndCorrelation(portfolio, stocksData) {
+function standardDeviationAndCorrelation(portfolio, stocksData, namesToSymbols) {
     //may need to find starting date and combine all dates
     //need to use dailyinfo
     //either only use data available in all or use last updated value
     //only uses the start and enddate that is available in all stocks
-    const usedDates = backtesting.getDaysAvailableInAll(portfolio, stocksData);
+    const usedDates = backtesting.getDaysAvailableInAll(portfolio, stocksData, namesToSymbols);
     const numDays = usedDates.length;
     let valuesOfStock = {};
     let correlations = {};
@@ -54,7 +53,7 @@ function standardDeviationAndCorrelation(portfolio, stocksData) {
         volatility[stock.name] = stats.stdev(valuesOfStock[stock.name]) * Math.sqrt(252);
     });
 
-    const standardDeviation = backtesting.standardDeviation(portfolio, stocksData);
+    const standardDeviation = backtesting.standardDeviation(portfolio, stocksData, namesToSymbols);
     const portfolioVolatility = standardDeviation * Math.sqrt(252);
     return AnnualizedVolatilityAndCorrelation = {
         volatility,
@@ -66,27 +65,21 @@ function standardDeviationAndCorrelation(portfolio, stocksData) {
 
 //needs daily data
 //weights the return by volatility and in comparison of the riskfreerate
-function sharpeRatioStocks(portfolio, stocksData) {
-    const usedDates = backtesting.getDaysAvailableInAll(portfolio, stocksData)
-    const volatility = standardDeviationAndCorrelation(portfolio, stocksData).volatility;
+function sharpeRatioStocks(portfolio, stocksData, namesToSymbols) {
+    const usedDates = backtesting.getDaysAvailableInAll(portfolio, stocksData, namesToSymbols)
+    const volatility = standardDeviationAndCorrelation(portfolio, stocksData, namesToSymbols).volatility;
     const riskFreeRate = backtesting.getRiskFreeRateOnDate(usedDates[usedDates.length - 1]) / 100;
-    const returnOfStocks = returnAnnual(portfolio, stocksData);
-    const data = {
-        volatility,
-        riskFreeRate,
-        returnOfStocks
-    }
-    console.log(data);
+    const returnOfStocks = returnAnnual(portfolio, stocksData, namesToSymbols);
     let sharpeRatio = {};
     portfolio.securities.forEach((stock) => {
         sharpeRatio[stock.name] = (returnOfStocks[stock.name] - riskFreeRate) / volatility[stock.name];
 
     });
-    return { sharpeRatioPerSymbol: sharpeRatio, portfolioSharpeRatio: backtesting.sharpeRatio(portfolio, stocksData) };
+    return { sharpeRatioPerSymbol: sharpeRatio, portfolioSharpeRatio: backtesting.sharpeRatio(portfolio, stocksData, namesToSymbols) };
 }
 
-function returnAnnual(portfolio, stocksData) {
-    const usedDates = backtesting.getDaysAvailableInAll(portfolio, stocksData);
+function returnAnnual(portfolio, stocksData, namesToSymbols) {
+    const usedDates = backtesting.getDaysAvailableInAll(portfolio, stocksData, namesToSymbols);
     const startDate = usedDates[usedDates.length - 1];
     const endDate = usedDates[0];
     const yearDif = (new Date(endDate) - new Date(startDate)) / 1000 / 60 / 60 / 24 / 365;

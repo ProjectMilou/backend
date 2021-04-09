@@ -6,7 +6,6 @@ const stats = require("stats-lite");
 
 const datesInterest = fs.readFileSync("./data-analytics/static/Rates.json");
 const rates = JSON.parse(datesInterest);
-const { namesToSymbols } = require("../../static/names-symbols-mapping")
 /**
  *It should return the finalPortfolioBalance for a given timespan
  *Core idea: of all symbols of the two given years
@@ -16,9 +15,9 @@ const { namesToSymbols } = require("../../static/names-symbols-mapping")
  * @param {{symbol: {date: {"1. open": "20.6350", "2. high": "71.7300", "3. low": "70.5200","4. close": "71.4900", "5. volume": "114923"}}}} stocksData Stocks data according to symbols
  * @returns {{totalBalance:number}}depending whaether the final sum is negative or positive returns sum or 0
  */
-function finalPortfolioBalance(portfolio, stocksData) {
+function finalPortfolioBalance(portfolio, stocksData, namesToSymbols) {
     const [symbolToQuantity, symbols] = getSymbolsAndMappingToQuantity(
-        portfolio
+        portfolio, namesToSymbols
     );
 
     let years = getStocksDateAccordingToYears(stocksData);
@@ -38,7 +37,6 @@ function finalPortfolioBalance(portfolio, stocksData) {
         totalEndYear +=
             stocksData[symbol][dateForEndSymbol]["4. close"] *
             symbolToQuantity[symbol];
-        console.log(`${dateForStartSymbol} AND ${dateForEndSymbol} : ${symbol}`)
     });
     totalBalance = totalEndYear - totalStartYear;
     if (totalBalance < 0) {
@@ -59,9 +57,9 @@ function finalPortfolioBalance(portfolio, stocksData) {
  * @returns {{MDDMaxToMin: number,MDDInitialToMin: number, dateMax: string, dateMin: string, maxValue: number, minValue: number, initialValue: number}}
  * An object containing the MDD value, maximum and minimum value and the corresponding dates.
  */
-function mdd(portfolio, stocksData) {
+function mdd(portfolio, stocksData, namesToSymbols) {
     const [symbolToQuantity, symbols] = getSymbolsAndMappingToQuantity(
-        portfolio
+        portfolio, namesToSymbols
     );
     let aggregatedMax = -9999999;
     let aggregatedMin = 9999999;
@@ -159,9 +157,9 @@ function mdd(portfolio, stocksData) {
  * @returns {{bestYear: {changeBest: number, yearBest: string, growthRateBest: number}, worstYear: {changeWorst: number, yearWorst: string, growthRateWorst: number}}}
  * An object containing data about the best and worst year
  */
-function bestAndWorstYear(portfolio, stocksData) {
+function bestAndWorstYear(portfolio, stocksData, namesToSymbols) {
     const [symbolToQuantity, symbols] = getSymbolsAndMappingToQuantity(
-        portfolio
+        portfolio, namesToSymbols
     );
 
     let years = getStocksDateAccordingToYears(stocksData);
@@ -229,7 +227,7 @@ function bestAndWorstYear(portfolio, stocksData) {
 }
 //standard deviation from average daily returns
 //made for daily data
-function standardDeviation(portfolio, stocksData) {
+function standardDeviation(portfolio, stocksData, namesToSymbols) {
     const usedDates = Object.keys(
         stocksData[namesToSymbols[portfolio.securities[0].name]]
     );
@@ -265,23 +263,23 @@ function standardDeviation(portfolio, stocksData) {
     return standardDeviation;
 }
 //need daily data
-function sharpeRatio(portfolio, stocksData) {
-    const usedDates = getDaysAvailableInAll(portfolio, stocksData);
+function sharpeRatio(portfolio, stocksData, namesToSymbols) {
+    const usedDates = getDaysAvailableInAll(portfolio, stocksData, namesToSymbols);
     const startDate = usedDates[usedDates.length - 1];
     const endDate = usedDates[0];
 
-    const returnRate = compoundAnnualGrowthRate(portfolio, stocksData);
+    const returnRate = compoundAnnualGrowthRate(portfolio, stocksData, namesToSymbols);
     //saves riskfreeRate on Backtesting start
     const riskFreeRateStartDate = getRiskFreeRateOnDate(startDate) / 100;
     //calcs time period of Backtesting
-    const volatility = standardDeviation(portfolio, stocksData) * Math.sqrt(252);
+    const volatility = standardDeviation(portfolio, stocksData, namesToSymbols) * Math.sqrt(252);
 
     return (returnRate - riskFreeRateStartDate) / volatility;
 }
 //growth per year
-function compoundAnnualGrowthRate(portfolio, stocksData) {
+function compoundAnnualGrowthRate(portfolio, stocksData, namesToSymbols) {
     //checks if the date is available in all stocks
-    const usedDates = getDaysAvailableInAll(portfolio, stocksData);
+    const usedDates = getDaysAvailableInAll(portfolio, stocksData, namesToSymbols);
     const startDate = usedDates[usedDates.length - 1];
     const endDate = usedDates[0];
     let startValue = 0;
@@ -303,7 +301,7 @@ function compoundAnnualGrowthRate(portfolio, stocksData) {
 
 
 //returns all dates available for every Stock
-function getDaysAvailableInAll(portfolio, stocksData) {
+function getDaysAvailableInAll(portfolio, stocksData, namesToSymbols) {
     let usedDates = Object.keys(
         stocksData[namesToSymbols[portfolio.securities[0].name]]
     );
@@ -350,7 +348,7 @@ function latestDefinedDateForRiskFree() {
  * @returns {[{symbol: number}, [string]]} [symbolToQuantity, symbols]
  *
  */
-function getSymbolsAndMappingToQuantity(portfolio) {
+function getSymbolsAndMappingToQuantity(portfolio, namesToSymbols) {
     let symbolToQuantity = {};
     let symbols = [];
 

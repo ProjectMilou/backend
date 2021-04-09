@@ -1077,6 +1077,9 @@
  *          description: Success.
  *          schema:
  *              $ref: '#/definitions/backtestResult'
+ *      '404':
+ *          description: Portfolio ID incorrect, Date format incorrect, no data for the stocks.
+ * 
  * /analytics/diversification/{portfolioId}:
  *  get:
  *   description: Calculates the weighted distribution of stocks in a portfolio among different criterion
@@ -1094,6 +1097,9 @@
  *   responses:
  *      '200':
  *          description: Success. 
+ *      '404':
+ *          description: Either portfolio ID is not correct or there is no data for the stocks
+ * 
  * /analytics/dividends/{portfolioId}:
  *  get:
  *   description: Calculates the weighted average dividend and also returns the dividends per stock
@@ -1111,6 +1117,9 @@
  *   responses:
  *      '200':
  *          description: Success.
+ *      '404':
+ *          description: Either portfolio ID is not correct or there is no data for the stocks
+ * 
  * /analytics/peratios/{portfolioId}:
  *  get:
  *   description: Calculates the weighted average of PERatio of a portfolio and returns also the PERatios per stock
@@ -1128,6 +1137,9 @@
  *   responses:
  *      '200':
  *          description: Success.
+ *      '404':
+ *          description: Either portfolio ID is not correct or there is no data for the stocks
+ * 
  * /analytics/gainLoss/{portfolioId}:
  *  get:
  *   description: Calculates the weighted average of Gain or Loss of a portfolio and returns also the gain or loss per stock
@@ -1145,6 +1157,9 @@
  *   responses:
  *      '200':
  *          description: Success.
+ *      '404':
+ *          description: Either portfolio ID is not correct or there is no data for the stocks
+ * 
  * /analytics/volatilityCorrelation/{portfolioId}:
  *  get:
  *   description: Calculates the volatility and correlation of stocks within a portfolio
@@ -1162,6 +1177,9 @@
  *   responses:
  *      '200':
  *          description: Success.
+ *      '404':
+ *          description: Either portfolio ID is not correct or there is no data for the stocks
+ * 
 * /analytics/sharpeRatio/{portfolioId}:
  *  get:
  *   description: Calculates the sharpe ratio of stocks within a portfolio
@@ -1179,6 +1197,9 @@
  *   responses:
  *      '200':
  *          description: Success.
+ *      '404':
+ *          description: Either portfolio ID is not correct or there is no data for the stocks
+ * 
  * /analytics/debtEquity/{portfolioId}:
  *  get:
  *   description: Calculates the weighted average of debt/equity of a portfolio and returns also the debt/equity per stock
@@ -1196,4 +1217,6 @@
  *   responses:
  *      '200':
  *          description: Success.
+ *      '404':
+ *          description: Either portfolio ID is not correct or there is no data for the stocks
 */
