@@ -11,19 +11,26 @@ async function findPortfolioByID(id) {
     const reformattedPortfolio = {
         securities: []
     }
-    if (returnedPortfolio) {
-        returnedPortfolio.portfolio.positions.forEach(position => {
-            const currSecurity = {};
-            currSecurity["name"] = position.stock.name;
-            currSecurity["symbol"] = position.stock.symbol;
-            currSecurity["entryQuote"] = position.stock.entryQuote;
-            currSecurity["quoteDate"] = position.stock.quoteDate;
-            currSecurity["quantityNominal"] = position.qty;
-            currSecurity["isin"] = position.stock.isin;
-            reformattedPortfolio.securities.push(currSecurity)
-        });
-    }
+    returnedPortfolio.portfolio.positions.forEach(position => {
+        const currSecurity = {};
+        currSecurity["name"] = position.stock.name;
+        currSecurity["symbol"] = position.stock.symbol;
+        currSecurity["entryQuote"] = position.stock.entryQuote;
+        currSecurity["quoteDate"] = position.stock.quoteDate;
+        currSecurity["quantityNominal"] = position.qty;
+        currSecurity["isin"] = position.stock.isin;
+        reformattedPortfolio.securities.push(currSecurity)
+    });
     return reformattedPortfolio;
 }
 
+function extractSymbolsFromPortfolio(portfolio) {
+    const symbols = [];
+    portfolio.securities.forEach(security => {
+        symbols.push(security.symbol);
+    })
+    return symbols;
+}
+
 exports.findPortfolioByID = findPortfolioByID;
+exports.extractSymbolsFromPortfolio = extractSymbolsFromPortfolio;

@@ -1,4 +1,3 @@
-const { namesToSymbols } = require("../../static/names-symbols-mapping")
 /**
  *  Debt/Equity = Total Liabilities / Total Shareholders Equity
  *  `WHERE`
@@ -9,7 +8,7 @@ const { namesToSymbols } = require("../../static/names-symbols-mapping")
  * Returns the debt/equity for each stock in the portfolio, the total debt/equity and
  * the average debt/equity of the portfolio
  */
-function debtEquity(portfolio, balanceSheetPerSymbol) {
+function debtEquity(portfolio, balanceSheetPerSymbol, namesToSymbols) {
     let symbolsToQuantity = {};
 
     let totalQuantity = 0;
