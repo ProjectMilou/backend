@@ -12,7 +12,7 @@ const init = async () => {
     const getUserRoute = require('./routes/user');
     const getPortfolioRoute = require('./routes/portfolio');
     const getStocksRoute = require('./routes/stocks');
-    const getStockRoute = require('./routes/stock');
+    // const getStockRoute = require('./routes/stock');
     const swaggerJsDoc = require('swagger-jsdoc');
     const swaggerUi = require('swagger-ui-express');
     require('./auth/auth');
@@ -54,7 +54,7 @@ const init = async () => {
     app.use('/user', getUserRoute);
     app.use('/portfolio', getPortfolioRoute);
     app.use('/stocks', getStocksRoute);
-    app.use('/stock', getStockRoute);
+    // app.use('/stock', getStockRoute);
     app.use('/analytics', getAnalyticsRoute);
 
     app.listen(process.env.PORT || 3000);
