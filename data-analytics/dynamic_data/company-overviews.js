@@ -15,6 +15,7 @@ async function getCompanyOverviewBySymbol(symbol) {
     companyOverview["Industry"] = data.industry;
     companyOverview["DividendYield"] = data.div;
     companyOverview["AssetType"] = data.assetType;
+    companyOverview["PERatio"] = data.peRatio;
     return companyOverview;
 }
 

@@ -9,7 +9,7 @@
  * }}
  */
 function getPriceEarningRatio(portfolio, symbolCompanyOverview, namesToSymbols) {
-    let peRation = {};
+    let peRatios = {};
     let totalPEratio = 0;
     let symbolsToQuantity = {};
 
@@ -26,7 +26,7 @@ function getPriceEarningRatio(portfolio, symbolCompanyOverview, namesToSymbols) 
     });
     Object.keys(symbolCompanyOverview).forEach((symbol) => {
 
-        peRation[symbol] = symbolCompanyOverview[symbol].PERatio;
+        peRatios[symbol] = symbolCompanyOverview[symbol].PERatio;
 
         totalPEratio += symbolCompanyOverview[symbol].PERatio *
             symbolsToQuantity[symbol];
@@ -35,7 +35,7 @@ function getPriceEarningRatio(portfolio, symbolCompanyOverview, namesToSymbols) 
     totalPEratio = totalPEratio;
 
     return {
-        peRation,
+        peRatios,
         averagePEration: totalPEratio,
     };
 }
