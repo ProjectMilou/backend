@@ -228,7 +228,7 @@
  *      properties:
  *          id:
  *              type: string
- *          qty: 
+ *          qty:
  *              type: number
  *  portfolioStock:
  *      type: object
@@ -237,7 +237,7 @@
  *              type: string
  *          name:
  *              type: string
- *          qty: 
+ *          qty:
  *              type: number
  *  risk:
  *    type: object
@@ -300,7 +300,7 @@
  *          type: number
  *      totalReturnPercent:
  *          type: number
- * 
+ *
  *  bestYear:
  *      properties:
  *          changeBest:
@@ -309,7 +309,7 @@
  *              type: string
  *          growthRateBest:
  *              type: number
- * 
+ *
  *  worstYear:
  *      properties:
  *          changeWorst:
@@ -318,7 +318,7 @@
  *              type: string
  *          growthRateWorst:
  *              type: number
- * 
+ *
  *  backtestResult:
  *      type: object
  *      properties:
@@ -328,25 +328,25 @@
  *              type: number
  *           dateMax:
  *              type: string
- *           dateMin: 
+ *           dateMin:
  *              type: string
- *           maxValue: 
+ *           maxValue:
  *              type: number
- *           minValue: 
+ *           minValue:
  *              type: number
- *           initialValue: 
+ *           initialValue:
  *              type: number
  *           bestYear:
  *               $ref: '#/definitions/bestYear'
  *           worstYear:
  *               $ref: '#/definitions/worstYear'
- *           finalPortfolioBalance: 
+ *           finalPortfolioBalance:
  *              type: number
  *           CAGR:
  *              type: number
  *           standardDeviation:
  *              type: number
- *           sharpeRatio: 
+ *           sharpeRatio:
  *              type: number
  *
  * /portfolio/list:
@@ -430,7 +430,7 @@
  *               type: array
  *               items:
  *                  type: array
- *                  items: 
+ *                  items:
  *                      type: number
  *                  minItems: 2
  *                  maxItems: 2
@@ -447,7 +447,7 @@
  *   get:
  *     tags:
  *     - portfolio
- *     summary: Gets the portfolio name and quantity of a specified stock for all portfolios of the current user. 
+ *     summary: Gets the portfolio name and quantity of a specified stock for all portfolios of the current user.
  *     description: This information is displayed to the user when adding a stock to his portfolios.
  *     operationId: portfolioStock
  *     produces:
@@ -465,7 +465,7 @@
  *              isin:
  *                type: string
  *     responses:
- *       200: 
+ *       200:
  *         description: successful operation
  *         schema:
  *              type: array
@@ -478,13 +478,13 @@
  *   put:
  *     tags:
  *     - portfolio
- *     summary: Modify stock quantity 
+ *     summary: Modify stock quantity
  *     description: Modifies a stock's quantity within multiple portfolios simultaneously.
- *     
+ *
  *      If the specified quantity for a portfolio is 0, the position in the specified portfolio is deleted if it exists.
  *      If there is no position in the specified portfolio, a new position with the specified quantity is created.
  *      Otherwise, the position in the specified portfolio is updated to match the specified quantity.
- * 
+ *
  *      Positions not included in the request remain unchanged.
  *     operationId: modifyStocks
  *     produces:
@@ -505,7 +505,7 @@
  *             items:
  *               $ref: '#/definitions/portfolioQty'
  *     responses:
- *       200: 
+ *       200:
  *         description: successful operation
  *       404:
  *         description: PORTFOLIO_ID_INVALID
@@ -515,7 +515,7 @@
  *         description: QTY_INVALID/ISIN_INVALID/REAL_PORTFOLIO_MODIFICATION
  *         schema:
  *           $ref: '#/definitions/error'
- * 
+ *
  * /portfolio/create:
  *   post: 
  *     tags:
@@ -931,125 +931,12 @@
  *    '400':
  *      description: Invalid
  *
- *
- * /user/register:
- *  post:
- *   description: Confirms, that the token is correct, which has been sent to users email address.
- *   summary: Confirmation of token.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Token was accepted. Users account is now registered.
- *    '404':
- *      description: Token was not accepted.
- *
- * /user/login:
- *  post:
- *   description: Checks if email and password are correct. sends back a token that needs to be passed in the header of each user-relevant request.
- *   summary: Confirming email and password.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Password accepted.
- *    '401':
- *      description: Password is not correct or email is not registered.
- *
- * /user/profile:
- *  get:
- *   description: Sends back account information about user profile.
- *   summary: Sends account information.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Accepted.
- *    '401':
- *      description: Unauthorized. Token not valid.
- *
- * /user/forgot:
- *  post:
- *   description: If user has forgotten password, a token will be sent to email, that has to be confirmed.
- *   summary: Requesting token when password was forgotten.
- *   tags:
- *    - user
- *   responses:
- *    '202':
- *      description: Email exists, token will be sent.
- *    '401':
- *      description: Not foundMail was not found.
- *
- * /user/reset/confirm:
- *  post:
- *   description: Confirms token that was sent to user-email, when a user has forgotten the password to his account.
- *   summary: Confirming forgotten password token.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Token was correct, password can now be reset.
- *    '404':
- *      description: Not found. Token was not found.
- *
- * /user/edit:
- *  put:
- *   description: Edit user account information.
- *   summary: Edit user account information.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Token was correct, user-account will be edited as specified.
- *    '404':
- *      description: Not found, Token was not found.
- *
- * /user/delete:
- *  delete:
- *   description: Delete user-account.
- *   summary: Delete user-account.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Accepted, user-account will be deleted.
- *    '404':
- *      description: Not found, Token was not found.
- *
- * /user/bank:
- *  get:
- *   description: Sends back banks, that fit the passed String.
- *   summary: Sends back banks, that fit the passed String.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Accepted.
- *  post:
- *   description: adds a bank-connection.
- *   summary: Adding a bank-connection.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Accepted, bank-connection added.
- *    '404':
- *      description: Rejected, Token was not found.
- *  delete:
- *   description: bank-connection with id will be deleted.
- *   summary: Deleting  bank-connection.
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Accepted, bank-connection deleted.
- * 
  * /analytics/backtest/{portfolioId}?{fromDate}&{toDate}:
  *  get:
  *   description: Backtests a real or a virtual portfolio for a given period of time
  *   summary: Backtests a real or a virtual portfolio for a given period of time
  *   produces:
- *      - application/json  
+ *      - application/json
  *   tags:
  *    - analytics
  *   parameters:
@@ -1071,7 +958,7 @@
  *   requestbody:
  *        portfolioId: The id of the Portfolio
  *        startDate: The start date for the backtest
- *        endDate: The end date for the backtest    
+ *        endDate: The end date for the backtest
  *   responses:
  *      '200':
  *          description: Success.
@@ -1079,7 +966,7 @@
  *              $ref: '#/definitions/backtestResult'
  *      '404':
  *          description: Portfolio ID incorrect, Date format incorrect, no data for the stocks.
- * 
+ *
  * /analytics/diversification/{portfolioId}:
  *  get:
  *   description: Calculates the weighted distribution of stocks in a portfolio among different criterion
@@ -1096,10 +983,9 @@
  *       type: string
  *   responses:
  *      '200':
- *          description: Success. 
- *      '404':
+ *          description: Success.*      '404':
  *          description: Either portfolio ID is not correct or there is no data for the stocks
- * 
+ *
  * /analytics/dividends/{portfolioId}:
  *  get:
  *   description: Calculates the weighted average dividend and also returns the dividends per stock
@@ -1119,7 +1005,7 @@
  *          description: Success.
  *      '404':
  *          description: Either portfolio ID is not correct or there is no data for the stocks
- * 
+ *
  * /analytics/peratios/{portfolioId}:
  *  get:
  *   description: Calculates the weighted average of PERatio of a portfolio and returns also the PERatios per stock
@@ -1139,7 +1025,7 @@
  *          description: Success.
  *      '404':
  *          description: Either portfolio ID is not correct or there is no data for the stocks
- * 
+ *
  * /analytics/gainLoss/{portfolioId}:
  *  get:
  *   description: Calculates the weighted average of Gain or Loss of a portfolio and returns also the gain or loss per stock
@@ -1159,7 +1045,7 @@
  *          description: Success.
  *      '404':
  *          description: Either portfolio ID is not correct or there is no data for the stocks
- * 
+ *
  * /analytics/volatilityCorrelation/{portfolioId}:
  *  get:
  *   description: Calculates the volatility and correlation of stocks within a portfolio
@@ -1179,7 +1065,7 @@
  *          description: Success.
  *      '404':
  *          description: Either portfolio ID is not correct or there is no data for the stocks
- * 
+ *
 * /analytics/sharpeRatio/{portfolioId}:
  *  get:
  *   description: Calculates the sharpe ratio of stocks within a portfolio
@@ -1199,7 +1085,7 @@
  *          description: Success.
  *      '404':
  *          description: Either portfolio ID is not correct or there is no data for the stocks
- * 
+ *
  * /analytics/debtEquity/{portfolioId}:
  *  get:
  *   description: Calculates the weighted average of debt/equity of a portfolio and returns also the debt/equity per stock
