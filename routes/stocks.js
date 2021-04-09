@@ -604,4 +604,32 @@ router.get('/news/search', async (req, res) => {
         })
 });
 
+router.get('/stock/balanceSheet/search', async (req, res) => {
+    var id = req.query.id;
+
+    let query = {};
+    query["symbol"] = id;
+    let stocks = await stockModel.find(query, '-_id');
+    let name;
+    try {
+        name = stocks[0]["name"];
+    } catch (e) {
+        res.status(404).json({"error": "STOCK_ID_INVALID"});
+    }
+
+    let url = 'https://www.alphavantage.co/query?function=BALANCE_SHEET' +
+        '&symbol=' + id +
+        '&apikey=' + process.env.alpha_ventage_key;
+
+    await fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            res.json({data});
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(404).json(err);
+        })
+});
+
 module.exports = router
