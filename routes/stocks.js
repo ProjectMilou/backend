@@ -610,7 +610,7 @@ router.get('/charts/dividend', async (req, res) => { //fixme: sometimes inconsis
                         dataPoints.push(
                             {
                                 "date": annualReport['fiscalDateEnding'],
-                                "div": annualReport['dividendPayout'] / annualReport['netIncome']
+                                "div": String(annualReport['dividendPayout'] / annualReport['netIncome'])
                             }
                         )
                     }
