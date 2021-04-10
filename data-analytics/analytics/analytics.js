@@ -29,12 +29,12 @@ function backtest(portfolio, stocksData, fromDate, toDate) {
     const sharpeRatio = backtesting.sharpeRatio(portfolio, filteredStocksData, namesToSymbols);
 
     const backTestedPortfolio = {
-        ...MDD,
         ...BWY,
         ...FPV,
         CAGR,
         standardDeviation,
-        sharpeRatio
+        sharpeRatio,
+        ...MDD
     }
 
     return backTestedPortfolio

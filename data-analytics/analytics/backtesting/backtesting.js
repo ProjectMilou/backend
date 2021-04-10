@@ -98,6 +98,7 @@ function mdd(portfolio, stocksData, namesToSymbols) {
             symbolToQuantity[symbol];
     });
 
+    let portfolioValues = []
     // Main logic
     for (const date of aggregatedDates) {
         let aggregatedSumOfAllStocks = 0;
@@ -117,6 +118,7 @@ function mdd(portfolio, stocksData, namesToSymbols) {
                 aggregatedSumOfAllStocks += lastPriceForSymbol[symbol];
             }
         });
+        portfolioValues.push([new Date(date).getTime(), aggregatedSumOfAllStocks])
 
         // Simply check if this is a maximum or a minimum value based on the results untill now
         if (aggregatedMax < aggregatedSumOfAllStocks) {
@@ -145,7 +147,8 @@ function mdd(portfolio, stocksData, namesToSymbols) {
         dateMin,
         maxValue: aggregatedMax.toFixed(4),
         minValue: aggregatedMin.toFixed(4),
-        initialValue: initialValue.toFixed(4)
+        initialValue: initialValue.toFixed(4),
+        portfolioValues
     };
 }
 
