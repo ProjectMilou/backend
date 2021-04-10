@@ -573,36 +573,72 @@ router.get('/stock/:isin', (req, res) => { // get portfolioId, name, qty of stoc
 });
 
 
-router.put('/stock/:isin', (req, res) => {
+router.put('/stock/:isin', (req, res) => {// get portfolioId, name, qty of stock
+    // request: {
+    // "modifications": [
+    //     {
+    //     "id": "string",
+    //     "qty": 0
+    //     }
+    // ]
+    // }
     var isin = req.params.isin;
 
     var response = {};
-    //? = %3F
-    Portfolio.find({}, 'id portfolio.overview.name portfolio.positions', function (err, portf) {
-        if (err) {
-            handle_database_error(res, err)
+    var modifications = req.body.modifications;
+    if (modifications.length == 0) {
+        res.json(response)
+    }
+
+    for (var j = 0; j < modifications.length; j++) {
+        var id = modifications[j].id
+        var qty = modifications[j].qty
+        if (!is_valid_id(id)) {
+            response.error = "PORTFOLIO_ID_INVALID"
+            if (j == 0)
+                res.status(404).json(response)
         } else {
-            response.portfolios = portf.map(({ id: pfId, portfolio: { overview: { name: pfName }, positions: arrayStocks } }) => {
-                var positionsWithCurrentISIN = arrayStocks.filter((position) => {
-                    return idBelongsToThisPosition(isin, position)
-                }) // the resulting array should have length 1
-                var qty;
-                if (positionsWithCurrentISIN.length == 0) {
-                    qty = 0
+            // find Portfolio
+            Portfolio.findOne({ "id": id, "userId": userId }, (err, portfolio) => {
+                var currentIndex = j;
+                if (err) {
+                    handle_database_error(res, err)
+                } else if (!portfolio) {
+                    response.error = "PORTFOLIO_ID_INVALID"
+                    if (!res.headersSent)
+                        res.status(404).json(response)
+                } else if (!portfolio.portfolio.overview.virtual) {
+                    response.error = "REAL_PORTFOLIO_MODIFICATION"
+                    if (!res.headersSent)
+                        res.status(400).json(response)
                 } else {
-                    qty = positionsWithCurrentISIN[0].qty
+                    var success = true;
+
+                    var portfolioId = isin;
+                    if (!is_valid_qty(qty)) {
+                        response.error = "QTY_INVALID"
+                        if (!res.headersSent)
+                            res.status(400).json(response)
+                        success = false;
+                    } else {
+                        modifyPortfolio(portfolio, portfolioId, qty)
+                    }
                 }
-                var result = {
-                    "id": pfId,
-                    "name": pfName,
-                    "qty": qty
-                };
-                return result;
+                if (success) {// all modifications done
+                    portfolio.save(
+                        function (err, portfolio) {
+                            if (err) handle_database_error(res, err)
+                            else if (!res.headersSent)
+                                res.json(response)// success
+                        }
+                    )
+
+                }
             })
-            res.json(response);
         }
-    })
+    }
 });
+
 
 
 // is not in the documentation any more
