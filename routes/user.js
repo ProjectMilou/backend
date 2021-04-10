@@ -399,8 +399,13 @@ router.post('/reset/forgot', async (req, res) => {
 
 
         // todo generate token
+        //  token must include user information as well as timestamp
+
+
         // todo safe in UserTokenModel -> specify type = "PASSWORD_RESET"
         // todo send email
+        // todo delete all old tokens with PASSWORD_RESET
+
         res.status(201).json({message: "Reset link was sent to email."});
     }
 
