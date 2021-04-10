@@ -278,75 +278,67 @@ router.get('/profile', passport.authenticate('jwt',{session: false}), async (req
 });
 
 /**
- * swagger
- * /user/forgot:
- *  post:
- *   description: If user has forgotten password, a token will be sent to email, that has to be confirmed.
- *   summary:
- *   tags:
- *    - user
- *   responses:
- *    '202':
- *      description: Email exists, token will be sent.
- *    '401':
- *      description: Not foundMail was not found.
+ * @swagger
+ *  /user/reset/forgot:
+ *      post:
+ *          description: User has forgotten password. A token will be generated, put in a link (as parameter) and sent to users email.
+ *          summary: starts reset process for forgotten passwords.
+ *          tags:
+ *            - user
+ *          parameters:
+ *            - in: body
+ *              name: email
+ *              schema:
+ *                  type: object
+ *                  properties:
+ *                      email:
+ *                          type: string
+ *                  example:
+ *                      email: test@getmilou.de
+ *          produces:
+ *            - application/json
+ *          consumes:
+ *            - application/json
+ *          responses:
+ *              201:
+ *                  description: OK, token sent.
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          message:
+ *                              type: string
+ *                      example:
+ *                          message: Reset link was sent to email.
+ *              404:
+ *                  description: Specified email not found.
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          message:
+ *                              type: string
+ *                      example:
+ *                          message: Specified email not found.
  */
-
-// forgot password
-router.post('/forgot', async (req, res) => {
+router.post('/reset/forgot', async (req, res) => {
 
     // if user exists: send token to mail and store it at userTokens
     if(await UserModel.exists({email: req.body.email})){
-        res.status(202).json({message: "confirm your email to proceed"});
+
 
         // todo generate token
-        // todo safe in UserTokenModel
+        // todo safe in UserTokenModel -> specify type = "PASSWORD_RESET"
         // todo send email
-
+        res.status(201).json({message: "Reset link was sent to email."});
     }
 
     // if user does not exist: 404
     else{
-        res.status(404).json({message: "mail not found"});
+        res.status(404).json({message: "Specified email not found."});
     }
 });
 
-/**
- * swagger
- * /user/reset/confirm:
- *  post:
- *   description: Confirms token that was sent to user-email, when a user has forgotten the password to his account.
- *   summary:
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Token was correct, password can now be reset.
- *    '404':
- *      description: Not found. Token was not found.
- */
-router.post('/reset/confirm/:id/:token', (req, res) => {
 
-    // todo check if token is valid
-    // todo enable reset for password
 
-    // fixme still mocked
-    if(req.body.uuid === "8e733aeb-8bf8-485c-92b7-62ca4463db3c") {
-        res.statusCode = 200;
-        res.json({
-            message: 'mail confirmed'
-        });
-    }
-
-    // case 8e733aeb-8bf8-485c-92b7-62ca4463db3c: 200, body: mail of the assigned user
-    // case token not found: 404
-    else {
-        res.statusCode = 404;
-        res.json({
-            message: 'failed'
-        });
-    }
-});
 
 /**
  * @swagger
