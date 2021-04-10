@@ -4,6 +4,7 @@ const passport = require('passport');
 const genToken = require('../auth/auth');
 const UserModel = require("../models/user");
 const UserTokenModel = require ("../models/userToken")
+const {hash, encrypt, decrypt} = require("../encryption/encryption");
 
 const router = express.Router();
 
@@ -55,7 +56,6 @@ const router = express.Router();
  *              example:
  *                  message: Signup failed - mail has got an account already
 */
-
 router.post(
     '/register',
     passport.authenticate('register', { session: false }),
@@ -100,7 +100,6 @@ router.post(
  *              example:
  *                  message: Failed
  */
-
 router.post('/confirm/:id/:token', async (req, res) => {
     const token = req.params.token;
     const id = req.params.id;
@@ -125,7 +124,7 @@ router.post('/confirm/:id/:token', async (req, res) => {
  * /user/login:
  *  post:
  *    description: Checks if email and password are correct. sends back a token that needs to be passed in the header of each user-relevant request.
- *    summary:
+ *    summary: Login of a user
  *    tags:
  *    - user
  *    parameters:
@@ -277,77 +276,6 @@ router.get('/profile', passport.authenticate('jwt',{session: false}), async (req
 });
 
 /**
- * swagger
- * /user/forgot:
- *  post:
- *   description: If user has forgotten password, a token will be sent to email, that has to be confirmed.
- *   summary:
- *   tags:
- *    - user
- *   responses:
- *    '202':
- *      description: Email exists, token will be sent.
- *    '401':
- *      description: Not foundMail was not found.
- */
-
-// forgot password
-router.post('/forgot', async (req, res) => {
-
-    // if user exists: send token to mail and store it at userTokens
-    if(await UserModel.exists({email: req.body.email})){
-        res.status(202).json({message: "confirm your email to proceed"});
-
-        // todo generate token
-        // todo safe in UserTokenModel
-        // todo send email
-
-    }
-
-    // if user does not exist: 404
-    else{
-        res.status(404).json({message: "mail not found"});
-    }
-});
-
-/**
- * swagger
- * /user/reset/confirm:
- *  post:
- *   description: Confirms token that was sent to user-email, when a user has forgotten the password to his account.
- *   summary:
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Token was correct, password can now be reset.
- *    '404':
- *      description: Not found. Token was not found.
- */
-router.post('/reset/confirm/:id/:token', (req, res) => {
-
-    // todo check if token is valid
-    // todo enable reset for password
-
-    // fixme still mocked
-    if(req.body.uuid === "8e733aeb-8bf8-485c-92b7-62ca4463db3c") {
-        res.statusCode = 200;
-        res.json({
-            message: 'mail confirmed'
-        });
-    }
-
-    // case 8e733aeb-8bf8-485c-92b7-62ca4463db3c: 200, body: mail of the assigned user
-    // case token not found: 404
-    else {
-        res.statusCode = 404;
-        res.json({
-            message: 'failed'
-        });
-    }
-});
-
-/**
  * @swagger
  * /user/edit:
  *  put:
@@ -424,6 +352,203 @@ router.put('/edit', passport.authenticate('jwt', {session: false}), async (req, 
 
 /**
  * @swagger
+ *  /user/reset/forgot:
+ *      post:
+ *          description: User has forgotten password. A token will be generated, put in a link (as parameter) and sent to users email.
+ *          summary: starts reset process for forgotten passwords.
+ *          tags:
+ *            - user
+ *          parameters:
+ *            - in: body
+ *              name: email
+ *              schema:
+ *                  type: object
+ *                  properties:
+ *                      email:
+ *                          type: string
+ *                  example:
+ *                      email: test@getmilou.de
+ *          produces:
+ *            - application/json
+ *          consumes:
+ *            - application/json
+ *          responses:
+ *              201:
+ *                  description: OK, token sent.
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          message:
+ *                              type: string
+ *                      example:
+ *                          message: Reset link was sent to email.
+ *              404:
+ *                  description: Specified email not found.
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          message:
+ *                              type: string
+ *                      example:
+ *                          message: Specified email not found.
+ */
+router.post('/reset/forgot', async (req, res) => {
+
+    // if user exists: send token to mail and store it at userTokens
+    if(await UserModel.exists({email: req.body.email})){
+
+
+        // todo generate token
+        // todo safe in UserTokenModel -> specify type = "PASSWORD_RESET"
+        // todo send email
+        res.status(201).json({message: "Reset link was sent to email."});
+    }
+
+    // if user does not exist: 404
+    else{
+        res.status(404).json({message: "Specified email not found."});
+    }
+});
+
+/**
+ * @swagger
+ *  /user/reset/confirm/:id/:token:
+ *      post:
+ *          summary: confirms a user, who forgot the password
+ *          description: Will only be called by user via a link, that he received in an email.
+ *                       It Redirects the user to a page, that allows password change.
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          consumes:
+ *            - application/json
+ *          parameters:
+ *            - in: path
+ *              name: id
+ *              type: string
+ *            - in: path
+ *              name: resetToken
+ *              type: string
+ *      response:
+ *          200:
+ *              description: todo! Redirect to frontend
+ *          404:
+ *              description: User not found or Token invalid or Token expired.
+ *              schema:
+ *                      type: object
+ *                      properties:
+ *                          message:
+ *                              type: string
+ *                      example:
+ *                          message: Invalid user, token, or token was used already
+ */
+router.post('/reset/confirm/:id/:token', async (req, res) => {
+
+    const reqUserId = req.params.id;
+    const reqToken = req.params.token;
+
+    const userToken = await UserTokenModel.find({userID : reqUserId, token : reqToken, tokenType : "PASSWORD_RESET"});
+
+    // todo specify further
+    if (userToken === null){
+        res.status(404).json({message: "Invalid user, token, or token was used already"})
+    }
+
+    // todo what statusCode would be appropriate?
+    else if(userToken.expirationDate < new Date.now()){
+        res.status(400).json({message: "link expired"})
+    }
+
+    // todo set token!
+    // todo redirect to frontend
+    else {
+        res.redirect("")
+    }
+});
+
+/**
+ * @swagger
+ *  /user/reset/change/:id/:token:
+ *      post:
+ *          summary: confirmed user changes password
+ *          description:
+ *              Final call of the password reset process. id and token used for authentication.
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          consumes:
+ *            - application/json
+ *          parameters:
+ *            - in: path
+ *              name: id
+ *              type: string
+ *            - in: path
+ *              name: resetToken
+ *              type: string
+ *            - in: body
+ *              name: password
+ *              schema:
+ *                  type: object
+ *                  properties:
+ *                      password:
+ *                          type: string
+ *                  example:
+ *                      password: 654321
+ *          responses:
+ *              201:
+ *                  description: OK. password was reset.
+ *              404:
+ *                  description: User not found.
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          message:
+ *                              type: string
+ *                      example:
+ *                          message: User not found.
+ *              400:
+ *                  description: todo! what statusCode in this case? Token invalid
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          message:
+ *                              type: string
+ *                      example:
+ *                          message: Token invalid.
+ */
+router.post('/reset/change/:id/:token', async (req, res) => {
+
+    const reqUserId = req.params.id;
+    const reqToken = req.params.token;
+
+    const userToken = await UserTokenModel.findOne({userID : reqUserId, tokenType : "PASSWORD_RESET"});
+
+    // todo specify further
+    if (userToken === null){
+        res.status(404).json({message: "User not found"})
+    }
+
+    else if (userToken.token !== reqToken){
+        res.status(400).json({message: "Token not found or expired"})
+    }
+
+    // todo what statusCode would be appropriate?
+    else if(userToken.expirationDate < new Date.now()){
+        res.status(400).json({message: "Token not found or expired"})
+    }
+
+
+    else {
+        await UserModel.updateOne({_id: reqUserId},{password: hash(req.body.password)});
+        res.status(201).json({message: "Password was reset"});
+    }
+
+});
+
+/**
+ * @swagger
  * /user/delete:
  *  delete:
  *   description:
@@ -496,6 +621,7 @@ router.get('/bank', (req,res) => {
         }]
     });
 })
+
 /**
  * swagger
  *  /user/bank:

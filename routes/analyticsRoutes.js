@@ -4,8 +4,7 @@ const analytics = require('../data-analytics/analytics/analytics');
 const portfolioFetcher = require('../data-analytics/dynamic_data/portfolio-fetcher');
 const companyOverviews = require('../data-analytics/dynamic_data/company-overviews');
 const stockTimeSeries = require('../data-analytics/dynamic_data/stock-time-series');
-// Require analytics, alphaVantageAPI, dbConnection and data filtering module.
-
+const balanceSheets = require('../data-analytics/dynamic_data/balance-sheets');
 
 const router = express.Router();
 
@@ -39,17 +38,6 @@ router.get('/backtest/:id', async (req, res) => {
     response.success = analyzedData;
 
     return res.json(response)
-    
-    // Extract parameters from request body
-
-    // Fetch time series data from DB, if data does not exist there or it's not enough
-    // => Fetch from AlphaVantage
-
-    // Call data filtering
-
-    // Analyse
-
-    // If no errors return results
 })
 
  router.get('/diversification/:id', async (req, res) => {
@@ -63,7 +51,7 @@ router.get('/backtest/:id', async (req, res) => {
     const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
     const currCompanyOverviews = await companyOverviews.getCompanyOverviewForSymbols(currSymbols);
     if (!currCompanyOverviews) {
-        response.error = "No data for all the stocks in the given portfolio."
+        response.error = "No company overview data for all the stocks in the given portfolio."
         return res.status(404).json(response)
     }
     
@@ -71,16 +59,6 @@ router.get('/backtest/:id', async (req, res) => {
     response.success = analyzedData;
 
     return res.json(response)
-    // Extract parameters from request path
-
-    // Fetch company overviews data from DB, if data does not exist there or it's not enough
-    // => Fetch from AlphaVantage
-
-    // Call data filtering
-
-    // Analyse
-
-    // If no errors return results
 })
 
  router.get('/dividends/:id', async (req, res) => {
@@ -96,7 +74,7 @@ router.get('/backtest/:id', async (req, res) => {
     const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
     const currCompanyOverviews = await companyOverviews.getCompanyOverviewForSymbols(currSymbols);
     if (!currCompanyOverviews) {
-        response.error = "No data for all the stocks in the given portfolio."
+        response.error = "No company overview data for all the stocks in the given portfolio."
         return res.status(404).json(response)
     }
 
@@ -104,16 +82,6 @@ router.get('/backtest/:id', async (req, res) => {
     response.success = analyzedData;
 
     return res.json(response)
-    // Extract parameters from request path
-
-    // Fetch company overviews data from DB, if data does not exist there or it's not enough
-    // => Fetch from AlphaVantage
-
-    // Call data filtering
-
-    // Analyse
-
-    // If no errors return results
 
 })
 
@@ -128,7 +96,7 @@ router.get('/backtest/:id', async (req, res) => {
     const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
     const currCompanyOverviews = await companyOverviews.getCompanyOverviewForSymbols(currSymbols);
     if (!currCompanyOverviews) {
-        response.error = "No data for all the stocks in the given portfolio."
+        response.error = "No company overview data for all the stocks in the given portfolio."
         return res.status(404).json(response)
     }
 
@@ -136,16 +104,6 @@ router.get('/backtest/:id', async (req, res) => {
     response.success = analyzedData;
 
     return res.json(response)
-    // Extract parameters from request path
-
-    // Fetch company overviews data from DB, if data does not exist there or it's not enough
-    // => Fetch from AlphaVantage
-
-    // Call data filtering
-
-    // Analyse
-
-    // If no errors return results
 })
 
  router.get('/gainLoss/:id', async (req, res) => {
@@ -166,16 +124,6 @@ router.get('/backtest/:id', async (req, res) => {
     const analyzedData = analytics.calculateGainAndLoss(currPortfolio, currStocksData);
     response.success= analyzedData;
     return res.json(response)
-    // Extract parameters from request path
-
-    // Fetch company overviews data from DB, if data does not exist there or it's not enough
-    // => Fetch from AlphaVantage
-
-    // Call data filtering
-
-    // Analyse
-
-    // If no errors return results
 
 })
 
@@ -197,16 +145,6 @@ router.get('/backtest/:id', async (req, res) => {
     const analyzedData = analytics.calculateSDAndCorrelationAndVolatility(currPortfolio, currStocksData);
     response.success= analyzedData;
     return res.json(response)
-    // Extract parameters from request path
-
-    // Fetch company overviews data from DB, if data does not exist there or it's not enough
-    // => Fetch from AlphaVantage
-
-    // Call data filtering
-
-    // Analyse
-
-    // If no errors return results
 
 })
 
@@ -228,16 +166,6 @@ router.get('/backtest/:id', async (req, res) => {
     const analyzedData = analytics.calculateSharpeRatio(currPortfolio, currStocksData);
     response.success= analyzedData;
     return res.json(response)
-    // Extract parameters from request path
-
-    // Fetch company overviews data from DB, if data does not exist there or it's not enough
-    // => Fetch from AlphaVantage
-
-    // Call data filtering
-
-    // Analyse
-
-    // If no errors return results
 })
 
  router.get('/debtEquity/:id', async (req, res) => {
@@ -248,22 +176,17 @@ router.get('/backtest/:id', async (req, res) => {
         response.error="Portfolio with ID: " + id + " was not found!"
         return res.status(404).json(response)
     }
-    response.success = currPortfolio;
-    
 
-    return res.status(404).json(response)
-    // Extract parameters from request path
-
-    // Fetch company overviews data from DB, if data does not exist there or it's not enough
-    // => Fetch from AlphaVantage
-
-    // Call data filtering
-
-    // Analyse
-
-    // If no errors return results
+    const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
+    const currBalanceSheetPerSymbol = await balanceSheets.getBalanceSheetForSymbols(currSymbols);
+    if(!currBalanceSheetPerSymbol) {
+        response.error = "No balance sheet data for some of the stocks"
+        return res.status(404).json(response)
+    }
+    const analyzedData = analytics.calculateDebtEquity(currPortfolio, currBalanceSheetPerSymbol);
+    response.success= analyzedData;
+    return res.json(response)
 })
-
 
 
 module.exports = router

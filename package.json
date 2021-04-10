@@ -37,7 +37,6 @@
     "swagger-ui-express": "^4.1.6"
   },
   "devDependencies": {
-    "bcrypt": "^5.0.1",
     "nodemon": "^2.0.7"
   },
   "keywords": [],

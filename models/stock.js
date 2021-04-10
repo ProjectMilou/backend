@@ -89,6 +89,150 @@ const StockSchema = new mongoose.Schema({
     },
     peRatio: {
         type: String,
+    },
+    cik: {
+        type: String,
+    },
+    exchange: {
+        type: String,
+    },
+    fiscalYearEnd: {
+        type: String,
+    },
+    latestQuarter: {
+        type: String,
+    },
+    ebitda: {
+        type: String,
+    },
+    pegRatio: {
+        type: String,
+    },
+    bookValue: {
+        type: String,
+    },
+    dividendPerShare: {
+        type: String,
+    },
+    eps: {
+        type: String,
+    },
+    revenuePerShareTTM: {
+        type: String,
+    },
+    profitMargin: {
+        type: String,
+    },
+    operatingMarginTTMprofitMargin: {
+        type: String,
+    },
+    returnOnAssetsTTM: {
+        type: String,
+    },
+    returnOnEquityTTM: {
+        type: String,
+    },
+    revenueTTM: {
+        type: String,
+    },
+    grossProfitTTM: {
+        type: String,
+    },
+    dilutedEPSTTM: {
+        type: String,
+    },
+    quarterlyEarningsGrowthYOY: {
+        type: String,
+    },
+    quarterlyRevenueGrowthYOY: {
+        type: String,
+    },
+    analystTargetPrice: {
+        type: String,
+    },
+    trailingPE: {
+        type: String,
+    },
+    forwardPE: {
+        type: String,
+    },
+    priceToSalesRatioTTM: {
+        type: String,
+    },
+    priceToBookRatio: {
+        type: String,
+    },
+    evToRevenue: {
+        type: String,
+    },
+    evToEbitda: {
+        type: String,
+    },
+    beta: {
+        type: String,
+    },
+    per52WeekHigh: {
+        type: String,
+    },
+    per52WeekLow: {
+        type: String,
+    },
+    per50DayMovingAverage: {
+        type: String,
+    },
+    per200DayMovingAverage: {
+        type: String,
+    },
+    sharesOutstanding: {
+        type: String,
+    },
+    sharesFloat: {
+        type: String,
+    },
+    sharesShort: {
+        type: String,
+    },
+    sharesShortPriorMonth: {
+        type: String,
+    },
+    shortRatio: {
+        type: String,
+    },
+    shortPercentOutstanding: {
+        type: String,
+    },
+    shortPercentFloat: {
+        type: String,
+    },
+    percentInsiders: {
+        type: String,
+    },
+    percentInstitutions: {
+        type: String,
+    },
+    forwardAnnualDividendRate: {
+        type: String,
+    },
+    forwardAnnualDividendYield: {
+        type: String,
+    },
+    payoutRatio: {
+        type: String,
+    },
+    dividendDate: {
+        type: String,
+    },
+    exDividendDate: {
+        type: String,
+    },
+    lastSplitFactor: {
+        type: String,
+    },
+    lastSplitDate: {
+        type: String,
+    },
+    mcSize: {
+        type: String,
     }
 }, {
     versionKey: false

@@ -3,12 +3,13 @@ const dotenv = require('dotenv');
 const fs = require('fs');
 const readline = require('readline');
 const stockModel = require("../models/stock");
+const balanceSheetModel = require("../models/balanceSheet");
 const db = require('../db/worker_index.js');
 dotenv.config();
 
 module.exports.updateAllStocks = async function () {
 
-    let api_key_alphavantage = process.env.alpha_ventage_key;
+    let api_key_alphavantage = process.env.alpha_vantage_key;
     let api_key_finhub = process.env.finnhub_key;
 
     const fileStream = fs.createReadStream('./public/assets/company_symbols.txt');
@@ -22,10 +23,12 @@ module.exports.updateAllStocks = async function () {
     const startFetching = async () => {
         for await (const symbol of rl) {
             console.log(symbol)
-            await getStockOverview(symbol, api_key_alphavantage);
+            // await getStockOverview(symbol, api_key_alphavantage);
             // await getTimeIntervalPerformance(symbol, api_key_alphavantage);
+            await updateMcSize(symbol, api_key_alphavantage)
             // await getYearlyPerformance(symbol, api_key_alphavantage);
             // await getImage(symbol, api_key_finhub);
+            await getBalanceSheet(symbol, api_key_alphavantage);
             await sleep(1200)
         }
         rl.close()
@@ -84,12 +87,57 @@ async function getStockOverview(symbol, api_key) {
                         "intro": data.Description,
                         "founded": "",
                         "employees": data.FullTimeEmployees,
-                        "website": "",
                         "address": data.Address,
                         "assembly": "",
-                        "picture": "",
                         "assetType": data.AssetType,
-                        "peRatio": data.PERatio
+                        "peRatio": data.PERatio,
+                        "exchange": data.Exchange,
+                        "cik": data.CIK,
+                        "fiscalYearEnd": data.FiscalYearEnd,
+                        "latestQuarter": data.LatestQuarter,
+                        "ebitda": data.EBITDA,
+                        "pegRatio": data.PEGRatio,
+                        "bookValue": data.BookValue,
+                        "dividendPerShare": data.DividendPerShare,
+                        "eps": data.EPS,
+                        "revenuePerShareTTM": data.RevenuePerShareTTM,
+                        "profitMargin": data.ProfitMargin,
+                        "operatingMarginTTMprofitMargin": data.OperatingMarginTTM,
+                        "returnOnAssetsTTM": data.ReturnOnAssetsTTM,
+                        "returnOnEquityTTM": data.ReturnOnEquityTTM,
+                        "revenueTTM": data.RevenueTTM,
+                        "grossProfitTTM": data.GrossProfitTTM,
+                        "dilutedEPSTTM": data.DilutedEPSTTM,
+                        "quarterlyEarningsGrowthYOY": data.QuarterlyEarningsGrowthYOY,
+                        "quarterlyRevenueGrowthYOY": data.QuarterlyRevenueGrowthYOY,
+                        "analystTargetPrice": data.AnalystTargetPrice,
+                        "trailingPE": data.TrailingPE,
+                        "forwardPE": data.ForwardPE,
+                        "priceToSalesRatioTTM": data.PriceToSalesRatioTTM,
+                        "priceToBookRatio": data.PriceToBookRatio,
+                        "evToRevenue": data.EVToRevenue,
+                        "evToEbitda": data.EVToEBITDA,
+                        "beta": data.Beta,
+                        "per52WeekHigh": data["52WeekHigh"],
+                        "per52WeekLow": data["52WeekLow"],
+                        "per50DayMovingAverage": data["50DayMovingAverage"],
+                        "per200DayMovingAverage": data["200DayMovingAverage"],
+                        "sharesOutstanding": data.SharesOutstanding,
+                        "sharesFloat": data.SharesFloat,
+                        "sharesShort": data.SharesShort,
+                        "sharesShortPriorMonth": data.SharesShortPriorMonth,
+                        "shortRatio": data.ShortRatio,
+                        "shortPercentOutstanding": data.ShortPercentOutstanding,
+                        "shortPercentFloat": data.ShortPercentFloat,
+                        "percentInsiders": data.PercentInsiders,
+                        "percentInstitutions": data.PercentInstitutions,
+                        "forwardAnnualDividendRate": data.ForwardAnnualDividendRate,
+                        "forwardAnnualDividendYield": data.ForwardAnnualDividendYield,
+                        "payoutRatio": data.PayoutRatio,
+                        "dividendDate": data.DividendDate,
+                        "exDividendDate": data.ExDividendDate,
+                        "lastSplitFactor": data.LastSplitFactor,
+                        "lastSplitDate": data.LastSplitDate
                     },
                 },
                 {
@@ -107,11 +155,11 @@ async function getStockOverview(symbol, api_key) {
 
 async function getImage(symbol, api_key) {
     let url = 'https://finnhub.io/api/v1/stock/profile2?symbol=' + symbol + '&token=' + api_key;
+
+    console.log(api_key)
     await fetch(url)
         .then(response => response.json())
         .then(data => {
-            console.log(data)
-            console.log(data.weburl)
             let stock = stockModel.findOneAndUpdate(
                 { symbol: symbol },
                 {
@@ -119,6 +167,41 @@ async function getImage(symbol, api_key) {
                     {
                         "website": data.weburl,
                         "picture": data.logo,
+                    },
+                },
+                {
+                    upsert: true,
+                    new: true
+                },
+                function (err, _stockInstance) {
+                    if (err)
+                        console.log(err)
+
+                });
+        })
+        .catch(err => console.log(err))
+}
+
+async function updateMcSize(symbol, api_key) {
+    let url = 'https://www.alphavantage.co/query?function=OVERVIEW&symbol=' + symbol + '&apikey=' + api_key;
+
+    await fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            let mcSize = "";
+            if (parseInt(data.MarketCapitalization) > 10000000000) {
+                mcSize = "large"
+            } else if (parseInt(data.MarketCapitalization) > 2000000000) {
+                mcSize = "medium"
+            } else {
+                mcSize = "small"
+            }
+            let stock = stockModel.findOneAndUpdate(
+                { symbol: symbol },
+                {
+                    $set:
+                    {
+                        "mcSize": mcSize,
                     },
                 },
                 {
@@ -196,7 +279,7 @@ async function getTimeIntervalPerformance(symbol, api_key) {
                 {
                     $set:
                     {
-                        "price": lastday,
+                        "price": lastDayClose,
                         "per1d": per1d,
                         "per7d": per7d,
                         "per30d": per30d,
@@ -215,6 +298,36 @@ async function getTimeIntervalPerformance(symbol, api_key) {
         .catch(err => {
             // console.log(err)
         })
+}
+
+async function getBalanceSheet(symbol, api_key) {
+    let url = 'https://www.alphavantage.co/query?function=BALANCE_SHEET' +
+        '&symbol=' + symbol +
+        '&apikey=' + api_key;
+
+    await fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data['symbol']);
+            let balanceSheet = balanceSheetModel.findOneAndUpdate(
+                { symbol: data['symbol'] },
+                {
+                    $set:
+                    {
+                        "totalAssets": data['annualReports'][0]['totalAssets'],
+                        "totalLiabilities": data['annualReports'][0]['totalLiabilities'],
+                    },
+                },
+                {
+                    upsert: true,
+                    new: true
+                },
+                function (err, _stockInstance) {
+                    if (err)
+                        console.log(err)
+                });
+        })
+        .catch(err => console.log(err))
 }
 
 function sleep(ms) {
