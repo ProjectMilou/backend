@@ -140,15 +140,17 @@
  *  keyFigureee:
  *    type: object
  *    properties:
- *      date:
+ *      fiscalDateEnding:
  *        type: string
- *      pte:
+ *      reportedDate:
  *        type: string
- *      ptb:
+ *      reportedEPS:
  *        type: string
- *      ptg:
+ *      estimatedEPS:
  *        type: string
- *      eps:
+ *      surprise:
+ *        type: string
+ *      surprisePercentage:
  *        type: string
  *  keyFigureees:
  *        type: array
@@ -166,6 +168,182 @@
  *        type: array
  *        items:
  *          $ref: '#/definitions/dataPointtt'
+ *
+ *
+ *
+ *
+ *  annualReport:
+ *    type: object
+ *    properties:
+ *      fiscalDateEnding:
+ *        type: string
+ *      reportedCurrency:
+ *        type: string
+ *      totalAssets:
+ *        type: string
+ *      totalCurrentAssets:
+ *        type: string
+ *      cashAndCashEquivalentsAtCarryingValue:
+ *        type: string
+ *      cashAndShortTermInvestments:
+ *        type: string
+ *      inventory:
+ *        type: string
+ *      currentNetReceivables:
+ *        type: string
+ *      totalNonCurrentAssets:
+ *        type: string
+ *      propertyPlantEquipment:
+ *        type: string
+ *      accumulatedDepreciationAmortizationPPE:
+ *        type: string
+ *      intangibleAssets:
+ *        type: string
+ *      intangibleAssetsExcludingGoodwill:
+ *        type: string
+ *      goodwill:
+ *        type: string
+ *      investments:
+ *        type: string
+ *      longTermInvestments:
+ *        type: string
+ *      shortTermInvestments:
+ *        type: string
+ *      otherCurrentAssets:
+ *        type: string
+ *      otherNonCurrrentAssets:
+ *        type: string
+ *      totalLiabilities:
+ *        type: string
+ *      totalCurrentLiabilities:
+ *        type: string
+ *      currentAccountsPayable:
+ *        type: string
+ *      deferredRevenue:
+ *        type: string
+ *      currentDebt:
+ *        type: string
+ *      shortTermDebt:
+ *        type: string
+ *      totalNonCurrentLiabilities:
+ *        type: string
+ *      capitalLeaseObligations:
+ *        type: string
+ *      longTermDebt:
+ *        type: string
+ *      currentLongTermDebt:
+ *        type: string
+ *      longTermDebtNoncurrent:
+ *        type: string
+ *      shortLongTermDebtTotal:
+ *        type: string
+ *      otherCurrentLiabilities:
+ *        type: string
+ *      otherNonCurrentLiabilities:
+ *        type: string
+ *      totalShareholderEquity:
+ *        type: string
+ *      treasuryStock:
+ *        type: string
+ *      retainedEarnings:
+ *        type: string
+ *      commonStock:
+ *        type: string
+ *      commonStockSharesOutstanding:
+ *        type: string
+ *  annualReports:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/annualReport'
+ *
+ *
+ *  quarterlyReport:
+ *    type: object
+ *    properties:
+ *      fiscalDateEnding:
+ *        type: string
+ *      reportedCurrency:
+ *        type: string
+ *      totalAssets:
+ *        type: string
+ *      totalCurrentAssets:
+ *        type: string
+ *      cashAndCashEquivalentsAtCarryingValue:
+ *        type: string
+ *      cashAndShortTermInvestments:
+ *        type: string
+ *      inventory:
+ *        type: string
+ *      currentNetReceivables:
+ *        type: string
+ *      totalNonCurrentAssets:
+ *        type: string
+ *      propertyPlantEquipment:
+ *        type: string
+ *      accumulatedDepreciationAmortizationPPE:
+ *        type: string
+ *      intangibleAssets:
+ *        type: string
+ *      intangibleAssetsExcludingGoodwill:
+ *        type: string
+ *      goodwill:
+ *        type: string
+ *      investments:
+ *        type: string
+ *      longTermInvestments:
+ *        type: string
+ *      shortTermInvestments:
+ *        type: string
+ *      otherCurrentAssets:
+ *        type: string
+ *      otherNonCurrrentAssets:
+ *        type: string
+ *      totalLiabilities:
+ *        type: string
+ *      totalCurrentLiabilities:
+ *        type: string
+ *      currentAccountsPayable:
+ *        type: string
+ *      deferredRevenue:
+ *        type: string
+ *      currentDebt:
+ *        type: string
+ *      shortTermDebt:
+ *        type: string
+ *      totalNonCurrentLiabilities:
+ *        type: string
+ *      capitalLeaseObligations:
+ *        type: string
+ *      longTermDebt:
+ *        type: string
+ *      currentLongTermDebt:
+ *        type: string
+ *      longTermDebtNoncurrent:
+ *        type: string
+ *      shortLongTermDebtTotal:
+ *        type: string
+ *      otherCurrentLiabilities:
+ *        type: string
+ *      otherNonCurrentLiabilities:
+ *        type: string
+ *      totalShareholderEquity:
+ *        type: string
+ *      treasuryStock:
+ *        type: string
+ *      retainedEarnings:
+ *        type: string
+ *      commonStock:
+ *        type: string
+ *      commonStockSharesOutstanding:
+ *        type: string
+ *  quarterlyReports:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/quarterlyReport'
+ *
+ *
+ *
+ *
  *
  *  rating:
  *    type: object
@@ -834,6 +1012,31 @@
  *    '400':
  *      description: Invalid
  *
+ * /stocks/overview?id={id}:
+ *  get:
+ *   summary: Returns a stock overview with given id.
+ *   description: Returns a stock overview with given id.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: can be symbol of a stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *       type: object
+ *       properties:
+ *        stocks:
+ *         $ref: '#/definitions/stockks'
+ *    '400':
+ *      description: Invalid
+ *
  * /stocks/details?id={id}:
  *  get:
  *   summary: Returns details of a stock with given id.
@@ -909,8 +1112,10 @@
  *    '200':
  *      description: Successful operation
  *      schema:
- *       type: object
+ *       type : object
  *       properties:
+ *        symbol:
+ *         type : string
  *        keyFigures:
  *         $ref: '#/definitions/keyFigureees'
  *    '400':
@@ -999,6 +1204,70 @@
  *       properties:
  *        stocks:
  *         $ref: '#/definitions/newsss'
+ *    '400':
+ *      description: Invalid
+ *
+ * /stocks/risk?id={id}:
+ *  get:
+ *   summary: Returns risk analysis.
+ *   description: Returns risk analysis.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: symbol of stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *       type: object
+ *       properties:
+ *        rewards:
+ *         type: array
+ *         items:
+ *          type: string
+ *        risks:
+ *         type: array
+ *         items:
+ *          type: string
+ *        risk_checks:
+ *         type: array
+ *         items:
+ *          type: string
+ *    '400':
+ *      description: Invalid
+ *
+ * /stocks/balanceSheet?id={id}:
+ *  get:
+ *   summary: Get balance sheet.
+ *   description: Get balance sheet.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: symbol of a stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *       type : object
+ *       properties:
+ *        symbol:
+ *         type : string
+ *        annualReports:
+ *         $ref: '#/definitions/annualReports'
+ *        quarterlyReports:
+ *         $ref: '#/definitions/quarterlyReports'
  *    '400':
  *      description: Invalid
  *
