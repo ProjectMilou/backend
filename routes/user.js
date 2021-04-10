@@ -4,6 +4,7 @@ const passport = require('passport');
 const genToken = require('../auth/auth');
 const UserModel = require("../models/user");
 const UserTokenModel = require ("../models/userToken")
+const {hash, encrypt, decrypt} = require("../encryption/encryption");
 
 const router = express.Router();
 
@@ -337,7 +338,135 @@ router.post('/reset/forgot', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ *  /user/reset/confirm/:id/:token:
+ *      post:
+ *          summary: confirms a user, who forgot the password
+ *          description: Will only be called by user via a link, that he received in an email.
+ *                       It Redirects the user to a page, that allows password change.
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          consumes:
+ *            - application/json
+ *          parameters:
+ *            - in: path
+ *              name: id
+ *              type: string
+ *            - in: path
+ *              name: resetToken
+ *              type: string
+ *      response:
+ *          200:
+ *              description: todo! Redirect to frontend
+ *          404:
+ *              description: User not found or Token invalid or Token expired.
+ *              schema:
+ *                      type: object
+ *                      properties:
+ *                          message:
+ *                              type: string
+ *                      example:
+ *                          message: Invalid user, token, or token was used already
+ */
+router.post('/reset/confirm/:id/:token', async (req, res) => {
 
+    const reqUserId = req.params.id;
+    const reqToken = req.params.token;
+
+    const userToken = await UserTokenModel.find({userID : reqUserId, token : reqToken, tokenType : "PASSWORD_RESET"});
+
+    // todo specify further
+    if (userToken === null){
+        res.status(404).json({message: "Invalid user, token, or token was used already"})
+    }
+
+    // todo what statusCode would be appropriate?
+    else if(userToken.expirationDate < new Date.now()){
+        res.status(400).json({message: "link expired"})
+    }
+
+    // todo set token!
+    // todo redirect to frontend
+    else {
+        res.redirect("")
+    }
+});
+
+/**
+ * @swagger
+ *  /user/reset/change/:id/:token:
+ *      post:
+ *          summary: confirmed user changes password
+ *          description:
+ *              Final call of the password reset process. id and token used for authentication.
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          consumes:
+ *            - application/json
+ *          parameters:
+ *            - in: path
+ *              name: id
+ *              type: string
+ *            - in: path
+ *              name: resetToken
+ *              type: string
+ *            - in: body
+ *              name: password
+ *              type: string
+ *      response:
+ *          201:
+ *              description: OK. password was reset.
+ *          404:
+ *              description: User not found.
+ *              schema:
+ *                      type: object
+ *                      properties:
+ *                          message:
+ *                              type: string
+ *                      example:
+ *                          message: User not found.
+ *          400:
+ *              description: todo! what statusCode in this case? Token invalid
+ *              schema:
+ *                      type: object
+ *                      properties:
+ *                          message:
+ *                              type: string
+ *                      example:
+ *                          message: Token invalid.
+ */
+router.post('/reset/change/:id/:token', async (req, res) => {
+
+    const reqUserId = req.params.id;
+    const reqToken = req.params.token;
+
+    const userToken = await UserTokenModel.findOne({userID : reqUserId, tokenType : "PASSWORD_RESET"});
+
+    // todo specify further
+    if (userToken === null){
+        res.status(404).json({message: "User not found"})
+    }
+
+    else if (userToken.token !== reqToken){
+        res.status(400).json({message: "Token not found or expired"})
+    }
+
+    // todo what statusCode would be appropriate?
+    else if(userToken.expirationDate < new Date.now()){
+        res.status(400).json({message: "Token not found or expired"})
+    }
+
+    else {
+        await UserModel.updateOne({_id: reqUserId},{password: hash(req.body.password)});
+        res.status(201).json({message: "Password was reset"});
+    }
+
+});
 
 
 /**
