@@ -467,6 +467,7 @@ router.post('/reset/change/:id/:token', async (req, res) => {
         res.status(400).json({message: "Token not found or expired"})
     }
 
+
     else {
         await UserModel.updateOne({_id: reqUserId},{password: hash(req.body.password)});
         res.status(201).json({message: "Password was reset"});
