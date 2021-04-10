@@ -4,6 +4,7 @@ const Portfolio = require('../models/portfolio');
 //const PortfolioOverview = PortfolioModels.portfolioOverview
 const mongoose = require('mongoose');
 const { ResourceGroups } = require('aws-sdk');
+const cookieParser = require('cookie-parser');
 
 const secret = require('../secret/secret')();
 const dotenv = require('dotenv');
@@ -12,10 +13,12 @@ dotenv.config();
 const router = express.Router();
 router.use(express.json()); // for parsing application/json
 router.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+
 //var userId ='7066e49a553a5c0447248073'// invalid
 // var userId = '6066e49a553a5c0447248073'
 //var userId = '6066e49a553a5c0000000000'
 var userId = '606c983e747e639f685affd0';
+router.use(cookieParser(process.env.auth_jwt_secret + userId));
 
 const fetch = require('node-fetch');
 const cors = require('cors');
@@ -188,7 +191,7 @@ const is_valid_isin = (isin) => {
 router.get('/list', (req, res) => {
     var response = { "portfolios": [] };
 
-    Portfolio.find({ "userId": userId }, 'portfolio.overview', function (err, portf) {
+    Portfolio.find({ "userId": userId }, 'portfolio.overview', function(err, portf) {
         if (err) {
             handle_database_error(res, err)
         } else {
@@ -220,7 +223,7 @@ router.get('/details/:id', (req, res) => {
     }
 });
 
-router.get('/performance/:id', function (req, res) {
+router.get('/performance/:id', function(req, res) {
     var id = req.params.id;
     var range = req.body.range;
     var response = {};
@@ -259,9 +262,9 @@ router.post('/create', (req, res) => {
                 res.status(400).json(response);
             } else {
                 var portfolio = new Portfolio(emptyPortfolio(portfolioId, userId, name))
-                // save new portfolio in database
+                    // save new portfolio in database
                 portfolio.save(
-                    function (err, portfolio) {
+                    function(err, portfolio) {
                         if (err) {
                             handle_database_error(res, err)
                         } else {
@@ -338,7 +341,7 @@ router.put('/rename/:id', (req, res) => {
 
 // not perfect yet
 // return the response of the first modification
-router.put('/modify/:id', async (req, res) => {
+router.put('/modify/:id', async(req, res) => {
     // request: {"modifications": 
     //                  [{"isin": "string",
     //                  "qty": 0}]}
@@ -354,7 +357,7 @@ router.put('/modify/:id', async (req, res) => {
             response.error = "PORTFOLIO_ID_INVALID"
             res.status(404)
             j = req.body.modifications.length //=break;
-            res.json(response)//TODO: only send response when j==0
+            res.json(response) //TODO: only send response when j==0
         } else {
             if (!is_valid_qty(qty)) {
                 console.log(qty)
@@ -418,13 +421,13 @@ router.put('/modify/:id', async (req, res) => {
                             portfolio.portfolio.overview.modified = Date.now() // current timestamp
                             portfolio.portfolio.overview.positionCount = portfolio.portfolio.positions.length;
                             portfolio.save(
-                                function (err, portfolio) {
+                                function(err, portfolio) {
                                     if (err) handle_database_error(res, err)
                                     else {
                                         console.log("success for modification nr. " + currentIndex) //why does this happen even when the isin is invalid?
 
                                         if (currentIndex == 0) {
-                                            res.json(response)//TODO find a way to make this wait
+                                            res.json(response) //TODO find a way to make this wait
                                         }
                                     }
 
@@ -488,7 +491,7 @@ router.post('/duplicate/:id', (req, res) => {
                             var newPortf = duplicate_portfolio(portf, portfolioId, name)
 
                             newPortf.save(
-                                function (err, portfolio) {
+                                function(err, portfolio) {
                                     if (err) {
                                         handle_database_error(res, err)
                                     } else {
@@ -523,14 +526,14 @@ router.get('/stock/:isin', (req, res) => { // get portfolioId, name, qty of stoc
 
     var response = {};
     //? = %3F
-    Portfolio.find({ "userId": userId }, 'id portfolio.overview.name portfolio.positions', function (err, portf) {
+    Portfolio.find({ "userId": userId }, 'id portfolio.overview.name portfolio.positions', function(err, portf) {
         if (err) {
             handle_database_error(res, err)
         } else {
             response.portfolios = portf.map(({ id: pfId, portfolio: { overview: { name: pfName }, positions: arrayStocks } }) => {
                 var positionsWithCurrentISIN = arrayStocks.filter((position) => {
-                    return position.stock.isin == isin
-                }) // the resulting array should have length 1 or 0
+                        return position.stock.isin == isin
+                    }) // the resulting array should have length 1 or 0
                 var qty;
                 if (positionsWithCurrentISIN.length == 0) {
                     qty = 0
@@ -560,24 +563,22 @@ router.post('/import', (req, res) => {
 
 // finapi part
 
-// global variable to be "cached"
-var token;
-
 // token/user gives user auth, for any other thing - client, e.g. token/client
-router.get('/token/:person', async (req, res) => {
+router.get('/token/:person', async(req, res) => {
     let person = req.params.person;
 
     //no merged secret configuration yet, so not specified
     let body = new URLSearchParams({
         'grant_type': "client_credentials",
         'client_id': process.env.finAPI_client_id,
-        'client_secret': process.env.finAPI_client_secret
+        'client_secret': process.env.finAPI_client_secret,
+
     });
 
     // credentials taken from db 
     if (person == 'user') {
-        body.append("username", "");
-        body.append("password", "");
+        body.append("username", "milouTest");
+        body.append("password", "MilouRostlab");
         body.set("grant_type", "password");
     }
 
@@ -592,17 +593,19 @@ router.get('/token/:person', async (req, res) => {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         });
 
-        catchErrors(api_response);
+        if (!api_response.ok) res.status = api_response.status;
 
         const json_response = await api_response.json();
-        token = 'Bearer ' + json_response['access_token'];
+
+        // secure: true, add in the end, when no testing needed 
+        res.cookie('finapi_token', 'Bearer ' + json_response['access_token'], { signed: true, httpOnly: true, maxAge: 60 * 60 * 1000 });
         res.json(json_response);
     } catch (err) {
         res.send(err.message);
     }
 });
 
-router.post('/newUser', async (req, res) => {
+router.post('/newUser', async(req, res) => {
     let body = {
         id: req.body.id, // read: username
         password: req.body.password,
@@ -613,26 +616,23 @@ router.post('/newUser', async (req, res) => {
 
     const api_url = `https://sandbox.finapi.io/api/v1/users`;
 
-    try {
-        const api_response = await fetch(api_url, {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token
-            }
-        });
-        catchErrors(api_response);
+    const api_response = await fetch(api_url, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': req.signedCookies.finapi_token
+        }
+    });
 
-        const json_response = await api_response.json();
-        res.json(json_response);
-    } catch (err) {
-        res.send(err.message);
-    }
+    if (!api_response.ok) res.status = api_response.status;
+
+    const json_response = await api_response.json();
+    res.json(json_response);
 
 });
 
-router.get('/deleteUser', async (req, res) => {
+router.get('/deleteUser', async(req, res) => {
 
     const api_url = `https://sandbox.finapi.io/api/v1/users`;
 
@@ -640,10 +640,11 @@ router.get('/deleteUser', async (req, res) => {
         const api_response = await fetch(api_url, {
             method: 'DELETE',
             headers: {
-                'Authorization': token
+                'Authorization': req.signedCookies.finapi_token
             }
         });
-        catchErrors(api_response);
+
+        if (!api_response.ok) res.status = api_response.status;
 
         var response = { "success": "DELETION_SUCCESS" };
         res.json(response);
@@ -653,7 +654,7 @@ router.get('/deleteUser', async (req, res) => {
     }
 });
 
-router.post('/searchBanks', async (req, res) => {
+router.post('/searchBanks', async(req, res) => {
     let params = new URLSearchParams({
         'search': req.body.search, // main field, others if needed
         'ids': req.body.ids, // integer array
@@ -671,11 +672,11 @@ router.post('/searchBanks', async (req, res) => {
         const api_response = await fetch(api_url, {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': token
+                'Authorization': req.signedCookies.finapi_token
             }
         });
 
-        catchErrors(api_response);
+        if (!api_response.ok) res.status = api_response.status;
 
         const response = await api_response.json();
         res.json(response);
@@ -685,9 +686,9 @@ router.post('/searchBanks', async (req, res) => {
 
 });
 
-router.get('/importConnection/:bankId', async (req, res) => {
+router.get('/importConnection/:bankId', async(req, res) => {
     let body = { //e.g. 26628 - stadtsparkasse
-        id: req.params.id
+        bankId: req.params.bankId
     };
 
     const api_url = `https://sandbox.finapi.io/api/v1/bankConnections/import`;
@@ -698,31 +699,25 @@ router.get('/importConnection/:bankId', async (req, res) => {
             body: JSON.stringify(body),
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': token,
-                'Access-Control-Expose-Headers': 'Location',
-                'redirect': 'manual'
+                'Authorization': req.signedCookies.finapi_token
             }
         });
 
         const json_response = await api_response;
-        // res.json(json_response.headers);
-        json_response.headers.forEach((val, key) => {
-            console.log(key, val);
-        });
-        console.log(json_response.headers.get('Location'));
-        var location = json_response.headers.get('Location');
 
-        //temporary overwriting of location due for testing
-        location = "https://api.milou.io/api-docs";
+        var response = {
+            "link": json_response.headers.get('Location')
+        }
 
-        res.redirect(location);
+        res.json(response);
+
     } catch (err) {
         res.send(err.message);
     }
 
 });
 
-router.post('/bankConnections/', async (req, res) => {
+router.post('/bankConnections/', async(req, res) => {
     if (req.body.ids !== undefined) {
         var ids = new URLSearchParams({});
         for (let id of req.body.ids) {
@@ -736,11 +731,11 @@ router.post('/bankConnections/', async (req, res) => {
         const api_response = await fetch(api_url, {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': token
+                'Authorization': req.signedCookies.finapi_token
             }
         });
 
-        catchErrors(api_response);
+        if (!api_response.ok) res.status = api_response.status;
 
         const json_response = await api_response.json();
         res.json(json_response);
@@ -750,7 +745,7 @@ router.post('/bankConnections/', async (req, res) => {
 
 });
 
-router.get('/deleteConnection/:id', async (req, res) => {
+router.get('/deleteConnection/:id', async(req, res) => {
     var id = req.params.id;
 
     const api_url = `https://sandbox.finapi.io/api/v1/bankConnections/${id}`;
@@ -759,10 +754,10 @@ router.get('/deleteConnection/:id', async (req, res) => {
         const api_response = await fetch(api_url, {
             method: 'DELETE',
             headers: {
-                'Authorization': token
+                'Authorization': req.signedCookies.finapi_token
             }
         });
-        catchErrors(api_response);
+        if (!api_response.ok) res.status = api_response.status;
 
         var response = { "id": id };
         res.json(response);
@@ -773,7 +768,7 @@ router.get('/deleteConnection/:id', async (req, res) => {
     }
 });
 
-router.get('/deleteAllConnections', async (req, res) => {
+router.get('/deleteAllConnections', async(req, res) => {
 
     const api_url = `https://sandbox.finapi.io/api/v1/bankConnections`;
 
@@ -782,11 +777,11 @@ router.get('/deleteAllConnections', async (req, res) => {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': token
+                'Authorization': req.signedCookies.finapi_token
             }
         });
 
-        catchErrors(api_response);
+        if (!api_response.ok) res.status = api_response.status;
 
         const json_response = await api_response.json();
         res.json(json_response);
@@ -796,7 +791,7 @@ router.get('/deleteAllConnections', async (req, res) => {
 
 });
 
-router.post('/securities', async (req, res) => {
+router.post('/securities', async(req, res) => {
     // if no body, all securities given
     let params = new URLSearchParams({
         'search': req.body.search, // isin, name, wkn contain
@@ -818,11 +813,11 @@ router.post('/securities', async (req, res) => {
         const api_response = await fetch(api_url, {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': token
+                'Authorization': req.signedCookies.finapi_token
             }
         });
 
-        catchErrors(api_response);
+        if (!api_response.ok) res.status = api_response.status;
 
         const json_response = await api_response.json();
         res.json(json_response);
@@ -842,7 +837,7 @@ router.post('/saveAllSecurities', (req, res) => {
         res.status(400).json(response);
     } else {
         var portfolioId = new mongoose.Types.ObjectId();
-        Portfolio.findOne({ "userId": userId, "portfolio.overview.name": name }).exec(async (err, result) => {
+        Portfolio.findOne({ "userId": userId, "portfolio.overview.name": name }).exec(async(err, result) => {
             if (err) {
                 handle_database_error(res, err);
             } else {
@@ -852,11 +847,11 @@ router.post('/saveAllSecurities', (req, res) => {
                     const api_response = await fetch(api_url, {
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': token
+                            'Authorization': req.signedCookies.finapi_token
                         }
                     });
 
-                    catchErrors(api_response);
+                    if (!api_response.ok) res.status = api_response.status;
 
                     const json_response = await api_response.json();
 
@@ -915,7 +910,7 @@ router.post('/saveAllSecurities', (req, res) => {
                         });
 
                         portfolio.save(
-                            function (error, portfolioRes) {
+                            function(error, portfolioRes) {
                                 if (error) handle_database_error(res, error)
                                 else {
                                     res.json(portfolioRes);
@@ -953,6 +948,7 @@ function convertSecurities(securities) {
                 "isin": securities[i].isin,
                 "wkn": securities[i].wkn,
                 "symbol": "",
+                //  searchSymbol(securities[i].isin),
                 "name": securities[i].name,
                 "price": securities[i].marketValue,
                 "marketValueCurrency": securities[i].marketValueCurrency,
@@ -976,12 +972,29 @@ function convertSecurities(securities) {
     return positions;
 }
 
-// checking for responses not in a range 200-299
-function catchErrors(api_response) {
-    if (!api_response.ok) {
-        const message = `An error has occured: ${api_response.status}`;
-        throw new Error(message);
+router.get('/searchSymbol/:isin', async(req, res) => {
+
+    let isin = req.params.isin;
+
+    const api_url = `https://finnhub.io/api/v1/search?${isin}`;
+
+    try {
+        const api_response = await fetch(api_url, {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Finnhub-Token': process.env.finnhub_key
+            }
+        });
+
+        if (!api_response.ok) res.status = api_response.status;
+
+        const json_response = await api_response.json();
+        res.json(json_response);
+
+    } catch (err) {
+        console.log(err.message);
     }
-}
+
+});
 
 module.exports = router;
