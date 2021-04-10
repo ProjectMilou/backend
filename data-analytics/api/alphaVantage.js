@@ -2,14 +2,12 @@ const axios = require("axios");
 const querystring = require("querystring");
 
 // Requires .env file and configures the process environment variables.
-require("dotenv").config();
-
 const api = axios.create({
     baseURL: "https://www.alphavantage.co"
 });
 
 // Gets the apikey which is in the .env file and is now in the process environment variables
-const apikey = process.env.APIKEY || undefined;
+const apikey = process.env.alpha_ventage_key || undefined;
 
 if (!apikey) {
     console.log("API KEY MISSING");

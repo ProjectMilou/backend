@@ -1,5 +1,3 @@
-const { namesToSymbols } = require("../../static/names-symbols-mapping")
-
 /**
  * Returns the distribution of a portfolio over different 
  * industries, countries, currencies, asset classes and sectors.
@@ -13,7 +11,7 @@ const { namesToSymbols } = require("../../static/names-symbols-mapping")
  * sectors: {sector: number}
  * }} Diversification among different criterion
  */
-function getDiversification(portfolio, symbolCompanyOverview) {
+function getDiversification(portfolio, symbolCompanyOverview, namesToSymbols) {
     let symbolsToQuantity = {};
 
     let totalQuantity = 0;
@@ -32,15 +30,13 @@ function getDiversification(portfolio, symbolCompanyOverview) {
     let countries = {};
     let currencies = {};
     let assetClasses = {};
-    let sectors = {}
 
     Object.keys(symbolCompanyOverview).forEach((symbol) => {
         let currIndustry = symbolCompanyOverview[symbol].Industry;
         let currCountry = symbolCompanyOverview[symbol].Country;
         let currCurrency = symbolCompanyOverview[symbol].Currency;
         let currAssetClass = symbolCompanyOverview[symbol].AssetType;
-        let currSector = symbolCompanyOverview[symbol].Sector;
-
+       
         if (!(currIndustry in industries)) {
             industries[currIndustry] = symbolsToQuantity[symbol];
         } else {
@@ -64,12 +60,6 @@ function getDiversification(portfolio, symbolCompanyOverview) {
         } else {
             assetClasses[currAssetClass] += symbolsToQuantity[symbol];
         }
-
-        if (!(currSector in sectors)) {
-            sectors[currSector] = symbolsToQuantity[symbol];
-        } else {
-            sectors[currSector] += symbolsToQuantity[symbol];
-        }
     });
 
 
@@ -77,8 +67,7 @@ function getDiversification(portfolio, symbolCompanyOverview) {
         industries: sortObject(industries),
         countries: sortObject(countries),
         currencies: sortObject(currencies),
-        assetClasses: sortObject(assetClasses),
-        sectors: sortObject(sectors)
+        assetClasses: sortObject(assetClasses)
     };
 }
 

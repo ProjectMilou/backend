@@ -33,14 +33,18 @@ const init = async () => {
         },
         definition: {},
         apis: [
-            './routes/swagger.js'
+            './routes/swagger.js',
+            './routes/user.js',
+            './models/user.js',
+            './models/userToken.js',
+            './auth/auth.js'
         ]
     };
     const swaggerDocs = swaggerJsDoc(swaggerOptions);
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
     // database setup
-    require( "./db/index.js" )( app );
+    require("./db/index.js")(app);
 
     app.get('/', (req, res) => {
         res.statusCode = 200;
