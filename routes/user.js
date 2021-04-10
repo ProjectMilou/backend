@@ -547,41 +547,9 @@ router.post('/reset/change/:id/:token', async (req, res) => {
 
 });
 
-
-/**
- * swagger
- *  /user/bank:
- *     get:
- *       description: get a bank
- *       summary: get bank
- *       tags:
- *        - user
- *       responses:
- *         '200':
- *           description: .
- *         '404':
- *           description: .
- */
-
-// search for a bank
-router.get('/bank', (req,res) => {
-
-//    req: query: Searchstring
-
-    res.statusCode = 200;
-    res.json({
-        banks: [{
-            id: 277672,
-            name: "FinAPI Test Bank",
-            location: "DE",
-            city: "München",
-        }]
-    });
-})
-
 /**
  * @swagger
- *  user/bank/search/:searchString:
+ *  /user/bank/search/:searchString:
  *      get:
  *          summary:
  *              Search for a bank in finAPI
@@ -618,14 +586,14 @@ router.get('/bank/search/:searchString',passport.authenticate('jwt', {session: f
 
 /**
  * @swagger
- *  /user/bank/add/:bankId
+ *  /user/bank/add/:bankId:
  *      post:
  *          summary:
  *              starts the process for adding a bank via finAPI
  *          description:
- *              Using the bankId a bank_connection import will be requested from finAPI.
- *              The resulting Webform link will be returned, the user needs to continue and the added bank_connection will be imported in his finAPI account.
- *              If everything goes well, the portfolios, connected to the bank_connection will be imported and can be viewed at portfolios section.
+ *              The bank-ID will be used to specify a bank for a "bank-connection-import" on finAPI.<br>
+ *              <b>A link to a webform</b> (leading to finAPI) will be returned. The user can input sensitive bank data on that page, because we are legally not allowed to do so.<br>
+ *              If the user confirmed his connection successfully on that other page, his securities (portfolios) will be available to us on finAPI.
  *          tags:
  *            - user
  *          parameters:
@@ -637,8 +605,12 @@ router.get('/bank/search/:searchString',passport.authenticate('jwt', {session: f
  *                  description:
  *                      OK. Webform passed in body.
  *                  schema:
- *
- *
+ *                      type: object
+ *                      properties:
+ *                          webform:
+ *                              type: string
+ *                      example:
+ *                          webform: "some link"
  *
  */
 router.get('/bank/add/:bankId',passport.authenticate('jwt', {session: false}), async (req, res) => {
