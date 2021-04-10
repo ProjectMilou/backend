@@ -4,7 +4,7 @@
  *  positionQty:
  *    type: object
  *    properties: 
- *      isin:
+ *      symbol:
  *        type: string
  *      qty: 
  *        type: number
@@ -20,10 +20,19 @@
  *        - PORTFOLIO_NAME_INVALID
  *        - PORTFOLIO_NAME_DUPLICATE
  *        - TIMESTAMP_INVALID
- *        - ISIN_INVALID  
+ *        - SYMBOL_INVALID  
  *        - QTY_INVALID
  *        - RANGE_INVALID
  *        - REAL_PORTFOLIO_MODIFICATION
+ *  error2:
+ *    type: object
+ *    properties:
+ *      error:
+ *        type: string
+ *        enum:
+ *        - DATABASE_ERROR
+ *      message:
+ *          type: string
  *  range: 
  *    type: string
  *    enum:
@@ -60,41 +69,139 @@
  *    properties: 
  *      symbol:
  *        type: string
- *      isin:
+ *      analystTargetPrice:
  *        type: string
- *      wkn:
+ *      country:
+ *        type: string
+ *      currency:
+ *        type: string
+ *      date:
+ *        type: string
+ *      industry:
+ *        type: string
+ *      marketCapitalization:
  *        type: string
  *      name:
  *        type: string
- *      price:
+ *      valuation:
  *        type: string
  *      per1d:
  *        type: string
- *      per7d:
- *        type: string
  *      per30d:
+ *        type: string
+ *      per7d:
  *        type: string
  *      per365d:
  *        type: string
- *      marketCapitalization: 
- *        type: string
- *      analystTargetPrice: 
- *        type: string
- *      valuation: 
- *        type: string
- *      growth: 
- *        type: string
  *      div: 
  *        type: string
- *      currency: 
+ *      growth:
  *        type: string
- *      country: 
+ *      isin:
  *        type: string
- *      industry: 
+ *      picture:
  *        type: string
- *      picture: 
+ *      wkn:
  *        type: string
- *      date: 
+ *      assetType:
+ *        type: string
+ *      beta:
+ *        type: string
+ *      bookValue:
+ *        type: string
+ *      cik:
+ *        type: string
+ *      dilutedEPSTTM:
+ *        type: string
+ *      dividendDate:
+ *        type: string
+ *      dividendPerShare:
+ *        type: string
+ *      ebitda:
+ *        type: string
+ *      eps:
+ *        type: string
+ *      evToEbitda:
+ *        type: string
+ *      evToRevenue:
+ *        type: string
+ *      exDividendDate:
+ *        type: string
+ *      exchange:
+ *        type: string
+ *      fiscalYearEnd:
+ *        type: string
+ *      forwardAnnualDividendRate:
+ *        type: string
+ *      forwardAnnualDividendYield:
+ *        type: string
+ *      forwardPE:
+ *        type: string
+ *      grossProfitTTM:
+ *        type: string
+ *      lastSplitDate:
+ *        type: string
+ *      lastSplitFactor:
+ *        type: string
+ *      latestQuarter:
+ *        type: string
+ *      operatingMarginTTMprofitMargin:
+ *        type: string
+ *      payoutRatio:
+ *        type: string
+ *      peRatio:
+ *        type: string
+ *      pegRatio:
+ *        type: string
+ *      per200DayMovingAverage:
+ *        type: string
+ *      per50DayMovingAverage:
+ *        type: string
+ *      per52WeekHigh:
+ *        type: string
+ *      per52WeekLow:
+ *        type: string
+ *      percentInsiders:
+ *        type: string
+ *      percentInstitutions:
+ *        type: string
+ *      priceToBookRatio:
+ *        type: string
+ *      priceToSalesRatioTTM:
+ *        type: string
+ *      profitMargin:
+ *        type: string
+ *      quarterlyEarningsGrowthYOY:
+ *        type: string
+ *      quarterlyRevenueGrowthYOY:
+ *        type: string
+ *      returnOnAssetsTTM:
+ *        type: string
+ *      returnOnEquityTTM:
+ *        type: string
+ *      revenuePerShareTTM:
+ *        type: string
+ *      revenueTTM:
+ *        type: string
+ *      sharesFloat:
+ *        type: string
+ *      sharesOutstanding:
+ *        type: string
+ *      sharesShort:
+ *        type: string
+ *      sharesShortPriorMonth:
+ *        type: string
+ *      shortPercentFloat:
+ *        type: string
+ *      shortPercentOutstanding:
+ *        type: string
+ *      shortRatio:
+ *        type: string
+ *      trailingPE:
+ *        type: string
+ *      price:
+ *        type: string
+ *      mcSize:
  *        type: string
  *  stockks: 
  *        type: array
@@ -131,15 +238,17 @@
  *  keyFigureee:
  *    type: object
  *    properties:
- *      date:
+ *      fiscalDateEnding:
  *        type: string
- *      pte:
+ *      reportedDate:
  *        type: string
- *      ptb:
+ *      reportedEPS:
  *        type: string
- *      ptg:
+ *      estimatedEPS:
  *        type: string
- *      eps:
+ *      surprise:
+ *        type: string
+ *      surprisePercentage:
  *        type: string
  *  keyFigureees:
  *        type: array
@@ -157,6 +266,182 @@
  *        type: array
  *        items:
  *          $ref: '#/definitions/dataPointtt'
+ *
+ *
+ *
+ *
+ *  annualReport:
+ *    type: object
+ *    properties:
+ *      fiscalDateEnding:
+ *        type: string
+ *      reportedCurrency:
+ *        type: string
+ *      totalAssets:
+ *        type: string
+ *      totalCurrentAssets:
+ *        type: string
+ *      cashAndCashEquivalentsAtCarryingValue:
+ *        type: string
+ *      cashAndShortTermInvestments:
+ *        type: string
+ *      inventory:
+ *        type: string
+ *      currentNetReceivables:
+ *        type: string
+ *      totalNonCurrentAssets:
+ *        type: string
+ *      propertyPlantEquipment:
+ *        type: string
+ *      accumulatedDepreciationAmortizationPPE:
+ *        type: string
+ *      intangibleAssets:
+ *        type: string
+ *      intangibleAssetsExcludingGoodwill:
+ *        type: string
+ *      goodwill:
+ *        type: string
+ *      investments:
+ *        type: string
+ *      longTermInvestments:
+ *        type: string
+ *      shortTermInvestments:
+ *        type: string
+ *      otherCurrentAssets:
+ *        type: string
+ *      otherNonCurrrentAssets:
+ *        type: string
+ *      totalLiabilities:
+ *        type: string
+ *      totalCurrentLiabilities:
+ *        type: string
+ *      currentAccountsPayable:
+ *        type: string
+ *      deferredRevenue:
+ *        type: string
+ *      currentDebt:
+ *        type: string
+ *      shortTermDebt:
+ *        type: string
+ *      totalNonCurrentLiabilities:
+ *        type: string
+ *      capitalLeaseObligations:
+ *        type: string
+ *      longTermDebt:
+ *        type: string
+ *      currentLongTermDebt:
+ *        type: string
+ *      longTermDebtNoncurrent:
+ *        type: string
+ *      shortLongTermDebtTotal:
+ *        type: string
+ *      otherCurrentLiabilities:
+ *        type: string
+ *      otherNonCurrentLiabilities:
+ *        type: string
+ *      totalShareholderEquity:
+ *        type: string
+ *      treasuryStock:
+ *        type: string
+ *      retainedEarnings:
+ *        type: string
+ *      commonStock:
+ *        type: string
+ *      commonStockSharesOutstanding:
+ *        type: string
+ *  annualReports:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/annualReport'
+ *
+ *
+ *  quarterlyReport:
+ *    type: object
+ *    properties:
+ *      fiscalDateEnding:
+ *        type: string
+ *      reportedCurrency:
+ *        type: string
+ *      totalAssets:
+ *        type: string
+ *      totalCurrentAssets:
+ *        type: string
+ *      cashAndCashEquivalentsAtCarryingValue:
+ *        type: string
+ *      cashAndShortTermInvestments:
+ *        type: string
+ *      inventory:
+ *        type: string
+ *      currentNetReceivables:
+ *        type: string
+ *      totalNonCurrentAssets:
+ *        type: string
+ *      propertyPlantEquipment:
+ *        type: string
+ *      accumulatedDepreciationAmortizationPPE:
+ *        type: string
+ *      intangibleAssets:
+ *        type: string
+ *      intangibleAssetsExcludingGoodwill:
+ *        type: string
+ *      goodwill:
+ *        type: string
+ *      investments:
+ *        type: string
+ *      longTermInvestments:
+ *        type: string
+ *      shortTermInvestments:
+ *        type: string
+ *      otherCurrentAssets:
+ *        type: string
+ *      otherNonCurrrentAssets:
+ *        type: string
+ *      totalLiabilities:
+ *        type: string
+ *      totalCurrentLiabilities:
+ *        type: string
+ *      currentAccountsPayable:
+ *        type: string
+ *      deferredRevenue:
+ *        type: string
+ *      currentDebt:
+ *        type: string
+ *      shortTermDebt:
+ *        type: string
+ *      totalNonCurrentLiabilities:
+ *        type: string
+ *      capitalLeaseObligations:
+ *        type: string
+ *      longTermDebt:
+ *        type: string
+ *      currentLongTermDebt:
+ *        type: string
+ *      longTermDebtNoncurrent:
+ *        type: string
+ *      shortLongTermDebtTotal:
+ *        type: string
+ *      otherCurrentLiabilities:
+ *        type: string
+ *      otherNonCurrentLiabilities:
+ *        type: string
+ *      totalShareholderEquity:
+ *        type: string
+ *      treasuryStock:
+ *        type: string
+ *      retainedEarnings:
+ *        type: string
+ *      commonStock:
+ *        type: string
+ *      commonStockSharesOutstanding:
+ *        type: string
+ *  quarterlyReports:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/quarterlyReport'
+ *
+ *
+ *
+ *
  *
  *  rating:
  *    type: object
@@ -355,6 +640,8 @@
  *    - portfolio
  *    summary: Get all portfolios of the current user
  *    description: Gets all portfolios of the current user with basic information to display in the portfolio dashboard.
+ *              
+ *                  (The value of "id" is the real one, "_id" can be ignored)
  *    operationId: getPortfolios
  *    produces:
  *    - application/json
@@ -366,6 +653,13 @@
  *          type: array
  *          items:
  *            $ref: '#/definitions/portfolioOverview'
+ *      500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
+ * 
  *    security:
  *    - api_key: [] 
  *
@@ -393,6 +687,12 @@
  *         description: PORTFOLIO_ID_INVALID
  *         schema:
  *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
  *
  * /portfolio/performance/{portfolioId}:
  *   get:
@@ -406,15 +706,6 @@
  *     consumes:
  *     - application/json
  *     parameters:
- *       - in: body
- *         name: range
- *         description: The range
- *         required: true
- *         schema:
- *           type: object
- *           properties:
- *             range:
- *               $ref: '#/definitions/range'
  *       - name: portfolioId
  *         in: path
  *         description: ID of the portfolio to get its data points
@@ -438,84 +729,14 @@
  *         description: PORTFOLIO_ID_INVALID
  *         schema:
  *           $ref: '#/definitions/error'
- *       400:
- *         description: RANGE_INVALID
- *         schema:
- *           $ref: '#/definitions/error'
- *
- * /portfolio/stock:
- *   get:
- *     tags:
- *     - portfolio
- *     summary: Gets the portfolio name and quantity of a specified stock for all portfolios of the current user.
- *     description: This information is displayed to the user when adding a stock to his portfolios.
- *     operationId: portfolioStock
- *     produces:
- *     - application/json
- *     consumes:
- *     - application/json
- *     parameters:
- *       - in: body
- *         name: isin
- *         description: ISIN of the specified stock
- *         required: true
- *         schema:
- *            type: object
- *            properties:
- *              isin:
- *                type: string
- *     responses:
- *       200:
- *         description: successful operation
- *         schema:
- *              type: array
- *              items:
- *                  $ref: '#/definitions/portfolioStock'
- *       400:
- *         description: ISIN_INVALID
- *         schema:
- *           $ref: '#/definitions/error'
- *   put:
- *     tags:
- *     - portfolio
- *     summary: Modify stock quantity
- *     description: Modifies a stock's quantity within multiple portfolios simultaneously.
- *
- *      If the specified quantity for a portfolio is 0, the position in the specified portfolio is deleted if it exists.
- *      If there is no position in the specified portfolio, a new position with the specified quantity is created.
- *      Otherwise, the position in the specified portfolio is updated to match the specified quantity.
- *
- *      Positions not included in the request remain unchanged.
- *     operationId: modifyStocks
- *     produces:
- *     - application/json
- *     consumes:
- *     - application/json
- *     parameters:
- *     - in: body
- *       name: isin and modifications
- *       description: ISIN of the specified stock
- *       schema:
- *         type: object
- *         properties:
- *           isin:
- *             type: string
- *           modifications:
- *             type: array
- *             items:
- *               $ref: '#/definitions/portfolioQty'
- *     responses:
- *       200:
- *         description: successful operation
- *       404:
- *         description: PORTFOLIO_ID_INVALID
- *         schema:
- *           $ref: '#/definitions/error'
- *       400:
- *         description: QTY_INVALID/ISIN_INVALID/REAL_PORTFOLIO_MODIFICATION
- *         schema:
- *           $ref: '#/definitions/error'
- *
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
+
+ * 
  * /portfolio/create:
  *   post: 
  *     tags:
@@ -548,14 +769,19 @@
  *         description: PORTFOLIO_NAME_DUPLICATE/PORTFOLIO_NAME_INVALID
  *         schema:
  *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
  *
  * /portfolio/{portfolioId}:
  *   delete:
  *     tags:
  *     - portfolio
  *     summary: Delete portfolio by ID
- *     description: For valid response try integer IDs with positive integer value.\
- *       \ Negative or non-integer values will generate API errors
+ *     description: Deletes portfolio with given id, if it exists.
  *     operationId: deletePortfolio
  *     produces:
  *     - application/json
@@ -572,13 +798,19 @@
  *         description: PORTFOLIO_NOT_EXISTS
  *         schema:
  *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
  *
  * /portfolio/rename/{portfolioId}:
  *   put:
  *     tags:
  *     - portfolio
  *     summary: Rename a portfolio
- *     description: Renames a portfolio.
+ *     description: Renames the portfoliowith the given id.
  *     operationId: renamePortfolio
  *     produces:
  *     - application/json
@@ -609,6 +841,12 @@
  *         description: PORTFOLIO_NAME_DUPLICATE/PORTFOLIO_NAME_INVALID
  *         schema:
  *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
  *
  * /portfolio/modify/{portfolioId}:
  *   put:
@@ -622,6 +860,12 @@
  *       Otherwise, the position in the specified portfolio is updated to match the specified quantity.
  *
  *       Positions not included in the request remain unchanged.
+ *       The position which is changed is the one which has isin, wkn, symbol or name equal to the parameter symbol 
+ *       (which you can call either isin, wkn, name or symbol)
+ *       It is safest to search with the symbol as parameter, because in our API we can search stocks by symbol
+ *       (Right now we haen't implemented the stock search yet, so it just creates a lot of question marks as fields for added positions)
+ *       Only virtual portfolios can be modified.
+ *       If any of the modifications causes an error, none of the modifications get stored in the database.
  *     operationId: modifyPortfolio
  *     produces:
  *     - application/json
@@ -651,9 +895,15 @@
  *         schema:
  *           $ref: '#/definitions/error'
  *       400:
- *         description: QTY_INVALID/ISIN_INVALID/REAL_PORTFOLIO_MODIFICATION
+ *         description: QTY_INVALID/SYMBOL_INVALID/REAL_PORTFOLIO_MODIFICATION
  *         schema:
  *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
  *
  * /portfolio/duplicate/{portfolioId}:
  *   post:
@@ -697,8 +947,105 @@
  *         description: PORTFOLIO_NAME_DUPLICATE/PORTFOLIO_NAME_INVALID
  *         schema:
  *           $ref: '#/definitions/error'
- *
- * /stocks/list?country={country}&currency={currency}&industry={industry}&mc={mc}:
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
+ * /portfolio/stock/{symbol}:
+ *   get:
+ *     tags:
+ *     - portfolio
+ *     summary: Gets the portfolio name and quantity of a specified stock for all portfolios of the current user. 
+ *     description: This information is displayed to the user when adding a stock to his portfolios.
+ *          The parameter "symbol" may be the symbol, the isin, the wkn or the name of a certain stock. The preferred parameter is symbol.
+ *     operationId: portfolioStock
+ *     produces:
+ *     - application/json
+ *     consumes:
+ *     - application/json
+ *     parameters:
+ *       - in: path
+ *         name: symbol
+ *         description: symbol, ISIN, WKN or name of the specified stock
+ *         required: true
+ *         schema:
+ *            type: object
+ *            properties:
+ *              symbol:
+ *                type: string
+ *     responses:
+ *       200: 
+ *         description: successful operation
+ *         schema:
+ *              type: array
+ *              items:
+ *                  $ref: '#/definitions/portfolioStock'
+ *       400:
+ *         description: SYMBOL_INVALID
+ *         schema:
+ *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
+ *   put:
+ *     tags:
+ *     - portfolio
+ *     summary: Modify stock quantity 
+ *     description: Modifies a stock's quantity within multiple portfolios simultaneously.
+ *     
+ *      If the specified quantity for a portfolio is 0, the position in the specified portfolio is deleted if it exists.
+ *      If there is no position in the specified portfolio, a new position with the specified quantity is created.
+ *      Otherwise, the position in the specified portfolio is updated to match the specified quantity.
+ * 
+ *      Positions not included in the request remain unchanged.
+ *     operationId: modifyStocks
+ *     produces:
+ *     - application/json
+ *     consumes:
+ *     - application/json
+ *     parameters:
+ *     - in: path
+ *       name: symbol
+ *       description: symbol, ISIN, WKN or name of the specified stock. The preferred parameter is symbol.
+ *       required: true
+ *       schema:
+ *            type: object
+ *            properties:
+ *              symbol:
+ *                type: string
+ *     - in: body
+ *       name: symbol and modifications
+ *       description: modifications; portfolioId and new quantity
+ *       schema:
+ *         type: object
+ *         properties:
+ *           modifications:
+ *             type: array
+ *             items:
+ *               $ref: '#/definitions/portfolioQty'
+ *     responses:
+ *       200: 
+ *         description: successful operation
+ *       404:
+ *         description: PORTFOLIO_ID_INVALID
+ *         schema:
+ *           $ref: '#/definitions/error'
+ *       400:
+ *         description: QTY_INVALID/SYMBOL_INVALID/REAL_PORTFOLIO_MODIFICATION
+ *         schema:
+ *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
+ * /stocks/list?{country}&{currency}&{industry}&{mc}:
  *  get:
  *   summary: Returns a stock list according to filter.
  *   description: Returns a stock list according to filter.
@@ -748,6 +1095,31 @@
  *     - name: id
  *       in: path
  *       description: can be name, isin, wkn, symbol of a stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *       type: object
+ *       properties:
+ *        stocks:
+ *         $ref: '#/definitions/stockks'
+ *    '400':
+ *      description: Invalid
+ *
+ * /stocks/overview?id={id}:
+ *  get:
+ *   summary: Returns a stock overview with given id.
+ *   description: Returns a stock overview with given id.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: can be symbol of a stock
  *       required: true
  *       type: string
  *   tags:
@@ -838,8 +1210,10 @@
  *    '200':
  *      description: Successful operation
  *      schema:
- *       type: object
+ *       type : object
  *       properties:
+ *        symbol:
+ *         type : string
  *        keyFigures:
  *         $ref: '#/definitions/keyFigureees'
  *    '400':
@@ -928,6 +1302,70 @@
  *       properties:
  *        stocks:
  *         $ref: '#/definitions/newsss'
+ *    '400':
+ *      description: Invalid
+ *
+ * /stocks/risk?id={id}:
+ *  get:
+ *   summary: Returns risk analysis.
+ *   description: Returns risk analysis.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: symbol of stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *       type: object
+ *       properties:
+ *        rewards:
+ *         type: array
+ *         items:
+ *          type: string
+ *        risks:
+ *         type: array
+ *         items:
+ *          type: string
+ *        risk_checks:
+ *         type: array
+ *         items:
+ *          type: string
+ *    '400':
+ *      description: Invalid
+ *
+ * /stocks/balanceSheet?id={id}:
+ *  get:
+ *   summary: Get balance sheet.
+ *   description: Get balance sheet.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: symbol of a stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *       type : object
+ *       properties:
+ *        symbol:
+ *         type : string
+ *        annualReports:
+ *         $ref: '#/definitions/annualReports'
+ *        quarterlyReports:
+ *         $ref: '#/definitions/quarterlyReports'
  *    '400':
  *      description: Invalid
  *

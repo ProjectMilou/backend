@@ -1,6 +1,7 @@
 const dotenv = require('dotenv');
 dotenv.config();
 const mongoose = require('mongoose');//https://mongoosejs.com/docs/index.html
+mongoose.set('useFindAndModify', false);
 
 module.exports = function (app) {
 
