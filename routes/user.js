@@ -124,7 +124,7 @@ router.post('/confirm/:id/:token', async (req, res) => {
  * /user/login:
  *  post:
  *    description: Checks if email and password are correct. sends back a token that needs to be passed in the header of each user-relevant request.
- *    summary:
+ *    summary: Login of a user
  *    tags:
  *    - user
  *    parameters:
