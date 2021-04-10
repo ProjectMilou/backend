@@ -169,7 +169,7 @@ const newStock = (symbol, qty) => {
             "perf7dPercent": 0,
             "perf1yPercent": 0,
             "country": "?", //TODO
-            "industry": "REIT-Specialty", //TODO
+            "industry": "?", //TODO
             "score": 0 //TODO-> finnHub reccomendation trends, for 10 biggest position, average of score multiplied with value, sum divided with total amount of reccomendations
         },
         "qty": qty, // = quantityNominal?
@@ -280,7 +280,7 @@ router.post('/create', (req, res) => {
                         if (err) {
                             handle_database_error(res, err)
                         } else {
-                            console.log("portfolio saved successfully")
+                            //console.log("portfolio saved successfully")
                             response.id = portfolio["id"];
                             res.json(response);
                         }

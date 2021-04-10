@@ -364,6 +364,8 @@
  *    - portfolio
  *    summary: Get all portfolios of the current user
  *    description: Gets all portfolios of the current user with basic information to display in the portfolio dashboard.
+ *              
+ *                  (The value of "id" is the real one, "_id" can be ignored)
  *    operationId: getPortfolios
  *    produces:
  *    - application/json
@@ -733,7 +735,7 @@
  *     parameters:
  *     - in: path
  *       name: symbol
- *       description: symbol, ISIN, WKN or name of the specified stock
+ *       description: symbol, ISIN, WKN or name of the specified stock. The preferred parameter is symbol.
  *       required: true
  *       schema:
  *            type: object
@@ -742,7 +744,7 @@
  *                type: string
  *     - in: body
  *       name: symbol and modifications
- *       description: symbol, ISIN, WKN or name of the specified stock
+ *       description: modifications; portfolioId and new quantity
  *       schema:
  *         type: object
  *         properties:
@@ -761,6 +763,12 @@
  *         description: QTY_INVALID/SYMBOL_INVALID/REAL_PORTFOLIO_MODIFICATION
  *         schema:
  *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
  * /stocks/list?{country}&{currency}&{industry}&{mc}:
  *  get:
  *   summary: Returns a stock list according to filter.
