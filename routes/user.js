@@ -56,7 +56,6 @@ const router = express.Router();
  *              example:
  *                  message: Signup failed - mail has got an account already
 */
-
 router.post(
     '/register',
     passport.authenticate('register', { session: false }),
@@ -101,7 +100,6 @@ router.post(
  *              example:
  *                  message: Failed
  */
-
 router.post('/confirm/:id/:token', async (req, res) => {
     const token = req.params.token;
     const id = req.params.id;
@@ -225,7 +223,6 @@ router.post(
     }
 );
 
-
 /**
  * @swagger
  * /user/profile:
@@ -272,6 +269,81 @@ router.get('/profile', passport.authenticate('jwt',{session: false}), async (req
                 firstName: req.user.firstName,
                 confirmed: req.user.confirmed
         });
+    } catch(err){
+        console.log(err);
+        res.json("error occured");
+    }
+});
+
+/**
+ * @swagger
+ * /user/edit:
+ *  put:
+ *   description: Edit user account information.
+ *   summary: Edit user information
+ *   tags:
+ *    - user
+ *   security:
+ *      - bearerAuth: []
+ *   parameters:
+ *       - in: body
+ *         name: changeInformation
+ *         description: information that has to be changed.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             lastName:
+ *               type: string
+ *             firstName:
+ *               type: string
+ *           example:
+ *             lastName: Homer
+ *             firstName: Simpson
+ *   responses:
+ *       200:
+ *          description: Token accepted, User information will be changed
+ *          schema:
+ *              type: object
+ *              properties:
+ *                  email:
+ *                      type: string
+ *                  lastName:
+ *                      type: string
+ *                  firstName:
+ *                      type: string
+ *                  confirmed:
+ *                      type: boolean
+ *              example:
+ *                  email: homer.simpson@milou.de
+ *                  lastName: Homer
+ *                  firstName: Simpson
+ *                  confirmed: true
+ *       404:
+ *          description: Token rejected, user not found or deleted.
+ *          schema:
+ *              type: string
+ *              example: Unauthorized
+ */
+router.put('/edit', passport.authenticate('jwt', {session: false}), async (req, res) => {
+    // implement the following authorization: http://www.passportjs.org/docs/username-password/
+
+    let changes = {};
+    if(req.body.firstName !== undefined){
+        changes.firstName = req.body.firstName;
+    }
+    if(req.body.lastName !== undefined){
+        changes.lastName = req.body.lastName;
+    }
+
+    try{
+        await UserModel.updateOne({_id: req.user.id},changes,null);
+        const user = await UserModel.findOne({_id: req.user.id});
+        res.json({user: {
+                email: user.email,
+                lastName: user.lastName,
+                firstName: user.firstName,
+                confirmed: user.confirmed
+            }});
     } catch(err){
         console.log(err);
         res.json("error occured");
@@ -475,82 +547,6 @@ router.post('/reset/change/:id/:token', async (req, res) => {
 
 });
 
-
-/**
- * @swagger
- * /user/edit:
- *  put:
- *   description: Edit user account information.
- *   summary: Edit user information
- *   tags:
- *    - user
- *   security:
- *      - bearerAuth: []
- *   parameters:
- *       - in: body
- *         name: changeInformation
- *         description: information that has to be changed.
- *         schema:
- *           type: object
- *           properties:
- *             lastName:
- *               type: string
- *             firstName:
- *               type: string
- *           example:
- *             lastName: Homer
- *             firstName: Simpson
- *   responses:
- *       200:
- *          description: Token accepted, User information will be changed
- *          schema:
- *              type: object
- *              properties:
- *                  email:
- *                      type: string
- *                  lastName:
- *                      type: string
- *                  firstName:
- *                      type: string
- *                  confirmed:
- *                      type: boolean
- *              example:
- *                  email: homer.simpson@milou.de
- *                  lastName: Homer
- *                  firstName: Simpson
- *                  confirmed: true
- *       404:
- *          description: Token rejected, user not found or deleted.
- *          schema:
- *              type: string
- *              example: Unauthorized
- */
-router.put('/edit', passport.authenticate('jwt', {session: false}), async (req, res) => {
-    // implement the following authorization: http://www.passportjs.org/docs/username-password/
-
-    let changes = {};
-    if(req.body.firstName !== undefined){
-        changes.firstName = req.body.firstName;
-    }
-    if(req.body.lastName !== undefined){
-        changes.lastName = req.body.lastName;
-    }
-
-    try{
-        await UserModel.updateOne({_id: req.user.id},changes,null);
-        const user = await UserModel.findOne({_id: req.user.id});
-        res.json({user: {
-                email: user.email,
-                lastName: user.lastName,
-                firstName: user.firstName,
-                confirmed: user.confirmed
-            }});
-    } catch(err){
-        console.log(err);
-        res.json("error occured");
-    }
-});
-
 /**
  * @swagger
  * /user/delete:
@@ -625,6 +621,7 @@ router.get('/bank', (req,res) => {
         }]
     });
 })
+
 /**
  * swagger
  *  /user/bank:
