@@ -15,9 +15,9 @@ router.use(express.json()); // for parsing application/json
 router.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
 //var userId ='7066e49a553a5c0447248073'// invalid
-// var userId = '6066e49a553a5c0447248073'
+var userId = '6066e49a553a5c0447248073'
 //var userId = '6066e49a553a5c0000000000'
-var userId = '606c983e747e639f685affd0';
+//var userId = '606c983e747e639f685affd0';
 router.use(cookieParser(process.env.auth_jwt_secret + userId));
 
 const fetch = require('node-fetch');
@@ -104,54 +104,58 @@ const emptyPortfolio = (portfolioId, userId, name) => {
                 "virtual": true,
                 "positionCount": 0,
                 "value": 0,
-                "score": 0,
+                //"score": 0, optional
                 "perf7d": 0,
                 "perf1y": 0,
+                "perf7dPercent": 0,
+                "perf1yPercent": 0,
                 "modified": Date.now()
             },
             "positions": [],
-            "risk": {
-                "countries": {
-                    "count": 0,
-                    "score": 0,
-                    "warnings": []
-                },
-                "segments": {
-                    "count": 0,
-                    "score": 0,
-                    "warnings": []
-                },
-                "currency": {
-                    "count": 0,
-                    "score": 0,
-                    "warnings": []
-                }
-            },
-            "keyFigures": [{
-                "year": 0,
-                "pte": 0,
-                "ptb": 0,
-                "ptg": 0,
-                "eps": 0,
-                "div": 0,
-                "dividendPayoutRatio": 0
-            }],
-            "nextDividend": 0,
-            "dividendPayoutRatio": 0,
-            "totalReturn": 0,
-            "totalReturnPercent": 0
+            //optional values
+            // "risk": {
+            //     "countries": {
+            //         "count": 0,
+            //         "score": 0,
+            //         "warnings": []
+            //     },
+            //     "segments": {
+            //         "count": 0,
+            //         "score": 0,
+            //         "warnings": []
+            //     },
+            //     "currency": {
+            //         "count": 0,
+            //         "score": 0,
+            //         "warnings": []
+            //     }
+            // },
+            // "keyFigures": [{
+            //     "year": 0,
+            //     "pte": 0,
+            //     "ptb": 0,
+            //     "ptg": 0,
+            //     "eps": 0,
+            //     "div": 0,
+            //     "dividendPayoutRatio": 0
+            // }],
+            // "nextDividend": 0,
+            // "dividendPayoutRatio": 0,
+            // "totalReturn": 0,
+            // "totalReturnPercent": 0,
+            // "performance": []
         }
     }
 }
 
-const newStock = (isin, qty) => {
+const newStock = (symbol, qty) => {
     return {
         "stock": {
             //id: Number?
             //accountId?
-            "isin": isin,
+            "isin": "?",
             "wkn": "?", //TODO
-            "symbol": "?", //TODO
+            "symbol": symbol, //TODO
             "name": "?", //TODO
             "price": 0, //=marketValue?//TODO
             "marketValueCurrency": "?", //TODO
@@ -162,6 +166,8 @@ const newStock = (isin, qty) => {
             "entryQuoteCurrency": "?", //TODO
             "perf7d": 0, //TODO
             "perf1y": 0, //TODO
+            "perf7dPercent": 0,
+            "perf1yPercent": 0,
             "country": "?", //TODO
             "industry": "REIT-Specialty", //TODO
             "score": 0 //TODO-> finnHub reccomendation trends, for 10 biggest position, average of score multiplied with value, sum divided with total amount of reccomendations
@@ -183,9 +189,7 @@ const is_valid_qty = (qty) => {
     return qty >= 0 // && qty < ?
 }
 
-const is_valid_isin = (isin) => {
-    return isin.length == 12
-}
+
 
 //returns all portfolios of current user
 router.get('/list', (req, res) => {
@@ -223,23 +227,31 @@ router.get('/details/:id', (req, res) => {
     }
 });
 
-router.get('/performance/:id', function(req, res) {
+
+// TODO: implement something which calculates the performance every day
+router.get('/performance/:id', function (req, res) {
     var id = req.params.id;
-    var range = req.body.range;
     var response = {};
-    if (id == "1" && range == "7D") {
-        response.chart = [
-            [1327359600000, 0],
-            [1327359700000, 1],
-            [1327359800000, 2]
-        ];
-        res.json(response);
-    } else if (id != "1") {
-        response.error = "PORTFOLIO_ID_INVALID";
+    if (!is_valid_id(id)) {
+        response.error = "PORTFOLIO_ID_INVALID"
         res.status(404).json(response);
     } else {
-        response.error = "RANGE_INVALID";
-        res.status(400).json(response);
+        // find all data of portfolio
+        Portfolio.findOne({ "userId": userId, "id": id }, (err, portf) => {
+            if (err) {
+                handle_database_error(res, err)
+            } else if (!portf) { //portfolio doesn't exist
+                response.error = "PORTFOLIO_ID_INVALID"
+                res.status(404).json(response);
+            } else {
+                if (portf.portfolio.performance)
+                    response.chart = portf.portfolio.performance;
+                else {
+                    response.chart = []
+                }
+                res.json(response);
+            }
+        });
     }
 });
 
@@ -338,111 +350,129 @@ router.put('/rename/:id', (req, res) => {
     }
 });
 
+// returns true if the positionId is either the name, the isin, the wkn or the symbol of the position
+const idBelongsToThisPosition = (positionId, position) => {
+    return positionId == position.stock.isin || positionId == position.stock.wkn || positionId == position.stock.name || positionId == position.stock.symbol;
+}
 
-// not perfect yet
-// return the response of the first modification
-router.put('/modify/:id', async(req, res) => {
+// returns the first one of the fields "symbol", "isin", "wkn", "name" which has a defined value
+const findPortfolioId = (modification) => {
+    if (modification.symbol)
+        return modification.symbol
+    else if (modification.isin)
+        return modification.isin
+    else if (modification.wkn)
+        return modification.wkn
+    else if (modification.name)
+        return modification.name
+}
+
+// query for mongoose
+// matches document which has isin, wkn, symbol or name equal to positionId
+const query = (userId, positionId) => {
+    return {
+        $or: [
+            { "userId": userId, "portfolio.positions.stock.isin": positionId },
+            { "userId": userId, "portfolio.positions.stock.wkn": positionId },
+            { "userId": userId, "portfolio.positions.stock.symbol": positionId },
+            { "userId": userId, "portfolio.positions.stock.name": positionId }
+        ]
+    }
+}
+
+/** Modifies the positions of a portfolio and saves the timestamp of the modification in the portfolio's history.
+ * If the specified quantity for a portfolio is 0, the position in the specified portfolio is deleted if it exists. 
+ * If there is no position in the specified portfolio, a new position with the specified quantity is created. 
+ * Otherwise, the position in the specified portfolio is updated to match the specified quantity.
+ * The position which is changed is the one which has isin, wkn, symbol or name equal to positionId
+ */
+const modifyPortfolio = (portfolio, positionId, qty) => {
+    // modify portfolio
+    var positions = portfolio.portfolio.positions
+    // find the right position, if already present in portfolio
+    var pos = positions.find((position) => {
+        return idBelongsToThisPosition(positionId, position)
+    })
+    if (pos) {// if present
+        var oldstockvalue = pos.stock.price * pos.qty
+        portfolio.portfolio.overview.value -= oldstockvalue
+        if (qty == 0) {
+            // delete position from portfolio
+            for (var i = 0; i < positions.length; i++) {
+                if (idBelongsToThisPosition(positionId, positions[i])) {
+                    positions.splice(i, 1);
+                }
+            }
+        } else {
+            // update position of portfolio
+            var newstockvalue = pos.stock.price * qty
+            portfolio.portfolio.overview.value += newstockvalue
+            pos.qty = qty
+        }
+    } else if (qty != 0) {
+        // add new stock/position to portfolio
+        var stock = newStock(positionId, qty)//TODO modify new Stock
+        positions.push(stock)
+        portfolio.portfolio.overview.value += stock.stock.price * stock.qty
+    }
+
+    //TODO modify totalReturn of portfolio and all the other fields
+    portfolio.portfolio.overview.modified = Date.now() // current timestamp
+    portfolio.portfolio.overview.positionCount = portfolio.portfolio.positions.length;
+
+}
+
+
+
+// if one of the modifications causes an error, nothing gets modified in the database
+router.put('/modify/:id', async (req, res) => {
     // request: {"modifications": 
-    //                  [{"isin": "string",
+    //                  [{"isin": "string", -> could also be symbol, wkn or name
     //                  "qty": 0}]}
     var id = req.params.id;
     var response = {};
-    if (req.body.modifications.length == 0) {
+    if (!is_valid_id(id)) {
+        response.error = "PORTFOLIO_ID_INVALID"
+        res.status(404)
         res.json(response)
-    }
-    for (var j = 0; j < req.body.modifications.length; j++) {
-        var isin = req.body.modifications[j].isin;
-        var qty = req.body.modifications[j].qty;
-        if (!is_valid_id(id)) {
-            response.error = "PORTFOLIO_ID_INVALID"
-            res.status(404)
-            j = req.body.modifications.length //=break;
-            res.json(response) //TODO: only send response when j==0
-        } else {
-            if (!is_valid_qty(qty)) {
-                console.log(qty)
-                response.error = "QTY_INVALID"
-                res.status(400)
-                j = req.body.modifications.length //=break;
-                res.json(response)
+    } else {
+        // find Portfolio
+        await Portfolio.findOne({ "id": id, "userId": userId }, (err, portfolio) => {
+            if (err) {
+                handle_database_error(res, err)
+            } else if (!portfolio) {
+                response.error = "PORTFOLIO_ID_INVALID"
+                res.status(404).json(response)
+            } else if (!portfolio.portfolio.overview.virtual) {
+                response.error = "REAL_PORTFOLIO_MODIFICATION"
+                res.status(400).json(response)
             } else {
-                if (!is_valid_isin(isin)) {
-                    response.error = "ISIN_INVALID"
-                    res.status(400)
-                    j = req.body.modifications.length //=break;
-                    res.json(response)
-                } else {
-                    // find Portfolio
-
-                    await Portfolio.findOne({ "id": id, "userId": userId }, (err, portfolio) => {
-                        var currentIndex = j
-                        if (err) {
-                            handle_database_error(res, err)
-                        } else if (!portfolio) {
-                            response.error = "PORTFOLIO_ID_INVALID"
-                            res.status(404)
-                            j = req.body.modifications.length //=break;
-                            res.json(response)
-                        } else if (!portfolio.portfolio.overview.virtual) {
-                            response.error = "REAL_PORTFOLIO_MODIFICATION"
-                            res.status(400)
-                            j = req.body.modifications.length //=break;
-                            res.json(response)
-                        } else {
-                            // modify portfolio
-                            var positions = portfolio.portfolio.positions
-                            var pos = positions.find((position) => {
-                                return position.stock.isin == isin
-                            })
-                            if (pos) {
-                                // update value of portfolio
-                                var oldstockvalue = pos.stock.price * pos.qty
-                                portfolio.portfolio.overview.value -= oldstockvalue
-                                if (qty == 0) {
-                                    // delete position from portfolio
-                                    for (var i = 0; i < positions.length; i++) {
-                                        if (positions[i].stock.isin == isin) {
-                                            positions.splice(i, 1);
-                                        }
-                                    }
-                                } else {
-                                    var newstockvalue = pos.stock.price * qty
-                                    portfolio.portfolio.overview.value += newstockvalue
-                                    pos.qty = qty
-                                }
-                            } else if (qty != 0) {
-                                // add new stock to portfolio
-                                var stock = newStock(isin, qty)
-                                positions.push(stock)
-                                portfolio.portfolio.overview.value += stock.stock.price * stock.qty
-                            }
-
-                            //TODO modify totalReturn of portfolio and all the other fields
-                            portfolio.portfolio.overview.modified = Date.now() // current timestamp
-                            portfolio.portfolio.overview.positionCount = portfolio.portfolio.positions.length;
-                            portfolio.save(
-                                function(err, portfolio) {
-                                    if (err) handle_database_error(res, err)
-                                    else {
-                                        console.log("success for modification nr. " + currentIndex) //why does this happen even when the isin is invalid?
-
-                                        if (currentIndex == 0) {
-                                            res.json(response) //TODO find a way to make this wait
-                                        }
-                                    }
-
-                                }
-                            )
+                var success = true;
+                for (var j = 0; j < req.body.modifications.length; j++) {
+                    var portfolioId = findPortfolioId(req.body.modifications[j]);
+                    var qty = req.body.modifications[j].qty;
+                    if (!is_valid_qty(qty)) {
+                        response.error = "QTY_INVALID"
+                        res.status(400).json(response)
+                        success = false;
+                        break;
+                    } else {
+                        modifyPortfolio(portfolio, portfolioId, qty)
+                    }
+                }
+                if (success) {// all modifications done
+                    portfolio.save(
+                        function (err, portfolio) {
+                            if (err) handle_database_error(res, err)
+                            else
+                                res.json(response)// success
                         }
-                    })
+                    )
 
                 }
             }
-        }
+        })
     }
-
-
-
 });
 
 const duplicate_portfolio = (portf, portfolioId, name) => {
@@ -509,16 +539,6 @@ router.post('/duplicate/:id', (req, res) => {
     }
 });
 
-router.put('/stock/:isin', (req, res) => {
-    var isin = req.params.isin;
-    var response = {};
-    if (isin.replace("-", "").length != 12) {
-        response.error = "ISIN_INVALID"
-        res.status(400).json(response);
-    } else {
-        res.json(response);
-    }
-});
 
 
 router.get('/stock/:isin', (req, res) => { // get portfolioId, name, qty of stock
@@ -526,14 +546,14 @@ router.get('/stock/:isin', (req, res) => { // get portfolioId, name, qty of stoc
 
     var response = {};
     //? = %3F
-    Portfolio.find({ "userId": userId }, 'id portfolio.overview.name portfolio.positions', function(err, portf) {
+    Portfolio.find(query(userId, isin), 'id portfolio.overview.name portfolio.positions', function (err, portf) {
         if (err) {
             handle_database_error(res, err)
         } else {
             response.portfolios = portf.map(({ id: pfId, portfolio: { overview: { name: pfName }, positions: arrayStocks } }) => {
                 var positionsWithCurrentISIN = arrayStocks.filter((position) => {
-                        return position.stock.isin == isin
-                    }) // the resulting array should have length 1 or 0
+                    return idBelongsToThisPosition(isin, position)
+                }) // the resulting array should have length 1
                 var qty;
                 if (positionsWithCurrentISIN.length == 0) {
                     qty = 0
@@ -546,14 +566,44 @@ router.get('/stock/:isin', (req, res) => { // get portfolioId, name, qty of stoc
                     "qty": qty
                 };
                 return result;
-            }).filter((result) => {
-                return result.qty > 0
             })
-
             res.json(response);
         }
     })
 });
+
+
+router.put('/stock/:isin', (req, res) => {
+    var isin = req.params.isin;
+
+    var response = {};
+    //? = %3F
+    Portfolio.find({}, 'id portfolio.overview.name portfolio.positions', function (err, portf) {
+        if (err) {
+            handle_database_error(res, err)
+        } else {
+            response.portfolios = portf.map(({ id: pfId, portfolio: { overview: { name: pfName }, positions: arrayStocks } }) => {
+                var positionsWithCurrentISIN = arrayStocks.filter((position) => {
+                    return idBelongsToThisPosition(isin, position)
+                }) // the resulting array should have length 1
+                var qty;
+                if (positionsWithCurrentISIN.length == 0) {
+                    qty = 0
+                } else {
+                    qty = positionsWithCurrentISIN[0].qty
+                }
+                var result = {
+                    "id": pfId,
+                    "name": pfName,
+                    "qty": qty
+                };
+                return result;
+            })
+            res.json(response);
+        }
+    })
+});
+
 
 // is not in the documentation any more
 router.post('/import', (req, res) => {
