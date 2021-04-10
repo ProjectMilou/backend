@@ -1183,7 +1183,7 @@
  *          type: array
  *          items:
  *            $ref: '#/definitions/error2'
- * /stocks/list?{country}&{currency}&{industry}&{mc}:
+ * /stocks/list?country={country}&currency={currency}&industry={industry}&mc={mc}:
  *  get:
  *   summary: Returns a stock list according to filter.
  *   description: Returns a stock list according to filter.
