@@ -554,6 +554,79 @@ router.post('/reset/change/:id/:token', async (req, res) => {
 
 /**
  * @swagger
+ *  /user/bank/search/:searchString:
+ *      get:
+ *          summary:
+ *              Search for a bank in finAPI
+ *          description:
+ *              Return all banks, that match the search-string while also being supported by finAPI. Only Banks shown, that are available at finAPI
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          parameters:
+ *            - in: path
+ *              name: searchString
+ *              type: string
+ *          responses:
+ *              200:
+ *                  description:
+ *                      OK. Matched banks are shown.
+ */
+// todo add schema, add example for 200 response!
+// todo add schema, add example for 200 response!
+// todo add schema, add example for 200 response!
+router.get('/bank/search/:searchString',passport.authenticate('jwt', {session: false}), async (req, res) => {
+
+    // todo return banks!
+    res.status(200).json({
+        banks: [{
+            id: 277672,
+            name: "FinAPI Test Bank",
+            location: "DE",
+            city: "München",
+        }]
+    })
+});
+
+/**
+ * @swagger
+ *  /user/bank/add/:bankId:
+ *      post:
+ *          summary:
+ *              starts the process for adding a bank via finAPI
+ *          description:
+ *              The bank-ID will be used to specify a bank for a "bank-connection-import" on finAPI.<br>
+ *              <b>A link to a webform</b> (leading to finAPI) will be returned. The user can input sensitive bank data on that page, because we are legally not allowed to do so.<br>
+ *              If the user confirmed his connection successfully on that other page, his securities (portfolios) will be available to us on finAPI.
+ *          tags:
+ *            - user
+ *          parameters:
+ *            - in: path
+ *              name: bankId
+ *              type: integer
+ *          responses:
+ *              200:
+ *                  description:
+ *                      OK. Webform passed in body.
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          webform:
+ *                              type: string
+ *                      example:
+ *                          webform: "some link"
+ *
+ */
+router.get('/bank/add/:bankId',passport.authenticate('jwt', {session: false}), async (req, res) => {
+
+    // todo call finAPI with (user, bankId)
+    res.status(200).json({webform: ""});
+
+});
+
+    /**
+ * @swagger
  * /user/delete:
  *  delete:
  *   description:
@@ -594,75 +667,6 @@ router.delete('/profile', passport.authenticate('jwt', {session: false}),  async
         console.log(err);
         res.json("error occured");
     }
-});
-
-/**
- * swagger
- *  /user/bank:
- *     get:
- *       description: get a bank
- *       summary: get bank
- *       tags:
- *        - user
- *       responses:
- *         '200':
- *           description: .
- *         '404':
- *           description: .
- */
-
-// search for a bank
-router.get('/bank', (req,res) => {
-
-//    req: query: Searchstring
-
-    res.statusCode = 200;
-    res.json({
-        banks: [{
-            id: 277672,
-            name: "FinAPI Test Bank",
-            location: "DE",
-            city: "München",
-        }]
-    });
-})
-
-/**
- * swagger
- *  /user/bank:
- *    post:
- *      description: add a bank connection
- *      summary: Adds bank connection
- *      tags:
- *       - user
- *      responses:
- *        '200':
- *          description: success
- *        '404':
- *          description: not found
- */
-// add a bank_connection
-router.post('/bank_connection', (req, res) => {
-    res.statusCode = 200;
-    res.send("bank added")
-});
-
-/**
- * swagger
- *  /user/bank:
- *    delete:
- *      description: bank-connection with id will be deleted.
- *      summary: Bank-connection with id wil be deleted
- *      tags:
- *      - user
- *      responses:
- *        '200':
- *          description: Accepted, bank-connection deleted.
- */
-// delete a bank connection
-router.delete('/bank_connection/:id', (req, res) => {
-    res.statusCode = 200;
-    res.send("bank deleted");
 });
 
 module.exports = router
