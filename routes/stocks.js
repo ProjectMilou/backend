@@ -167,6 +167,28 @@ const excludeFields = {
     address: false,
 };
 
+const listIncludeFields = {
+    symbol: true,
+    analystTargetPrice: true,
+    country: true,
+    currency: true,
+    date: true,
+    industry: true,
+    marketCapitalization: true,
+    name: true,
+    valuation: true,
+    per1d: true,
+    per30d: true,
+    per7d: true,
+    per365d: true,
+    div: true,
+    growth: true,
+    isin: true,
+    picture: true,
+    wkn: true,
+    assetType: true,
+};
+
 // fixme: stocks from database are reformated wrongly
 
 router.get('/list', async (req, res) => {
@@ -179,13 +201,13 @@ router.get('/list', async (req, res) => {
     let mc = req.query.mc; // either small, medium or large market capitalization
     if (currency === undefined && country === undefined && industry === undefined && mc === undefined) {
         const stocks = await stockModel.find({}, excludeFields);
-        res.json({"stocks": stocks});
+        res.json({ "stocks": stocks });
     } else {
         let query = {};
         if (currency != undefined) {
             if (currency.includes(',')) {
                 const currencies = currency.split(',');
-                query["currency"] = {$in: currencies}
+                query["currency"] = { $in: currencies }
             } else {
                 query["currency"] = currency;
             }
@@ -193,13 +215,13 @@ router.get('/list', async (req, res) => {
         if (country != undefined) {
             if (country.includes(',')) {
                 const countries = country.split(',');
-                query["country"] = {$in: countries}
+                query["country"] = { $in: countries }
             } else {
                 query["country"] = country;
             }
         }
         if (industry != undefined) {
-            query["industry"] = {$regex: ".*" + industry + ".*", '$options': 'i'};
+            query["industry"] = { $regex: ".*" + industry + ".*", '$options': 'i' };
         }
         if (mc != undefined) {
             if (mc.includes(',')) {
@@ -208,30 +230,30 @@ router.get('/list', async (req, res) => {
                 if (mc_values.includes["small"] && mc_values.includes["medium"] && mc_values.includes["large"]) {
                     ; // do nothing
                 } else if (mc_values.includes["small"] && mc_values.includes["medium"]) {
-                    query["$expr"] = {$lt: [{$toDouble: "$marketCapitalization"}, 10000000000]}
+                    query["$expr"] = { $lt: [{ $toDouble: "$marketCapitalization" }, 10000000000] }
                 } else if (mc_values.includes["small"] && mc_values.includes["large"]) {
                     query["$or"] = [
-                        {$expr: {$lt: [{$toDouble: "$marketCapitalization"}, 2000000000]}},
-                        {$expr: {$gt: [{$toDouble: "$marketCapitalization"}, 10000000000]}}
+                        { $expr: { $lt: [{ $toDouble: "$marketCapitalization" }, 2000000000] } },
+                        { $expr: { $gt: [{ $toDouble: "$marketCapitalization" }, 10000000000] } }
                     ]
                 } else if (mc_values.includes["medium"] && mc_values.includes["large"]) {
-                    query["$expr"] = {$gte: [{$toDouble: "$marketCapitalization"}, 2000000000]}
+                    query["$expr"] = { $gte: [{ $toDouble: "$marketCapitalization" }, 2000000000] }
                 }
             } else {
                 if (mc === "small") {
-                    query["$expr"] = {$lt: [{$toDouble: "$marketCapitalization"}, 2000000000]}
+                    query["$expr"] = { $lt: [{ $toDouble: "$marketCapitalization" }, 2000000000] }
                 } else if (mc === 'medium') {
                     query["$and"] = [
-                        {$expr: {$lt: [{$toDouble: "$marketCapitalization"}, 10000000000]}},
-                        {$expr: {$gt: [{$toDouble: "$marketCapitalization"}, 2000000000]}}
+                        { $expr: { $lt: [{ $toDouble: "$marketCapitalization" }, 10000000000] } },
+                        { $expr: { $gt: [{ $toDouble: "$marketCapitalization" }, 2000000000] } }
                     ]
                 } else if (mc === 'large') {
-                    query["$expr"] = {$gte: [{$toDouble: "$marketCapitalization"}, 10000000000]}
+                    query["$expr"] = { $gte: [{ $toDouble: "$marketCapitalization" }, 10000000000] }
                 }
             }
         }
-        const stocks = await stockModel.find(query, excludeFields);
-        res.json({"stocks": stocks});
+        const stocks = await stockModel.find(query, includeFiels);
+        res.json({ "stocks": stocks });
     }
 });
 
@@ -242,15 +264,15 @@ router.get('/search', async (req, res) => {
     let searchString = req.query.id;
     let query = {};
     query["$or"] = [
-        {"isin": {$regex: ".*" + searchString + ".*", '$options': 'i'}},
-        {"wkn": {$regex: ".*" + searchString + ".*", '$options': 'i'}},
-        {"name": {$regex: ".*" + searchString + ".*", '$options': 'i'}},
-        {"symbol": {$regex: ".*" + searchString + ".*", '$options': 'i'}},
+        { "isin": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+        { "wkn": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+        { "name": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+        { "symbol": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
     ]
     console.log(query)
     const stocks = await stockModel.find(query, excludeFields);
 
-    res.json({"stocks": stocks})
+    res.json({ "stocks": stocks })
 });
 
 // router.get('/details/search', (req, res) => {
@@ -362,7 +384,7 @@ router.get('/overview', async (req, res) => {
     let isError = false;
 
     let symbol = req.query.id;
-    const stock = await stockModel.find({"symbol": symbol}, {
+    const stock = await stockModel.find({ "symbol": symbol }, {
         _id: false,
         founded: false,
         intro: false,
@@ -371,7 +393,7 @@ router.get('/overview', async (req, res) => {
         assembly: false,
         address: false,
     });
-    res.json({"stocks": stock});
+    res.json({ "stocks": stock });
 });
 
 router.get('/details', async (req, res) => {
@@ -379,16 +401,9 @@ router.get('/details', async (req, res) => {
     let isError = false;
 
     let symbol = req.query.id;
-    const stock = await stockModel.find({"symbol": symbol}, {
-        symbol: true,
-        intro: true,
-        founded: true,
-        website: true,
-        employees: true,
-        address: true,
-        assembly: true,
-    });
-    res.json({"stocks": stock});
+
+    const stock = await stockModel.find({ "symbol": symbol }, { _id: false });
+    res.json({ "stocks": stock });
 });
 
 router.get('/charts/historic', async (req, res) => {
@@ -396,13 +411,13 @@ router.get('/charts/historic', async (req, res) => {
     let maxParam = req.query.max;
     let dataPoints;
     if (maxParam === 'false') {
-        dataPoints = await dataPointModel.find({"symbol": symbol}, {
+        dataPoints = await dataPointModel.find({ "symbol": symbol }, {
             symbol: false,
             _id: false
         });
-        dataPoints = {"dataPoints": dataPoints[0]["dataPoints"].slice(0, 1260)};
+        dataPoints = { "dataPoints": dataPoints[0]["dataPoints"].slice(0, 1260) };
     } else {
-        dataPoints = await dataPointModel.find({"symbol": symbol}, {
+        dataPoints = await dataPointModel.find({ "symbol": symbol }, {
             symbol: false,
             _id: false
         });
@@ -412,10 +427,11 @@ router.get('/charts/historic', async (req, res) => {
     if (dataPoints) {
         res.json(dataPoints);
     } else {
-        res.json({"error": "STOCK_ID_INVALID"})
+        res.json({ "error": "STOCK_ID_INVALID" })
     }
 
 });
+
 
 // const keyFigure1 = {"date": "2021-01-19", "pte": "1.587", "PriceToBookRatio": "5.345", "ptg": "1.7978", "eps": "1.789"}
 // const keyFigure2 = {"date": "2021-01-20", "pte": "1.678", "PriceToBookRatio": "5.645", "ptg": "1.789", "eps": "1.789"}
@@ -500,27 +516,26 @@ router.get('/charts/historic', async (req, res) => {
 //
 // });
 
-
-const rating1 = {"date": "2021-01-19", "goal": "345770", "strategy": "buy", "source": "investing.com"}
-const rating2 = {"date": "2021-01-20", "goal": "345727", "strategy": "hold", "source": "investing.com"}
-const rating3 = {"date": "2021-01-21", "goal": "346718", "strategy": "sell", "source": "investing.com"}
-const rating4 = {"date": "2021-01-22", "goal": "346766", "strategy": "sell", "source": "investing.com"}
-const rating5 = {"date": "2021-01-23", "goal": "346793", "strategy": "sell", "source": "investing.com"}
-const rating6 = {"date": "2021-01-24", "goal": "344768", "strategy": "sell", "source": "investing.com"}
-const rating7 = {"date": "2021-01-25", "goal": "344812", "strategy": "hold", "source": "investing.com"}
-const rating8 = {"date": "2021-01-26", "goal": "345849", "strategy": "buy", "source": "investing.com"}
-const rating9 = {"date": "2021-01-27", "goal": "345932", "strategy": "hold", "source": "investing.com"}
-const rating10 = {"date": "2021-01-28", "goal": "345904", "strategy": "hold", "source": "investing.com"}
-const rating11 = {"date": "2021-01-29", "goal": "345912", "strategy": "sell", "source": "investing.com"}
-const rating12 = {"date": "2021-01-30", "goal": "345770", "strategy": "sell", "source": "investing.com"}
-const rating13 = {"date": "2021-01-31", "goal": "345727", "strategy": "sell", "source": "investing.com"}
-const rating14 = {"date": "2021-02-01", "goal": "346718", "strategy": "sell", "source": "investing.com"}
-const rating15 = {"date": "2021-02-02", "goal": "347766", "strategy": "sell", "source": "investing.com"}
-const rating16 = {"date": "2021-02-03", "goal": "346793", "strategy": "hold", "source": "investing.com"}
-const rating17 = {"date": "2021-02-04", "goal": "345768", "strategy": "hold", "source": "investing.com"}
-const rating18 = {"date": "2021-02-05", "goal": "343812", "strategy": "hold", "source": "investing.com"}
-const rating19 = {"date": "2021-02-06", "goal": "345849", "strategy": "buy", "source": "investing.com"}
-const rating20 = {"date": "2021-02-07", "goal": "345932", "strategy": "sell", "source": "investing.com"}
+const rating1 = { "date": "2021-01-19", "goal": "345770", "strategy": "buy", "source": "investing.com" }
+const rating2 = { "date": "2021-01-20", "goal": "345727", "strategy": "hold", "source": "investing.com" }
+const rating3 = { "date": "2021-01-21", "goal": "346718", "strategy": "sell", "source": "investing.com" }
+const rating4 = { "date": "2021-01-22", "goal": "346766", "strategy": "sell", "source": "investing.com" }
+const rating5 = { "date": "2021-01-23", "goal": "346793", "strategy": "sell", "source": "investing.com" }
+const rating6 = { "date": "2021-01-24", "goal": "344768", "strategy": "sell", "source": "investing.com" }
+const rating7 = { "date": "2021-01-25", "goal": "344812", "strategy": "hold", "source": "investing.com" }
+const rating8 = { "date": "2021-01-26", "goal": "345849", "strategy": "buy", "source": "investing.com" }
+const rating9 = { "date": "2021-01-27", "goal": "345932", "strategy": "hold", "source": "investing.com" }
+const rating10 = { "date": "2021-01-28", "goal": "345904", "strategy": "hold", "source": "investing.com" }
+const rating11 = { "date": "2021-01-29", "goal": "345912", "strategy": "sell", "source": "investing.com" }
+const rating12 = { "date": "2021-01-30", "goal": "345770", "strategy": "sell", "source": "investing.com" }
+const rating13 = { "date": "2021-01-31", "goal": "345727", "strategy": "sell", "source": "investing.com" }
+const rating14 = { "date": "2021-02-01", "goal": "346718", "strategy": "sell", "source": "investing.com" }
+const rating15 = { "date": "2021-02-02", "goal": "347766", "strategy": "sell", "source": "investing.com" }
+const rating16 = { "date": "2021-02-03", "goal": "346793", "strategy": "hold", "source": "investing.com" }
+const rating17 = { "date": "2021-02-04", "goal": "345768", "strategy": "hold", "source": "investing.com" }
+const rating18 = { "date": "2021-02-05", "goal": "343812", "strategy": "hold", "source": "investing.com" }
+const rating19 = { "date": "2021-02-06", "goal": "345849", "strategy": "buy", "source": "investing.com" }
+const rating20 = { "date": "2021-02-07", "goal": "345932", "strategy": "sell", "source": "investing.com" }
 
 const ratings = [rating1, rating2, rating3, rating4, rating5, rating6, rating7, rating8, rating9, rating10, rating11,
     rating12, rating13, rating14, rating15, rating16, rating17, rating18, rating19, rating20];
@@ -531,16 +546,16 @@ router.get('/charts/analysts', (req, res) => {
     let response;
 
     if (id === "IBM") {
-        response = {"ratings": ratings, "averageGoal": "345961"};
+        response = { "ratings": ratings, "averageGoal": "345961" };
     } else if (id === "AAPL") {
-        response = {"ratings": ratings, "averageGoal": "345961"};
+        response = { "ratings": ratings, "averageGoal": "345961" };
     } else if (id === "MSFT") {
-        response = {"ratings": ratings, "averageGoal": "345961"};
+        response = { "ratings": ratings, "averageGoal": "345961" };
     } else if (id === "MS") {
-        response = {"ratings": ratings, "averageGoal": "345961"};
+        response = { "ratings": ratings, "averageGoal": "345961" };
     } else {
         isError = true;
-        response = {"error": "STOCK_ID_INVALID"}
+        response = { "error": "STOCK_ID_INVALID" }
     }
 
     !isError && res.json(response);
@@ -559,7 +574,7 @@ router.get('/charts/dividend', async (req, res) => { //fixme: sometimes inconsis
     try {
         name = stocks[0]["name"];
     } catch (e) {
-        res.status(404).json({"error": "STOCK_ID_INVALID"});
+        res.status(404).json({ "error": "STOCK_ID_INVALID" });
     }
 
     let urlOverview = 'https://www.alphavantage.co/query?' +
@@ -572,7 +587,7 @@ router.get('/charts/dividend', async (req, res) => { //fixme: sometimes inconsis
         '&symbol=' + id +
         '&apikey=' + process.env.alpha_vantage_key;
 
-    let settings = {method: "Get"};
+    let settings = { method: "Get" };
 
     if (!!id && !!max) {
         let dividendDate;
@@ -604,9 +619,9 @@ router.get('/charts/dividend', async (req, res) => { //fixme: sometimes inconsis
 
             });
 
-        res.json({"dataPoints": dataPoints, "date": dividendDate, "quota": quota});
+        res.json({ "dataPoints": dataPoints, "date": dividendDate, "quota": quota });
     } else {
-        res.status(404).json({"error": "STOCK_ID_INVALID"});
+        res.status(404).json({ "error": "STOCK_ID_INVALID" });
     }
 
 });
@@ -625,7 +640,7 @@ router.get('/news', async (req, res) => {
     try {
         name = stocks[0]["name"];
     } catch (e) {
-        res.status(404).json({"error": "STOCK_ID_INVALID"});
+        res.status(404).json({ "error": "STOCK_ID_INVALID" });
     }
 
     var url = 'https://newsapi.org/v2/everything?' +
@@ -652,7 +667,7 @@ router.get('/news', async (req, res) => {
                     }
                 )
             })
-            res.json({"news": news});
+            res.json({ "news": news });
         })
         .catch(err => {
             console.log(err);
@@ -670,7 +685,7 @@ router.get('/balanceSheet', async (req, res) => {
     try {
         name = stocks[0]["name"];
     } catch (e) {
-        res.status(404).json({"error": "STOCK_ID_INVALID"});
+        res.status(404).json({ "error": "STOCK_ID_INVALID" });
     }
 
     let url = 'https://www.alphavantage.co/query?function=BALANCE_SHEET' +
@@ -699,7 +714,7 @@ router.get('/charts/key_figures', async (req, res) => {
     try {
         name = stocks[0]["name"];
     } catch (e) {
-        res.status(404).json({"error": "STOCK_ID_INVALID"});
+        res.status(404).json({ "error": "STOCK_ID_INVALID" });
     }
 
     let url = 'https://www.alphavantage.co/query?function=EARNINGS' +
@@ -715,10 +730,10 @@ router.get('/charts/key_figures', async (req, res) => {
             let counter = 0;
 
             quarterlyEarnings.forEach(quarterlyEarning => {
-                if (counter < 5*4) keyFigures.push(quarterlyEarning)
+                if (counter < 5 * 4) keyFigures.push(quarterlyEarning)
                 if (max !== 'true') counter++;
             })
-            res.json({"symbol": symbol, "keyFigures" : keyFigures});
+            res.json({ "symbol": symbol, "keyFigures": keyFigures });
         })
         .catch(err => {
             console.log(err);
