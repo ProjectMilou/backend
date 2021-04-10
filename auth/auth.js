@@ -73,7 +73,7 @@ passport.use(
 
                     // send token to mail
 
-                    //await confEmail.sendConfirmationEmail( email,user.id, token);
+                    await confEmail.sendConfirmationEmail( email,user.id, token);
 
                     return done(null, {
                         response: {
