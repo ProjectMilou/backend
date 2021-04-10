@@ -51,7 +51,7 @@ router.get('/backtest/:id', async (req, res) => {
     const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
     const currCompanyOverviews = await companyOverviews.getCompanyOverviewForSymbols(currSymbols);
     if (!currCompanyOverviews) {
-        response.error = "No data for all the stocks in the given portfolio."
+        response.error = "No company overview data for all the stocks in the given portfolio."
         return res.status(404).json(response)
     }
     
@@ -74,7 +74,7 @@ router.get('/backtest/:id', async (req, res) => {
     const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
     const currCompanyOverviews = await companyOverviews.getCompanyOverviewForSymbols(currSymbols);
     if (!currCompanyOverviews) {
-        response.error = "No data for all the stocks in the given portfolio."
+        response.error = "No company overview data for all the stocks in the given portfolio."
         return res.status(404).json(response)
     }
 
@@ -96,7 +96,7 @@ router.get('/backtest/:id', async (req, res) => {
     const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
     const currCompanyOverviews = await companyOverviews.getCompanyOverviewForSymbols(currSymbols);
     if (!currCompanyOverviews) {
-        response.error = "No data for all the stocks in the given portfolio."
+        response.error = "No company overview data for all the stocks in the given portfolio."
         return res.status(404).json(response)
     }
 
@@ -180,7 +180,7 @@ router.get('/backtest/:id', async (req, res) => {
     const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
     const currBalanceSheetPerSymbol = await balanceSheets.getBalanceSheetForSymbols(currSymbols);
     if(!currBalanceSheetPerSymbol) {
-        response.error = "No stock time series data for some of the stocks"
+        response.error = "No balance sheet data for some of the stocks"
         return res.status(404).json(response)
     }
     const analyzedData = analytics.calculateDebtEquity(currPortfolio, currBalanceSheetPerSymbol);
