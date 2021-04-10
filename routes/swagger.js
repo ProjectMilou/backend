@@ -4,7 +4,7 @@
  *  positionQty:
  *    type: object
  *    properties: 
- *      isin:
+ *      symbol:
  *        type: string
  *      qty: 
  *        type: number
@@ -20,10 +20,19 @@
  *        - PORTFOLIO_NAME_INVALID
  *        - PORTFOLIO_NAME_DUPLICATE
  *        - TIMESTAMP_INVALID
- *        - ISIN_INVALID  
+ *        - SYMBOL_INVALID  
  *        - QTY_INVALID
  *        - RANGE_INVALID
  *        - REAL_PORTFOLIO_MODIFICATION
+ *  error2:
+ *    type: object
+ *    properties:
+ *      error:
+ *        type: string
+ *        enum:
+ *        - DATABASE_ERROR
+ *      message:
+ *          type: string
  *  range: 
  *    type: string
  *    enum:
@@ -355,6 +364,8 @@
  *    - portfolio
  *    summary: Get all portfolios of the current user
  *    description: Gets all portfolios of the current user with basic information to display in the portfolio dashboard.
+ *              
+ *                  (The value of "id" is the real one, "_id" can be ignored)
  *    operationId: getPortfolios
  *    produces:
  *    - application/json
@@ -366,6 +377,13 @@
  *          type: array
  *          items:
  *            $ref: '#/definitions/portfolioOverview'
+ *      500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
+ * 
  *    security:
  *    - api_key: [] 
  *
@@ -393,6 +411,12 @@
  *         description: PORTFOLIO_ID_INVALID
  *         schema:
  *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
  *
  * /portfolio/performance/{portfolioId}:
  *   get:
@@ -406,15 +430,6 @@
  *     consumes:
  *     - application/json
  *     parameters:
- *       - in: body
- *         name: range
- *         description: The range
- *         required: true
- *         schema:
- *           type: object
- *           properties:
- *             range:
- *               $ref: '#/definitions/range'
  *       - name: portfolioId
  *         in: path
  *         description: ID of the portfolio to get its data points
@@ -438,84 +453,14 @@
  *         description: PORTFOLIO_ID_INVALID
  *         schema:
  *           $ref: '#/definitions/error'
- *       400:
- *         description: RANGE_INVALID
- *         schema:
- *           $ref: '#/definitions/error'
- *
- * /portfolio/stock:
- *   get:
- *     tags:
- *     - portfolio
- *     summary: Gets the portfolio name and quantity of a specified stock for all portfolios of the current user.
- *     description: This information is displayed to the user when adding a stock to his portfolios.
- *     operationId: portfolioStock
- *     produces:
- *     - application/json
- *     consumes:
- *     - application/json
- *     parameters:
- *       - in: body
- *         name: isin
- *         description: ISIN of the specified stock
- *         required: true
- *         schema:
- *            type: object
- *            properties:
- *              isin:
- *                type: string
- *     responses:
- *       200:
- *         description: successful operation
- *         schema:
- *              type: array
- *              items:
- *                  $ref: '#/definitions/portfolioStock'
- *       400:
- *         description: ISIN_INVALID
- *         schema:
- *           $ref: '#/definitions/error'
- *   put:
- *     tags:
- *     - portfolio
- *     summary: Modify stock quantity
- *     description: Modifies a stock's quantity within multiple portfolios simultaneously.
- *
- *      If the specified quantity for a portfolio is 0, the position in the specified portfolio is deleted if it exists.
- *      If there is no position in the specified portfolio, a new position with the specified quantity is created.
- *      Otherwise, the position in the specified portfolio is updated to match the specified quantity.
- *
- *      Positions not included in the request remain unchanged.
- *     operationId: modifyStocks
- *     produces:
- *     - application/json
- *     consumes:
- *     - application/json
- *     parameters:
- *     - in: body
- *       name: isin and modifications
- *       description: ISIN of the specified stock
- *       schema:
- *         type: object
- *         properties:
- *           isin:
- *             type: string
- *           modifications:
- *             type: array
- *             items:
- *               $ref: '#/definitions/portfolioQty'
- *     responses:
- *       200:
- *         description: successful operation
- *       404:
- *         description: PORTFOLIO_ID_INVALID
- *         schema:
- *           $ref: '#/definitions/error'
- *       400:
- *         description: QTY_INVALID/ISIN_INVALID/REAL_PORTFOLIO_MODIFICATION
- *         schema:
- *           $ref: '#/definitions/error'
- *
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
+
+ * 
  * /portfolio/create:
  *   post: 
  *     tags:
@@ -548,14 +493,19 @@
  *         description: PORTFOLIO_NAME_DUPLICATE/PORTFOLIO_NAME_INVALID
  *         schema:
  *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
  *
  * /portfolio/{portfolioId}:
  *   delete:
  *     tags:
  *     - portfolio
  *     summary: Delete portfolio by ID
- *     description: For valid response try integer IDs with positive integer value.\
- *       \ Negative or non-integer values will generate API errors
+ *     description: Deletes portfolio with given id, if it exists.
  *     operationId: deletePortfolio
  *     produces:
  *     - application/json
@@ -572,13 +522,19 @@
  *         description: PORTFOLIO_NOT_EXISTS
  *         schema:
  *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
  *
  * /portfolio/rename/{portfolioId}:
  *   put:
  *     tags:
  *     - portfolio
  *     summary: Rename a portfolio
- *     description: Renames a portfolio.
+ *     description: Renames the portfoliowith the given id.
  *     operationId: renamePortfolio
  *     produces:
  *     - application/json
@@ -609,6 +565,12 @@
  *         description: PORTFOLIO_NAME_DUPLICATE/PORTFOLIO_NAME_INVALID
  *         schema:
  *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
  *
  * /portfolio/modify/{portfolioId}:
  *   put:
@@ -622,6 +584,12 @@
  *       Otherwise, the position in the specified portfolio is updated to match the specified quantity.
  *
  *       Positions not included in the request remain unchanged.
+ *       The position which is changed is the one which has isin, wkn, symbol or name equal to the parameter symbol 
+ *       (which you can call either isin, wkn, name or symbol)
+ *       It is safest to search with the symbol as parameter, because in our API we can search stocks by symbol
+ *       (Right now we haen't implemented the stock search yet, so it just creates a lot of question marks as fields for added positions)
+ *       Only virtual portfolios can be modified.
+ *       If any of the modifications causes an error, none of the modifications get stored in the database.
  *     operationId: modifyPortfolio
  *     produces:
  *     - application/json
@@ -651,9 +619,15 @@
  *         schema:
  *           $ref: '#/definitions/error'
  *       400:
- *         description: QTY_INVALID/ISIN_INVALID/REAL_PORTFOLIO_MODIFICATION
+ *         description: QTY_INVALID/SYMBOL_INVALID/REAL_PORTFOLIO_MODIFICATION
  *         schema:
  *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
  *
  * /portfolio/duplicate/{portfolioId}:
  *   post:
@@ -697,8 +671,105 @@
  *         description: PORTFOLIO_NAME_DUPLICATE/PORTFOLIO_NAME_INVALID
  *         schema:
  *           $ref: '#/definitions/error'
- *
- * /stocks/list?country={country}&currency={currency}&industry={industry}&mc={mc}:
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
+ * /portfolio/stock/{symbol}:
+ *   get:
+ *     tags:
+ *     - portfolio
+ *     summary: Gets the portfolio name and quantity of a specified stock for all portfolios of the current user. 
+ *     description: This information is displayed to the user when adding a stock to his portfolios.
+ *          The parameter "symbol" may be the symbol, the isin, the wkn or the name of a certain stock. The preferred parameter is symbol.
+ *     operationId: portfolioStock
+ *     produces:
+ *     - application/json
+ *     consumes:
+ *     - application/json
+ *     parameters:
+ *       - in: path
+ *         name: symbol
+ *         description: symbol, ISIN, WKN or name of the specified stock
+ *         required: true
+ *         schema:
+ *            type: object
+ *            properties:
+ *              symbol:
+ *                type: string
+ *     responses:
+ *       200: 
+ *         description: successful operation
+ *         schema:
+ *              type: array
+ *              items:
+ *                  $ref: '#/definitions/portfolioStock'
+ *       400:
+ *         description: SYMBOL_INVALID
+ *         schema:
+ *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
+ *   put:
+ *     tags:
+ *     - portfolio
+ *     summary: Modify stock quantity 
+ *     description: Modifies a stock's quantity within multiple portfolios simultaneously.
+ *     
+ *      If the specified quantity for a portfolio is 0, the position in the specified portfolio is deleted if it exists.
+ *      If there is no position in the specified portfolio, a new position with the specified quantity is created.
+ *      Otherwise, the position in the specified portfolio is updated to match the specified quantity.
+ * 
+ *      Positions not included in the request remain unchanged.
+ *     operationId: modifyStocks
+ *     produces:
+ *     - application/json
+ *     consumes:
+ *     - application/json
+ *     parameters:
+ *     - in: path
+ *       name: symbol
+ *       description: symbol, ISIN, WKN or name of the specified stock. The preferred parameter is symbol.
+ *       required: true
+ *       schema:
+ *            type: object
+ *            properties:
+ *              symbol:
+ *                type: string
+ *     - in: body
+ *       name: symbol and modifications
+ *       description: modifications; portfolioId and new quantity
+ *       schema:
+ *         type: object
+ *         properties:
+ *           modifications:
+ *             type: array
+ *             items:
+ *               $ref: '#/definitions/portfolioQty'
+ *     responses:
+ *       200: 
+ *         description: successful operation
+ *       404:
+ *         description: PORTFOLIO_ID_INVALID
+ *         schema:
+ *           $ref: '#/definitions/error'
+ *       400:
+ *         description: QTY_INVALID/SYMBOL_INVALID/REAL_PORTFOLIO_MODIFICATION
+ *         schema:
+ *           $ref: '#/definitions/error'
+ *       500:
+ *        description: DATABASE_ERROR
+ *        schema:
+ *          type: array
+ *          items:
+ *            $ref: '#/definitions/error2'
+ * /stocks/list?{country}&{currency}&{industry}&{mc}:
  *  get:
  *   summary: Returns a stock list according to filter.
  *   description: Returns a stock list according to filter.
