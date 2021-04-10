@@ -31,6 +31,10 @@ const UserTokenSchema = new mongoose.Schema({
     },
     expirationDate: {
         type: Date
+    },
+    tokenType: {
+        type: String,
+        enum: ["EMAIL_CONFIRMATION", "PASSWORD_RESET"]
     }
 });
 
