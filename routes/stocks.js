@@ -252,7 +252,7 @@ router.get('/list', async (req, res) => {
                 }
             }
         }
-        const stocks = await stockModel.find(query, includeFiels);
+        const stocks = await stockModel.find(query, listIncludeFields);
         res.json({ "stocks": stocks });
     }
 });
