@@ -417,22 +417,28 @@ router.post('/reset/confirm/:id/:token', async (req, res) => {
  *              type: string
  *            - in: body
  *              name: password
- *              type: string
- *      response:
- *          201:
- *              description: OK. password was reset.
- *          404:
- *              description: User not found.
  *              schema:
+ *                  type: object
+ *                  properties:
+ *                      password:
+ *                          type: string
+ *                  example:
+ *                      password: 654321
+ *          responses:
+ *              201:
+ *                  description: OK. password was reset.
+ *              404:
+ *                  description: User not found.
+ *                  schema:
  *                      type: object
  *                      properties:
  *                          message:
  *                              type: string
  *                      example:
  *                          message: User not found.
- *          400:
- *              description: todo! what statusCode in this case? Token invalid
- *              schema:
+ *              400:
+ *                  description: todo! what statusCode in this case? Token invalid
+ *                  schema:
  *                      type: object
  *                      properties:
  *                          message:
