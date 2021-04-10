@@ -23,16 +23,17 @@ function gainOrLossLastYearOrMonth(portfolio, stocksData, namesToSymbols) {
     let gainLoss = {
         totalGainLoss: 0
     }
+    let perSymbol = {}
 
     Object.keys(stocksData).forEach(symbol => {
         let lastDate = Object.keys(stocksData[symbol])[0];
         let currGainLoss = stocksData[symbol][lastDate]["4. close"] * symbolsToQuantity[symbol] -
             stockEntryQuote[symbol]
         gainLoss.totalGainLoss += currGainLoss;
-        gainLoss[symbol] = { symbolGainLoss: currGainLoss }
+        perSymbol[symbol] = currGainLoss;
     });
 
-    return gainLoss
+    return {...gainLoss, perSymbol}
 }
 
 exports.gainOrLossLastYearOrMonth = gainOrLossLastYearOrMonth;

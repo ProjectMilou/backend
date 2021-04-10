@@ -28,8 +28,8 @@ function debtEquity(portfolio, balanceSheetPerSymbol, namesToSymbols) {
     let weightedAverageDebtEquity = 0;
 
     Object.keys(balanceSheetPerSymbol).forEach(symbol => {
-        let totalAssets = balanceSheetPerSymbol[symbol].annualReports[0].totalAssets;
-        let totalLiabilities = balanceSheetPerSymbol[symbol].annualReports[0].totalLiabilities;
+        let totalAssets = balanceSheetPerSymbol[symbol].totalAssets;
+        let totalLiabilities = balanceSheetPerSymbol[symbol].totalLiabilities;
         let currEquityDebt = totalLiabilities / (totalAssets - totalLiabilities);
         results[symbol] = currEquityDebt
         weightedAverageDebtEquity += currEquityDebt * symbolsToQuantity[symbol]
