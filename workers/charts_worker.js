@@ -34,7 +34,7 @@ module.exports.updateAllCharts = async function () {
             // await getYearlyPerformance(symbol, api_key_alphavantage);
             // await getImage(symbol, api_key_finhub);
             // await getDividends(symbol, api_key_alphavantage);
-            await getKeyFigures(symbol, api_key_alphavantage);
+            // await getKeyFigures(symbol, api_key_alphavantage);
             await sleep(1500)
         }
         rl.close()
