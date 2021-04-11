@@ -84,10 +84,7 @@ const deleteFinAPIUser = async (user) => {
             'Authorization': access_token
         }
     });
-
 }
-
-
 
 const searchBanks = async (searchString) => {
     const access_token = await getClientAccessToken();
@@ -107,12 +104,7 @@ const searchBanks = async (searchString) => {
             'Authorization': access_token
         }
     });
-
-    const banks = await api_response.json();
-    console.log(banks);
-
-    return banks;
-
+    return await api_response.json();
 }
 
 const importBankConnection = async (user,bankId) => {

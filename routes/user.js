@@ -580,7 +580,7 @@ router.get('/bank/search/:searchString',passport.authenticate('jwt', {session: f
 
     console.log(req.user);
 
-    const banks = finAPI.searchBanks(searchString);
+    const banks = await finAPI.searchBanks(searchString);
     res.status(200).send(banks);
 
 });
