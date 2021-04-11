@@ -48,7 +48,7 @@ const init = async () => {
 
     app.get('/', (req, res) => {
         res.statusCode = 200;
-        res.redirect(req.protocol + '://' + req.get('host') + req.originalUrl + 'api-docs');
+        res.send("please visit <b> https://api.milou.io/api-docs/ </b> for documentation")
     })
 
     app.use(bodyParser.json());
