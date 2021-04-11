@@ -25,11 +25,11 @@ module.exports.updateAllStocks = async function () {
             console.log(symbol)
             // await getStockOverview(symbol, api_key_alphavantage);
             // await getTimeIntervalPerformance(symbol, api_key_alphavantage);
-            await updateMcSize(symbol, api_key_alphavantage)
+            // await updateMcSize(symbol, api_key_alphavantage)
             // await getYearlyPerformance(symbol, api_key_alphavantage);
             // await getImage(symbol, api_key_finhub);
-            await getBalanceSheet(symbol, api_key_alphavantage);
-            await sleep(1200)
+            // await getBalanceSheet(symbol, api_key_alphavantage);
+            await sleep(1500)
         }
         rl.close()
         return
@@ -308,14 +308,13 @@ async function getBalanceSheet(symbol, api_key) {
     await fetch(url)
         .then(response => response.json())
         .then(data => {
-            console.log(data['symbol']);
             let balanceSheet = balanceSheetModel.findOneAndUpdate(
                 { symbol: data['symbol'] },
                 {
                     $set:
                     {
-                        "totalAssets": data['annualReports'][0]['totalAssets'],
-                        "totalLiabilities": data['annualReports'][0]['totalLiabilities'],
+                        "annualReports": data['annualReports'],
+                        "quarterlyReports": data['quarterlyReports'],
                     },
                 },
                 {
