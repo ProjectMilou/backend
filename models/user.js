@@ -60,6 +60,12 @@ const UserSchema = new mongoose.Schema({
     confirmed: {
         type: Boolean,
         required: true
+    },
+    finUserId: {
+        type: String
+    },
+    finUserPassword: {
+        type: String
     }
 });
 
