@@ -5,6 +5,7 @@ const genToken = require('../auth/auth');
 const UserModel = require("../models/user");
 const UserTokenModel = require ("../models/userToken")
 const {hash, encrypt, decrypt} = require("../encryption/encryption");
+const finAPI = require('../models/finAPI');
 
 const router = express.Router();
 
@@ -574,19 +575,14 @@ router.post('/reset/change/:id/:token', async (req, res) => {
  *                      OK. Matched banks are shown.
  */
 // todo add schema, add example for 200 response!
-// todo add schema, add example for 200 response!
-// todo add schema, add example for 200 response!
 router.get('/bank/search/:searchString',passport.authenticate('jwt', {session: false}), async (req, res) => {
+    const searchString = req.params.searchString;
 
-    // todo return banks!
-    res.status(200).json({
-        banks: [{
-            id: 277672,
-            name: "FinAPI Test Bank",
-            location: "DE",
-            city: "München",
-        }]
-    })
+    console.log(req.user);
+
+    const banks = finAPI.searchBanks(searchString);
+    res.status(200).send(banks);
+
 });
 
 /**

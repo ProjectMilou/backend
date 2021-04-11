@@ -87,8 +87,14 @@ const deleteFinAPIUser = async (user) => {
 
 }
 
+
+
 const searchBanks = async (searchString) => {
     const access_token = await getClientAccessToken();
+
+    // todo filter, so that only 'isValid = true' banks are shown
+    // todo filter, so that only 'isValid = true' banks are shown
+    // todo filter, so that only 'isValid = true' banks are shown
 
     const params = new URLSearchParams({
         'search': searchString, // main field, others if needed
@@ -101,7 +107,12 @@ const searchBanks = async (searchString) => {
             'Authorization': access_token
         }
     });
-    return await api_response.json();
+
+    const banks = await api_response.json();
+    console.log(banks);
+
+    return banks;
+
 }
 
 const importBankConnection = async (user,bankId) => {
