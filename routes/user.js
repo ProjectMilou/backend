@@ -647,11 +647,9 @@ router.get('/bank/connections',passport.authenticate('jwt', {session: false}), a
     res.send(finResponse);
 });
 
-
-
 /**
  * @swagger
- *  /user/bank/refresh (not working yet):
+ *  /user/bank/refresh (not working as specified) :
  *      get:
  *          summary:
  *              Refresh all bank-connections of a user, importing his securities into our database
@@ -666,7 +664,6 @@ router.get('/bank/connections',passport.authenticate('jwt', {session: false}), a
  *            - application/json
  *          security:
  *            - bearerAuth: []
- *
  */
 // getSecurities todo (?) what used for (?)
 router.get('/securities',passport.authenticate('jwt', {session: false}), async (req, res) => {
@@ -677,7 +674,7 @@ router.get('/securities',passport.authenticate('jwt', {session: false}), async (
 
 /**
  * @swagger
- *  /user/bank/connections/:id:
+ *  /user/bank/connections/:id (not working as specified):
  *      delete:
  *          summary:
  *              Get all bank-connections of a user
@@ -690,9 +687,9 @@ router.get('/securities',passport.authenticate('jwt', {session: false}), async (
  *            - application/json
  *          security:
  *            - bearerAuth: []
- *
  */
 // delete bankConnection by id
+// todo delete all connected portfolios from our database as well
 router.delete('/bank/connections/:id',passport.authenticate('jwt', {session: false}), async (req, res) => {
     const user = req.user;
     const bankConnectionId = params.id;
@@ -702,7 +699,7 @@ router.delete('/bank/connections/:id',passport.authenticate('jwt', {session: fal
 
 /**
  * @swagger
- *  /user/bank/connections:
+ *  /user/bank/connections (not working as specified):
  *      delete:
  *          summary:
  *              Delete all of a users bank-connections.
@@ -720,15 +717,16 @@ router.delete('/bank/connections/:id',passport.authenticate('jwt', {session: fal
  *
  */
 // delete all bankConnections
+// todo delete all connected portfolios from our database as well
 router.delete('/bank/connections',passport.authenticate('jwt', {session: false}), async (req, res) => {
     const user = req.user;
     await finAPI.deleteAllBankConnections(user)
     res.status(200).json({"message": "deleted all bank connection"});
 });
 
-    /**
+/**
  * @swagger
- * /user/delete:
+ * /user/delete (not working as specified (bank not removed properly)):
  *  delete:
  *   description:
  *      Delete a user account and if exists portfolio details as well as user information on finAPI. JWT needs to be passed as Bearer-Token in header.
@@ -752,10 +750,8 @@ router.delete('/bank/connections',passport.authenticate('jwt', {session: false})
 // delete profile
 router.delete('/profile', passport.authenticate('jwt', {session: false}),  async (req, res) => {
     // implement the following authorization: http://www.passportjs.org/docs/username-password/
-
     // JWT token in header as bearer token
 
-    // todo: delete user from finAPI
     // todo: delete portfolios
 
     try{
