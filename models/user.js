@@ -69,9 +69,7 @@ const UserSchema = new mongoose.Schema({
         type: Boolean,
         required: true
     }
-
 });
-
 
 // store hash of password
 // store finUserId

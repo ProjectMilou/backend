@@ -560,7 +560,8 @@ router.post('/reset/change/:id/:token', async (req, res) => {
  *          summary:
  *              Search for a bank in finAPI
  *          description:
- *              Return all banks, that match the search-string while also being supported by finAPI. Only Banks shown, that are available at finAPI
+ *              Return all banks, that match the search-string while also being supported by finAPI.<br>
+ *              Only Banks shown, that are available at finAPI
  *          tags:
  *            - user
  *          produces:
@@ -574,20 +575,17 @@ router.post('/reset/change/:id/:token', async (req, res) => {
  *                  description:
  *                      OK. Matched banks are shown.
  */
+// todo filter!
 // todo add schema, add example for 200 response!
-router.get('/bank/search/:searchString',passport.authenticate('jwt', {session: false}), async (req, res) => {
+router.get('/bank/search/:searchString',async (req, res) => {
     const searchString = req.params.searchString;
-
-    console.log(req.user);
-
     const banks = await finAPI.searchBanks(searchString);
     res.status(200).send(banks);
-
 });
 
 /**
  * @swagger
- *  /user/bank/add/:bankId:
+ *  /user/bank/connections/add/:bankId:
  *      post:
  *          summary:
  *              starts the process for adding a bank via finAPI
@@ -601,6 +599,8 @@ router.get('/bank/search/:searchString',passport.authenticate('jwt', {session: f
  *            - in: path
  *              name: bankId
  *              type: integer
+ *          security:
+ *            - bearerAuth: []
  *          responses:
  *              200:
  *                  description:
@@ -614,11 +614,116 @@ router.get('/bank/search/:searchString',passport.authenticate('jwt', {session: f
  *                          webform: "some link"
  *
  */
-router.get('/bank/add/:bankId',passport.authenticate('jwt', {session: false}), async (req, res) => {
+router.post('/bank/connections/add/:bankId',passport.authenticate('jwt', {session: false}), async (req, res) => {
+    // todo should be redirected?
 
-    // todo call finAPI with (user, bankId)
-    res.status(200).json({webform: ""});
+    const bankId = req.params.bankId;
+    const user = req.user;
+    const finResponse = await finAPI.importBankConnection(user, bankId)
+    res.send(finResponse);
+});
 
+/**
+ * @swagger
+ *  /user/bank/connections:
+ *      get:
+ *          summary:
+ *              Get all bank-connections of a user
+ *          description:
+ *              Specify a user by JWT. <br>
+ *              All of the users currently registered bank-connections will be returned as an array.
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          security:
+ *            - bearerAuth: []
+ *
+ */
+// get bankconnections
+router.get('/bank/connections',passport.authenticate('jwt', {session: false}), async (req, res) => {
+    const user = req.user;
+    const finResponse = await finAPI.getAllBankConnections(user)
+    res.send(finResponse);
+});
+
+
+
+/**
+ * @swagger
+ *  /user/bank/refresh (not working yet):
+ *      get:
+ *          summary:
+ *              Refresh all bank-connections of a user, importing his securities into our database
+ *          description:
+ *              Specify a user by JWT. <br>
+ *              All of the users securities will be refreshed and new ones will be imported.<br>
+ *              Has to happen after the successful import of a bank-connection, because <b>we don't <br>
+ *              get notified about the (successful) import of a bank-connection.</b>
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          security:
+ *            - bearerAuth: []
+ *
+ */
+// getSecurities todo (?) what used for (?)
+router.get('/securities',passport.authenticate('jwt', {session: false}), async (req, res) => {
+    const user = req.user;
+    const finResponse = await finAPI.getSecurities(user)
+    res.send(finResponse);
+});
+
+/**
+ * @swagger
+ *  /user/bank/connections/:id:
+ *      delete:
+ *          summary:
+ *              Get all bank-connections of a user
+ *          description:
+ *              Specify a user by JWT. <br>
+ *              All of the users currently registered bank-connections will be returned as an array.
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          security:
+ *            - bearerAuth: []
+ *
+ */
+// delete bankConnection by id
+router.delete('/bank/connections/:id',passport.authenticate('jwt', {session: false}), async (req, res) => {
+    const user = req.user;
+    const bankConnectionId = params.id;
+    await finAPI.deleteOneBankConnection(user, bankConnectionId);
+    res.status(200).json({"message": "deleted bank connection " + bankConnectionId})
+});
+
+/**
+ * @swagger
+ *  /user/bank/connections:
+ *      delete:
+ *          summary:
+ *              Delete all of a users bank-connections.
+ *          description:
+ *              <h2> (securities not deleted from our database yet! todo)</h2>
+ *              Specify a user by JWT. <br>
+ *              All of the users currently registered bank-connections will be deleted from finAPI <br>
+ *              and our database.
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          security:
+ *            - bearerAuth: []
+ *
+ */
+// delete all bankConnections
+router.delete('/bank/connections',passport.authenticate('jwt', {session: false}), async (req, res) => {
+    const user = req.user;
+    await finAPI.deleteAllBankConnections(user)
+    res.status(200).json({"message": "deleted all bank connection"});
 });
 
     /**
@@ -657,6 +762,9 @@ router.delete('/profile', passport.authenticate('jwt', {session: false}),  async
         const user = await UserModel.findOne({_id: req.user.id});
         await UserModel.deleteOne({_id: req.user.id});
         await UserTokenModel.deleteMany({email: user.email});
+
+        // todo uncomment when last testing has begun
+        // await finAPI.deleteFinAPIUser(user);
 
         res.json("successfully deleted user").status(200);
     } catch(err){

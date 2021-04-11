@@ -31,13 +31,12 @@ const getClientAccessToken = async () => {
 
 const getUserAccessToken = async (user) => {
     const body = new URLSearchParams({
-        'grant_type': "client_credentials",
+        'grant_type': "password",
         'client_id': process.env.finAPI_client_id,
         'client_secret': process.env.finAPI_client_secret,
+        'username': user.finUserId,
+        'password': user.finUserPassword
     });
-
-    body.append("username", user.finUserId);
-    body.append("password", user.finUserPassword);
 
     return await getAccessToken(body);
 }
@@ -114,6 +113,7 @@ const importBankConnection = async (user,bankId) => {
         bankId: bankId
     };
 
+    const api_url = `https://sandbox.finapi.io/api/v1/bankConnections/import`;
     const api_response = await fetch(api_url, {
         method: 'POST',
         body: JSON.stringify(body),
@@ -123,7 +123,7 @@ const importBankConnection = async (user,bankId) => {
         }
     });
 
-    const json_response = await api_response.json();
+    const json_response = await api_response;
     return {
         "link": json_response.headers.get('Location')
     }
@@ -168,6 +168,23 @@ const deleteAllBankConnections = async (user) => {
     });
 }
 
+const getSecurities = async (user) => {
+    const access_token = await getUserAccessToken(user);
+
+    const api_url = `https://sandbox.finapi.io/api/v1/securities`;
+    const api_response = await fetch(api_url, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': access_token
+        }
+    });
+
+    if (!api_response.ok) res.status = api_response.status;
+
+    const json_response = await api_response.json();
+    return json_response;
+}
+
 module.exports = {
     createFinAPIUser,
     deleteFinAPIUser,
@@ -175,5 +192,6 @@ module.exports = {
     importBankConnection,
     getAllBankConnections,
     deleteOneBankConnection,
-    deleteAllBankConnections
+    deleteAllBankConnections,
+    getSecurities
 }
