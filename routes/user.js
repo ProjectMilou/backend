@@ -6,7 +6,7 @@ const UserModel = require("../models/user");
 const UserTokenModel = require ("../models/userToken")
 const {hash, encrypt, decrypt} = require("../encryption/encryption");
 const finAPI = require('../models/finAPI');
-const {startResetProcess,startConfirmationProcess, endConfirmationProcess} = require ('../auth/confirmation');
+const confirmation = require ('../auth/confirmation');
 
 const router = express.Router();
 
@@ -71,7 +71,7 @@ router.post(
 
         // success
         else {
-            await startConfirmationProcess(req.user.user);
+            await confirmation.startConfirmationProcess(req.user.user);
             res.status(201).json({
                 message: "Signup success, check your mails"
             });
@@ -92,7 +92,7 @@ router.post(
     '/confirm/resent',
     passport.authenticate('login', {session: false}),
     async (req, res) => {
-        await startResetProcess(req.user);
+        await confirmation.startResetProcess(req.user);
         res.status(201).json({message: "Resent confirmation email."});
     }
 );
@@ -136,11 +136,11 @@ router.get('/confirm/:id/:token', async (req, res) => {
     const token = req.params.token;
     const id = req.params.id;
 
-    const confirmed = await endConfirmationProcess(id,token);
+    const confirmed = await confirmation.endConfirmationProcess(id,token);
 
     // todo: frontend needs to add some "wow great, you are confirmed" banner
     if(confirmed)
-        res.redirect("https://milou.io/");
+        res.redirect("https://milou.io/profile");
     else
         res.status(404).json({message: "User not found or Token not found or Token invalid."});
 });
@@ -421,16 +421,9 @@ router.put('/edit', passport.authenticate('jwt', {session: false}), async (req, 
 router.post('/reset/forgot', async (req, res) => {
 
     // if user exists: send token to mail and store it at userTokens
-    if(await UserModel.exists({email: req.body.email})){
-
-        // todo generate token
-        //  token must include user information as well as timestamp
-
-        // todo safe in UserTokenModel -> specify type = "PASSWORD_RESET"
-        // todo send email
-        // todo delete all old tokens with PASSWORD_RESET
-
-        res.status(201).json({message: "Reset link was sent to email."});
+    const resetWorked = await confirmation.startResetProcess(req.body.email);
+    if(resetWorked){
+        res.status(201).json({message: "Reset Process started, check your mail"});
     }
 
     // if user does not exist: 404
@@ -477,29 +470,22 @@ router.get('/reset/confirm/:id/:token', async (req, res) => {
     const reqUserId = req.params.id;
     const reqToken = req.params.token;
 
-    const userToken = await UserTokenModel.find({userID : reqUserId, token : reqToken, tokenType : "PASSWORD_RESET"});
+    const resetResponse = await confirmation.resetConfirm(reqUserId, reqToken);
 
-    // todo specify further
-    if (userToken === null){
-        res.status(404).json({message: "Invalid user, token, or token was used already"})
+    if(!resetResponse){
+        res.status(404).json({message: "token invalid or expired or user not found."});
     }
-
-    // todo what statusCode would be appropriate?
-    else if(userToken.expirationDate < new Date.now()){
-        res.status(400).json({message: "link expired"})
-    }
-
-    // todo set token!
-    // todo redirect to frontend
     else {
-        res.redirect("")
+        const newToken = resetResponse.token
+        // todo redirect to frontend with changed token
+        res.redirect("https://www.google.de/search?q=please+insert+useful+link");
     }
 });
 
 /**
  * @swagger
  *  /user/reset/change/:id/:token:
- *      post:
+ *      put:
  *          summary: confirmed user changes password
  *          description:
  *              Final call of the password reset process. id and token used for authentication.
@@ -537,43 +523,30 @@ router.get('/reset/confirm/:id/:token', async (req, res) => {
  *                              type: string
  *                      example:
  *                          message: User not found.
- *              400:
- *                  description: todo! what statusCode in this case? Token invalid
+ *              401:
+ *                  description:
  *                  schema:
  *                      type: object
  *                      properties:
  *                          message:
  *                              type: string
  *                      example:
- *                          message: Token invalid.
+ *                          message: Unauthorized
  */
-router.post('/reset/change/:id/:token', async (req, res) => {
+router.put('/reset/change/:id/:token', async (req, res) => {
 
     const reqUserId = req.params.id;
     const reqToken = req.params.token;
+    const newHashedPassword = hash(req.body.password);
 
-    const userToken = await UserTokenModel.findOne({userID : reqUserId, tokenType : "PASSWORD_RESET"});
+    const userConfirmed = await confirmation.endResetProcess(reqUserId, reqToken);
 
-    // todo specify further
-    if (userToken === null){
-        res.status(404).json({message: "User not found"})
+    if(!userConfirmed){
+        res.status(401).json({message: "Unauthorized, confirmation failed."});
+    } else {
+        await UserModel.updateOne({_id: reqUserId},{password: newHashedPassword},null);
+        res.status(204).json({message: "Password was successfully changed"});
     }
-
-    else if (userToken.token !== reqToken){
-        res.status(400).json({message: "Token not found or expired"})
-    }
-
-    // todo what statusCode would be appropriate?
-    else if(userToken.expirationDate < new Date.now()){
-        res.status(400).json({message: "Token not found or expired"})
-    }
-
-
-    else {
-        await UserModel.updateOne({_id: reqUserId},{password: hash(req.body.password)});
-        res.status(201).json({message: "Password was reset"});
-    }
-
 });
 
 /**
