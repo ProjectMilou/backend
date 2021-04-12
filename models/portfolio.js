@@ -22,23 +22,21 @@ const portfolioSchema = new mongoose.Schema({
         positions: [
             {
                 stock: {
-                    //id: Number?
-                    //accountId?
                     isin: String,
                     wkn: String,
                     symbol: String,
                     name: String,
-                    price: Number,//=marketValue?
+                    price: Number,//=marketValue!
                     marketValueCurrency: String,
-                    quote: Number,
-                    quoteCurrency: String,
-                    quoteDate: String,
-                    entryQuote: Number,
-                    entryQuoteCurrency: String,
-                    perf7d: Number,//?
-                    perf1y: Number,//?
-                    perf7dPercent: Number,//?
-                    perf1yPercent: Number,//?
+                    quote: Number,//??
+                    quoteCurrency: String,//??
+                    quoteDate: String,//??
+                    entryQuote: Number,//only makes sense in real ones I guess
+                    entryQuoteCurrency: String,//same
+                    perf7d: Number,
+                    perf1y: Number,
+                    perf7dPercent: Number,
+                    perf1yPercent: Number,
                     country: String,
                     industry: String,
                     score: Number//? -> finnHub reccomendation trends, for 10 biggest position, average of score multiplied with value, sum divided with total amount of reccomendations
@@ -87,12 +85,12 @@ const portfolioSchema = new mongoose.Schema({
         dividendPayoutRatio: Number,//?
         totalReturn: Number,
         totalReturnPercent: Number,
-        performance: [
+        performance: [// cron scheduler time as parameter how often should it work
             [Number]
         ]
+        //DE000BASF111
     }
 });
-//method for analytics
 
 
 const Portfolio = mongoose.model('Portfolio', portfolioSchema)

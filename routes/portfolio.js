@@ -5,6 +5,7 @@ const Portfolio = require('../models/portfolio');
 const mongoose = require('mongoose');
 const { ResourceGroups } = require('aws-sdk');
 const cookieParser = require('cookie-parser');
+const stockModel = require("../models/stock");
 
 const secret = require('../secret/secret')();
 const dotenv = require('dotenv');
@@ -84,6 +85,14 @@ const stockMock2 = {
     totalReturnPercent: 1 //=?
 }
 
+// what percent nr1 is in realtion to nr2
+const percent = (nr1, nr2) => {
+    if (nr1 && nr2 && !isNaN(nr1) && !isNaN(nr2))
+        return nr1 / (nr2) * 100
+    else
+        return 0
+}
+
 const emptyPortfolio = (portfolioId, userId, name) => {
     return {
         "id": portfolioId,
@@ -138,29 +147,66 @@ const emptyPortfolio = (portfolioId, userId, name) => {
         }
     }
 }
+const searchStock = async (searchString) => {
+    let query = {};
+    query["$or"] = [
+        { "isin": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+        { "wkn": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+        { "name": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+        { "symbol": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+    ]
+    var stocks = await stockModel.find(query);
+    return stocks
+}
 
-const newStock = (symbol, qty) => {
-    return {
-        "stock": {
+const newStock = async (symbol, qty) => {
+    var stockArray = await searchStock(symbol);//?
+    var stock = stockArray[0]
+    if (!stock) {
+        stock = {
             //id: Number?
             //accountId?
             "isin": "?",
-            "wkn": "?", //TODO
-            "symbol": symbol, //TODO
-            "name": "?", //TODO
-            "price": 0, //=marketValue?//TODO
-            "marketValueCurrency": "?", //TODO
+            "wkn": "?",
+            "symbol": symbol,
+            "name": symbol,
+            "price": 0,
+            "marketValueCurrency": "?",
+            "quote": 0,
+            "quoteCurrency": "?",
+            "quoteDate": "?",
+            "entryQuote": 0,
+            "entryQuoteCurrency": "?",
+            "perf7d": 0,
+            "perf1y": 0,
+            "perf7dPercent": 0,
+            "perf1yPercent": 0,
+            "country": "?",
+            "industry": "?",
+            "score": 0
+        }
+    }
+    var result = {
+        "stock": {
+            //id: Number?
+            //accountId?
+            "isin": stock.isin,
+            "wkn": stock.wkn,
+            "symbol": stock.symbol,
+            "name": stock.name,
+            "price": stock.price,
+            "marketValueCurrency": stock.currency,
             "quote": 0, //TODO
             "quoteCurrency": "?", //TODO
             "quoteDate": "?", //TODO
             "entryQuote": 0, //TODO (=quote)
             "entryQuoteCurrency": "?", //TODO
-            "perf7d": 0, //TODO
-            "perf1y": 0, //TODO
-            "perf7dPercent": 0,
-            "perf1yPercent": 0,
-            "country": "?", //TODO
-            "industry": "?", //TODO
+            "perf7d": stock.per7d,
+            "perf1y": stock.per365d,
+            "perf7dPercent": percent(stock.per7d, (stock.price * qty)),
+            "perf1yPercent": percent(stock.per365d, (stock.price * qty)),
+            "country": stock.country,
+            "industry": stock.industry,
             "score": 0 //TODO-> finnHub reccomendation trends, for 10 biggest position, average of score multiplied with value, sum divided with total amount of reccomendations
         },
         "qty": qty, // = quantityNominal?
@@ -168,8 +214,26 @@ const newStock = (symbol, qty) => {
         "totalReturn": 0, //=profitOrLoss?
         "totalReturnPercent": 0 //=?
     }
+    return result;
 }
 
+const updatePortfolioFields = (portfolio) => {
+    //TODO modify totalReturn of portfolio and all the other fields
+    portfolio.portfolio.overview.modified = Date.now() // current timestamp
+    var overview = portfolio.portfolio.overview
+    overview.positionCount = portfolio.portfolio.positions.length;
+    overview.perf7d = portfolio.portfolio.positions.map(({ stock: { perf7d: performance } }) => performance).reduce((a, b) => a + b)
+    overview.perf1y = portfolio.portfolio.positions.map(({ stock: { perf1y: performance } }) => performance).reduce((a, b) => a + b)
+    overview.perf7dPercent = percent(overview.perf7d, overview.value)
+    overview.perf1yPercent = percent(overview.perf1y, overview.value)
+    //TODO risk
+    //TODO keyfigures
+    portfolio.portfolio.totalReturn = portfolio.portfolio.positions.map(({ totalReturn: performance }) => performance).reduce((a, b) => a + b)
+    portfolio.portfolio.totalReturnPercent = percent(portfolio.portfolio.totalReturn, overview.value)
+    //TODO nextDividend: Number,//no data, maybe Alpha Vantage
+    //dividendPayoutRatio: Number,//?
+    //TODO score
+}
 
 // can it be cast to mongoose.ObjectId?
 const is_valid_id = (id) => {
@@ -265,7 +329,7 @@ router.post('/create', passport.authenticate('jwt', { session: false }), (req, r
                 res.status(400).json(response);
             } else {
                 var portfolio = new Portfolio(emptyPortfolio(portfolioId, req.user.id, name))
-                    // save new portfolio in database
+                // save new portfolio in database
                 portfolio.save(
                     function(err, portfolio) {
                         if (err) {
@@ -377,10 +441,10 @@ const query = (userId, positionId) => {
  * Otherwise, the position in the specified portfolio is updated to match the specified quantity.
  * The position which is changed is the one which has isin, wkn, symbol or name equal to positionId
  */
-const modifyPortfolio = (portfolio, positionId, qty) => {
+const modifyPortfolio = async (portfolio, positionId, qty) => {
     // modify portfolio
     var positions = portfolio.portfolio.positions
-        // find the right position, if already present in portfolio
+    // find the right position, if already present in portfolio
     var pos = positions.find((position) => {
         return idBelongsToThisPosition(positionId, position)
     })
@@ -402,14 +466,12 @@ const modifyPortfolio = (portfolio, positionId, qty) => {
         }
     } else if (qty != 0) {
         // add new stock/position to portfolio
-        var stock = newStock(positionId, qty) //TODO modify new Stock
+        var stock = await newStock(positionId, qty)
         positions.push(stock)
         portfolio.portfolio.overview.value += stock.stock.price * stock.qty
     }
+    updatePortfolioFields(portfolio)
 
-    //TODO modify totalReturn of portfolio and all the other fields
-    portfolio.portfolio.overview.modified = Date.now() // current timestamp
-    portfolio.portfolio.overview.positionCount = portfolio.portfolio.positions.length;
 
 }
 
@@ -428,7 +490,7 @@ router.put('/modify/:id', passport.authenticate('jwt', { session: false }), asyn
         res.json(response)
     } else {
         // find Portfolio
-        await Portfolio.findOne({ "id": id, "userId": req.user.id }, (err, portfolio) => {
+        await Portfolio.findOne({ "id": id, "userId": req.user.id }, async (err, portfolio) => {
             if (err) {
                 handle_database_error(res, err)
             } else if (!portfolio) {
@@ -448,12 +510,12 @@ router.put('/modify/:id', passport.authenticate('jwt', { session: false }), asyn
                         success = false;
                         break;
                     } else {
-                        modifyPortfolio(portfolio, portfolioId, qty)
+                        await modifyPortfolio(portfolio, portfolioId, qty)
                     }
                 }
                 if (success) { // all modifications done
                     portfolio.save(
-                        function(err, portfolio) {
+                        function (err, portfolio) {
                             if (err) handle_database_error(res, err)
                             else
                                 res.json(response) // success
@@ -537,14 +599,14 @@ router.get('/stock/:isin', passport.authenticate('jwt', { session: false }), (re
 
     var response = {};
     //? = %3F
-    Portfolio.find(query(req.user.id, isin), 'id portfolio.overview.name portfolio.positions', function(err, portf) {
+    Portfolio.find(query(req.user.id, isin), 'id portfolio.overview.name portfolio.positions', function (err, portf) {
         if (err) {
             handle_database_error(res, err)
         } else {
             response.portfolios = portf.map(({ id: pfId, portfolio: { overview: { name: pfName }, positions: arrayStocks } }) => {
                 var positionsWithCurrentISIN = arrayStocks.filter((position) => {
-                        return idBelongsToThisPosition(isin, position)
-                    }) // the resulting array should have length 1
+                    return idBelongsToThisPosition(isin, position)
+                }) // the resulting array should have length 1
                 var qty;
                 if (positionsWithCurrentISIN.length == 0) {
                     qty = 0
@@ -590,7 +652,7 @@ router.put('/stock/:isin', passport.authenticate('jwt', { session: false }), (re
                 res.status(404).json(response)
         } else {
             // find Portfolio
-            Portfolio.findOne({ "id": id, "userId": req.user.id }, (err, portfolio) => {
+            Portfolio.findOne({ "id": id, "userId": req.user.id }, async (err, portfolio) => {
                 var currentIndex = j;
                 if (err) {
                     handle_database_error(res, err)
@@ -612,12 +674,12 @@ router.put('/stock/:isin', passport.authenticate('jwt', { session: false }), (re
                             res.status(400).json(response)
                         success = false;
                     } else {
-                        modifyPortfolio(portfolio, portfolioId, qty)
+                        await modifyPortfolio(portfolio, portfolioId, qty)
                     }
                 }
                 if (success) { // all modifications done
                     portfolio.save(
-                        function(err, portfolio) {
+                        function (err, portfolio) {
                             if (err) handle_database_error(res, err)
                             else if (!res.headersSent)
                                 res.json(response) // success
