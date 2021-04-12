@@ -68,6 +68,8 @@ router.post(
                 message: "Signup failed - mail has got an account already"
             })
         }
+
+        // success
         await startConfirmationProcess(req.user.user);
         res.status(201).json({
             message: "Signup success, check your mails"
@@ -88,7 +90,7 @@ router.post(
     '/confirm/resent',
     passport.authenticate('login', {session: false}),
     async (req, res) => {
-        startResetProcess(req.user);
+        await startResetProcess(req.user);
         res.status(201).json({message: "Resent confirmation email."});
     }
 );
@@ -96,7 +98,7 @@ router.post(
 /**
  * @swagger
  * /user/confirm/:id/:token:
- *   post:
+ *   get:
  *     description: Confirms, that the token is correct, which has been sent to users email address.
  *     summary: Confirmation of email token
  *     tags:
@@ -128,7 +130,7 @@ router.post(
  *              example:
  *                  message: Failed
  */
-router.post('/confirm/:id/:token', async (req, res) => {
+router.get('/confirm/:id/:token', async (req, res) => {
     const token = req.params.token;
     const id = req.params.id;
 
@@ -418,10 +420,8 @@ router.post('/reset/forgot', async (req, res) => {
     // if user exists: send token to mail and store it at userTokens
     if(await UserModel.exists({email: req.body.email})){
 
-
         // todo generate token
         //  token must include user information as well as timestamp
-
 
         // todo safe in UserTokenModel -> specify type = "PASSWORD_RESET"
         // todo send email

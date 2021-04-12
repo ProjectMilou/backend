@@ -33,7 +33,7 @@ const startResetProcess = async (user) => {
     });
     const confirmationToken = await userToken.token;
 
-    // todo send email with token
+    // send email with token
     // await sendPasswordResetEmail(userEmail,userId,confirmationToken);
 }
 
