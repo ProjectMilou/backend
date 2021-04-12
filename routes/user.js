@@ -70,10 +70,12 @@ router.post(
         }
 
         // success
-        await startConfirmationProcess(req.user.user);
-        res.status(201).json({
-            message: "Signup success, check your mails"
-        });
+        else {
+            await startConfirmationProcess(req.user.user);
+            res.status(201).json({
+                message: "Signup success, check your mails"
+            });
+        }
     }
 );
 
