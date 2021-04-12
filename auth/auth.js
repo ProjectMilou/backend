@@ -62,23 +62,8 @@ passport.use(
                         confirmed : false
                     });
 
-                    // generate token
-                    const token = hash(email);
-
-                    // token and mail are stored usertokens
-                    await UserTokenModel.create({
-                        userID: user.id,
-                        token: token
-                    });
-
-                    // send token to mail
-
-                    //await confEmail.sendConfirmationEmail( email,user.id, token);
-
                     return done(null, {
-                        response: {
-                            message: "Signup success",
-                        },
+                        user,
                         statusCode: 201
                     });
                 } catch (error) {

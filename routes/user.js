@@ -6,6 +6,7 @@ const UserModel = require("../models/user");
 const UserTokenModel = require ("../models/userToken")
 const {hash, encrypt, decrypt} = require("../encryption/encryption");
 const finAPI = require('../models/finAPI');
+const {startResetProcess,startConfirmationProcess, endConfirmationProcess} = require ('../auth/confirmation');
 
 const router = express.Router();
 
@@ -61,8 +62,34 @@ router.post(
     '/register',
     passport.authenticate('register', { session: false }),
     async (req, res) => {
-        res.statusCode = req.user.statusCode
-        res.json(req.user.response);
+
+        if(req.user.statusCode === 409){
+            res.status(409).json({
+                message: "Signup failed - mail has got an account already"
+            })
+        }
+        await startConfirmationProcess(req.user.user);
+        res.status(201).json({
+            message: "Signup success, check your mails"
+        });
+    }
+);
+
+/**
+ * @swagger
+ *  /user/confirm/resent:
+ *      post:
+ *          summary:
+ *              todo
+ *          description:
+ *              allows user to resent a confirmation mail.
+ */
+router.post(
+    '/confirm/resent',
+    passport.authenticate('login', {session: false}),
+    async (req, res) => {
+        startResetProcess(req.user);
+        res.status(201).json({message: "Resent confirmation email."});
     }
 );
 
@@ -104,20 +131,13 @@ router.post(
 router.post('/confirm/:id/:token', async (req, res) => {
     const token = req.params.token;
     const id = req.params.id;
-    try{
-        const userToken = await UserTokenModel.findOne({userID: id})
-        if(userToken.expirationDate < Date.now()) {
-            res.status(404).send("token has already expired")
-        } else if(userToken.token !== token){
-            res.send("failed");
-        } else {
-            await UserModel.updateOne({_id: id}, {confirmed: true})
-            await UserTokenModel.deleteOne({userID: id})
-            res.status(200).send("account successfully confirmed");
-        }
-    } catch(err) {
-        res.status(404).send("failed");
-    }
+
+    const confirmed = await endConfirmationProcess(id,token);
+
+    if(confirmed)
+        res.status(200).json({message: "User confirmed successfully"});
+    else
+        res.status(404).json({message: "User not found or Token not found or Token invalid."});
 });
 
 /**
