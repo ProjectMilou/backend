@@ -7,6 +7,11 @@ const { ResourceGroups } = require('aws-sdk');
 const cookieParser = require('cookie-parser');
 const stockModel = require("../models/stock");
 
+//analytics
+const diversification = require('../data-analytics/analytics/analytics');
+const companyOverviews = require('../data-analytics/dynamic_data/company-overviews');
+const portfolioFetcher = require('../data-analytics/dynamic_data/portfolio-fetcher');
+
 const secret = require('../secret/secret')();
 const dotenv = require('dotenv');
 dotenv.config();
@@ -217,8 +222,25 @@ const newStock = async (symbol, qty) => {
     return result;
 }
 
-const updatePortfolioFields = (portfolio) => {
-    //TODO modify totalReturn of portfolio and all the other fields
+function tofinAPIPortfolio(returnedPortfolio) {
+    const reformattedPortfolio = {
+        securities: []
+    }
+    returnedPortfolio.portfolio.positions.forEach(position => {
+        const currSecurity = {};
+        currSecurity["name"] = position.stock.name;
+        currSecurity["symbol"] = position.stock.symbol;
+        currSecurity["entryQuote"] = position.stock.entryQuote;
+        currSecurity["quoteDate"] = position.stock.quoteDate;
+        currSecurity["quantityNominal"] = position.qty;
+        currSecurity["isin"] = position.stock.isin;
+        reformattedPortfolio.securities.push(currSecurity)
+    });
+    return reformattedPortfolio;
+}
+
+
+const updatePortfolioFields = async (portfolio) => {
     portfolio.portfolio.overview.modified = Date.now() // current timestamp
     var overview = portfolio.portfolio.overview
     overview.positionCount = portfolio.portfolio.positions.length;
@@ -227,12 +249,18 @@ const updatePortfolioFields = (portfolio) => {
     overview.perf7dPercent = percent(overview.perf7d, overview.value)
     overview.perf1yPercent = percent(overview.perf1y, overview.value)
     //TODO risk
+    var currPortfolio = tofinAPIPortfolio(portfolio)
+    var currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
+    var currCompanyOverviews = await companyOverviews.getCompanyOverviewForSymbols(currSymbols);
+    var portfDiversification = diversification.calculateDiversification(currPortfolio,currCompanyOverviews)//TODO
+    console.log(portfDiversification)
     //TODO keyfigures
     portfolio.portfolio.totalReturn = portfolio.portfolio.positions.map(({ totalReturn: performance }) => performance).reduce((a, b) => a + b)
     portfolio.portfolio.totalReturnPercent = percent(portfolio.portfolio.totalReturn, overview.value)
     //TODO nextDividend: Number,//no data, maybe Alpha Vantage
     //dividendPayoutRatio: Number,//?
     //TODO score
+    //TODO new values
 }
 
 // can it be cast to mongoose.ObjectId?
@@ -470,7 +498,7 @@ const modifyPortfolio = async (portfolio, positionId, qty) => {
         positions.push(stock)
         portfolio.portfolio.overview.value += stock.stock.price * stock.qty
     }
-    updatePortfolioFields(portfolio)
+    await updatePortfolioFields(portfolio)
 
 
 }
