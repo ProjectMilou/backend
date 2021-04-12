@@ -138,8 +138,9 @@ router.get('/confirm/:id/:token', async (req, res) => {
 
     const confirmed = await endConfirmationProcess(id,token);
 
+    // todo: frontend needs to add some "wow great, you are confirmed" banner
     if(confirmed)
-        res.status(200).json({message: "User confirmed successfully"});
+        res.redirect("https://milou.io/");
     else
         res.status(404).json({message: "User not found or Token not found or Token invalid."});
 });
@@ -471,7 +472,7 @@ router.post('/reset/forgot', async (req, res) => {
  *                      example:
  *                          message: Invalid user, token, or token was used already
  */
-router.post('/reset/confirm/:id/:token', async (req, res) => {
+router.get('/reset/confirm/:id/:token', async (req, res) => {
 
     const reqUserId = req.params.id;
     const reqToken = req.params.token;
