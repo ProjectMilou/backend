@@ -13,16 +13,19 @@ const AWS_SES = new AWS.SES(SES_CONFIG);
 
 let  sendConfirmationEmail =  (recipientEmail,id, confirmationCode) =>{
     //TODO: set up params
+    var templateData = {};
+    templateData.id = id;
+    templateData.confirmationCode= confirmationCode;
     let params = {
         Source: 'info@milou.io',
-        Template:'ExampleTemplate',
+        Template:'EmailConfirmation',
         Destination:{
             ToAddresses: [
                 recipientEmail
             ],
         },
         ReplyToAddresses: [],
-        TemplateData:'{\"id\":${id}}'
+        TemplateData: JSON.stringify(templateData),
         /*
         Message: {
             Body: {
@@ -44,22 +47,26 @@ let  sendConfirmationEmail =  (recipientEmail,id, confirmationCode) =>{
 }
 
 let sendPasswordResetEmail = (recipientEmail, id,name, confirmationCode) =>{
+    var templateData = {};
+    templateData.name = name;
+    templateData.id = id;
+    templateData.confirmationCode= confirmationCode;
     let params = {
         Source: 'info@milou.io',
+        Template: 'PasswordReset',
         Destination :{
             ToAddresses: [
                 recipientEmail
             ],
         },
         ReplyToAddresses: [],
-        Message: {
-
-        }
+        TemplateData: JSON.stringify(templateData),
 
     };
-    return AWS_SES.sendEmail(params).promise();
+    return AWS_SES.sendTemplatedEmail(params).promise();
 }
 
 module.exports = {
     sendConfirmationEmail,
+    sendPasswordResetEmail
 };
