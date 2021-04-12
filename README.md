@@ -1,18 +1,22 @@
 # Milou-backend
 ​
 This is the repository for the backend which powers [Milou](api.milou.io/api-docs), 
-running on an [Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/) instance on AWS. 
+which is running on an [Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/) environment on AWS. 
 It includes a MongoDB database 
 connection and can be interfaced via HTTPS requests. It is also fetching from different 
-financial apis such as Alpha Vantage, finnHub and newsAPI to retrieve information/news about stocks and companies.
-Furthermore, finAPI is used to enable users to connect their bank-accounts, which allows 
-the application to import their real portfolios. Besides that, the analytics team is also integrated, ...`TODO`
+financial apis such as [Alpha Vantage](https://www.alphavantage.co/), [finnHub](https://finnhub.io/) and [newsAPI](https://newsapi.org/) 
+to retrieve information/news about stocks and companies.
+Furthermore, [finAPI](https://www.finapi.io/?gclid=Cj0KCQjw38-DBhDpARIsADJ3kjnOQGANlF8mcGFtSLsq282GzMtaaJbcH2X7xnKWLfNM-PJck63tdHwaAofPEALw_wcB) 
+is used to enable users to connect their bank-accounts, which allows 
+the application to import their real portfolios. Besides that, the Analytics part of Milou is integrated in a subfolder 
+called `data-analytics` and one file called `analyticsRoutes.js`, which offers a connection to the Analyzer part of Milou.
 ​
 ## Dependencies
 ​
 Among others we use express, swagger, passportJS, fetch and axios, aws-sdk, dotenv and mongoose.
+
 [Express](https://expressjs.com/) is our main backend-application framework. 
-We use [Swagger](https://swagger.io/) 3.0 OpenAPI for the documentation of our API.
+We use [Swagger](https://swagger.io/) 3.0 OpenAPI for the [documentation](https://api.milou.io/api-docs/) of the API.
 [PassportJS](http://www.passportjs.org/) is used for user-authorization. 
 [Fetch](https://www.npmjs.com/package/node-fetch) is used by the backend application to 
 retrieve data from other APIs, the analytics team uses 
@@ -25,6 +29,8 @@ retrieve data from other APIs, the analytics team uses
 You can install our dependencies by running `npm install`.
 ## Installation
 ​
+Except for importing the secrets (next step), no major effort is required to run the project locally
+
 ```sh
 npm i
 npm start
@@ -52,8 +58,7 @@ It is used to cache information and news about stocks and companies,
 enabling us to update analysis of portfolios, even tough we are limited 
 in terms of calls per minute to our financial APIs.
 
-Besides that, we store user information safely encrypted using the `aes-256-gcm`. 
-Not the user passwords, those are hashed.
+Sensitive user data is stored encrypted _(not yet for better debugging)_, while passwords are stored hashed.
 ​
 ## Authentication
 ​
@@ -65,7 +70,7 @@ requests, that should only work for signed in users.
 ​
 The application can be found at:
 ​
-* [https://api.milou.io/](https://api.milou.io/)
+* [https://milou.io/](https://milou.io/)
 
-our documentation can be viewed at:
+Our documentation can be viewed at:
 * [https://api.milou.io/api-docs](https://api.milou.io/api-docs)
