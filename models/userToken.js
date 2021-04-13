@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const {randomToken} = require('../encryption/encryption');
+
 /**
  * @swagger
  * definitions:
@@ -26,11 +28,14 @@ const UserTokenSchema = new mongoose.Schema({
         required: true,
     },
     token: {
-        type: String,
-        required: true
+        type: String
     },
     expirationDate: {
         type: Date
+    },
+    tokenType: {
+        type: String,
+        enum: ["EMAIL_CONFIRMATION", "PASSWORD_RESET"]
     }
 });
 
@@ -38,7 +43,8 @@ const UserTokenSchema = new mongoose.Schema({
 UserTokenSchema.pre(
     'save',
     async function(next) {
-        this.expirationDate = new Date().setDate(new Date().getDate() + 1)
+        this.expirationDate = new Date().setDate(new Date().getDate() + 1);
+        this.token = await randomToken();
         next();
     }
 );

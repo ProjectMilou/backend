@@ -4,6 +4,9 @@ const passport = require('passport');
 const genToken = require('../auth/auth');
 const UserModel = require("../models/user");
 const UserTokenModel = require ("../models/userToken")
+const {hash, encrypt, decrypt} = require("../encryption/encryption");
+const finAPI = require('../models/finAPI');
+const confirmation = require ('../auth/confirmation');
 
 const router = express.Router();
 
@@ -55,20 +58,53 @@ const router = express.Router();
  *              example:
  *                  message: Signup failed - mail has got an account already
 */
-
 router.post(
     '/register',
     passport.authenticate('register', { session: false }),
     async (req, res) => {
-        res.statusCode = req.user.statusCode
-        res.json(req.user.response);
+
+        if(req.user.statusCode === 409){
+            res.status(409).json({
+                message: "Signup failed - mail has got an account already"
+            })
+        }
+
+        // success
+        else {
+            await confirmation.startConfirmationProcess(req.user.user);
+            res.status(201).json({
+                message: "Signup success, check your mails"
+            });
+        }
+    }
+);
+
+
+/**
+ * @swagger
+ *  /user/confirm/resent:
+ *      post:
+ *          summary:
+ *              resent a confirmation link to an email-address
+ *          description:
+ *              If a user has not confirmed the account right away or has lost the email with the confirmation link somehow, <br>
+ *              this route enables sending another one, restarting the confirmation process internally.
+ *          tags:
+ *            - user
+ */
+router.post(
+    '/confirm/resent',
+    passport.authenticate('jwt', {session: false}),
+    async (req, res) => {
+        await confirmation.startConfirmationProcess(req.user);
+        res.status(201).json({message: "Resent confirmation email."});
     }
 );
 
 /**
  * @swagger
  * /user/confirm/:id/:token:
- *   post:
+ *   get:
  *     description: Confirms, that the token is correct, which has been sent to users email address.
  *     summary: Confirmation of email token
  *     tags:
@@ -100,24 +136,17 @@ router.post(
  *              example:
  *                  message: Failed
  */
-
-router.post('/confirm/:id/:token', async (req, res) => {
+router.get('/confirm/:id/:token', async (req, res) => {
     const token = req.params.token;
     const id = req.params.id;
-    try{
-        const userToken = await UserTokenModel.findOne({userID: id})
-        if(userToken.expirationDate < Date.now()) {
-            res.status(404).send("token has already expired")
-        } else if(userToken.token !== token){
-            res.send("failed");
-        } else {
-            await UserModel.updateOne({_id: id}, {confirmed: true})
-            await UserTokenModel.deleteOne({userID: id})
-            res.status(200).send("account successfully confirmed");
-        }
-    } catch(err) {
-        res.status(404).send("failed");
-    }
+
+    const confirmed = await confirmation.endConfirmationProcess(id,token);
+
+    // todo: frontend needs to add some "wow great, you are confirmed" banner
+    if(confirmed)
+        res.redirect("https://milou.io/profile");
+    else
+        res.status(404).json({message: "User not found or Token not found or Token invalid."});
 });
 
 /**
@@ -125,7 +154,7 @@ router.post('/confirm/:id/:token', async (req, res) => {
  * /user/login:
  *  post:
  *    description: Checks if email and password are correct. sends back a token that needs to be passed in the header of each user-relevant request.
- *    summary:
+ *    summary: Login of a user
  *    tags:
  *    - user
  *    parameters:
@@ -224,7 +253,6 @@ router.post(
     }
 );
 
-
 /**
  * @swagger
  * /user/profile:
@@ -274,77 +302,6 @@ router.get('/profile', passport.authenticate('jwt',{session: false}), async (req
     } catch(err){
         console.log(err);
         res.json("error occured");
-    }
-});
-
-/**
- * swagger
- * /user/forgot:
- *  post:
- *   description: If user has forgotten password, a token will be sent to email, that has to be confirmed.
- *   summary:
- *   tags:
- *    - user
- *   responses:
- *    '202':
- *      description: Email exists, token will be sent.
- *    '401':
- *      description: Not foundMail was not found.
- */
-
-// forgot password
-router.post('/forgot', async (req, res) => {
-
-    // if user exists: send token to mail and store it at userTokens
-    if(await UserModel.exists({email: req.body.email})){
-        res.status(202).json({message: "confirm your email to proceed"});
-
-        // todo generate token
-        // todo safe in UserTokenModel
-        // todo send email
-
-    }
-
-    // if user does not exist: 404
-    else{
-        res.status(404).json({message: "mail not found"});
-    }
-});
-
-/**
- * swagger
- * /user/reset/confirm:
- *  post:
- *   description: Confirms token that was sent to user-email, when a user has forgotten the password to his account.
- *   summary:
- *   tags:
- *    - user
- *   responses:
- *    '200':
- *      description: Token was correct, password can now be reset.
- *    '404':
- *      description: Not found. Token was not found.
- */
-router.post('/reset/confirm/:id/:token', (req, res) => {
-
-    // todo check if token is valid
-    // todo enable reset for password
-
-    // fixme still mocked
-    if(req.body.uuid === "8e733aeb-8bf8-485c-92b7-62ca4463db3c") {
-        res.statusCode = 200;
-        res.json({
-            message: 'mail confirmed'
-        });
-    }
-
-    // case 8e733aeb-8bf8-485c-92b7-62ca4463db3c: 200, body: mail of the assigned user
-    // case token not found: 404
-    else {
-        res.statusCode = 404;
-        res.json({
-            message: 'failed'
-        });
     }
 });
 
@@ -425,7 +382,352 @@ router.put('/edit', passport.authenticate('jwt', {session: false}), async (req, 
 
 /**
  * @swagger
- * /user/delete:
+ *  /user/reset/forgot:
+ *      post:
+ *          description: User has forgotten password. A token will be generated, put in a link (as parameter) and sent to users email.
+ *          summary: starts reset process for forgotten passwords.
+ *          tags:
+ *            - user
+ *          parameters:
+ *            - in: body
+ *              name: email
+ *              schema:
+ *                  type: object
+ *                  properties:
+ *                      email:
+ *                          type: string
+ *                  example:
+ *                      email: test@getmilou.de
+ *          produces:
+ *            - application/json
+ *          consumes:
+ *            - application/json
+ *          responses:
+ *              201:
+ *                  description: OK, token sent.
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          message:
+ *                              type: string
+ *                      example:
+ *                          message: Reset link was sent to email.
+ *              404:
+ *                  description: Specified email not found.
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          message:
+ *                              type: string
+ *                      example:
+ *                          message: Specified email not found.
+ */
+router.post('/reset/forgot', async (req, res) => {
+
+    // if user exists: send token to mail and store it at userTokens
+    const resetWorked = await confirmation.startResetProcess(req.body.email);
+    if(resetWorked){
+        res.status(201).json({message: "Reset Process started, check your mail"});
+    }
+
+    // if user does not exist: 404
+    else{
+        res.status(404).json({message: "Specified email not found."});
+    }
+});
+
+/**
+ * @swagger
+ *  /user/reset/confirm/:id/:token:
+ *      post:
+ *          summary: confirms a user, who forgot the password
+ *          description: Will only be called by user via a link, that he received in an email.
+ *                       It Redirects the user to a page, that allows password change.
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          consumes:
+ *            - application/json
+ *          parameters:
+ *            - in: path
+ *              name: id
+ *              type: string
+ *            - in: path
+ *              name: resetToken
+ *              type: string
+ *      response:
+ *          200:
+ *              description: todo! Redirect to frontend
+ *          404:
+ *              description: User not found or Token invalid or Token expired.
+ *              schema:
+ *                      type: object
+ *                      properties:
+ *                          message:
+ *                              type: string
+ *                      example:
+ *                          message: Invalid user, token, or token was used already
+ */
+router.get('/reset/confirm/:id/:token', async (req, res) => {
+
+    const reqUserId = req.params.id;
+    const reqToken = req.params.token;
+
+    const resetResponse = await confirmation.resetConfirm(reqUserId, reqToken);
+
+    if(!resetResponse){
+        res.status(404).json({message: "token invalid or expired or user not found."});
+    }
+    else {
+        const newToken = resetResponse.token
+        // todo redirect to frontend with changed token
+        res.redirect("https://www.google.de/search?q=please+insert+link+to+password+reset+webform");
+    }
+});
+
+/**
+ * @swagger
+ *  /user/reset/change/:id/:token:
+ *      put:
+ *          summary: confirmed user changes password
+ *          description:
+ *              Final call of the password reset process. id and token used for authentication.
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          consumes:
+ *            - application/json
+ *          parameters:
+ *            - in: path
+ *              name: id
+ *              type: string
+ *            - in: path
+ *              name: resetToken
+ *              type: string
+ *            - in: body
+ *              name: password
+ *              schema:
+ *                  type: object
+ *                  properties:
+ *                      password:
+ *                          type: string
+ *                  example:
+ *                      password: 654321
+ *          responses:
+ *              201:
+ *                  description: OK. password was reset.
+ *              404:
+ *                  description: User not found.
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          message:
+ *                              type: string
+ *                      example:
+ *                          message: User not found.
+ *              401:
+ *                  description:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          message:
+ *                              type: string
+ *                      example:
+ *                          message: Unauthorized
+ */
+router.put('/reset/change/:id/:token', async (req, res) => {
+
+    const reqUserId = req.params.id;
+    const reqToken = req.params.token;
+    const newHashedPassword = hash(req.body.password);
+
+    const userConfirmed = await confirmation.endResetProcess(reqUserId, reqToken);
+
+    if(!userConfirmed){
+        res.status(401).json({message: "Unauthorized, confirmation failed."});
+    } else {
+        await UserModel.updateOne({_id: reqUserId},{password: newHashedPassword},null);
+        console.log("bong");
+        res.status(201).json({message: "Password was successfully changed"});
+    }
+});
+
+/**
+ * @swagger
+ *  /user/bank/search/:searchString:
+ *      get:
+ *          summary:
+ *              Search for a bank in finAPI
+ *          description:
+ *              Return all banks, that match the search-string while also being supported by finAPI.<br>
+ *              Only Banks shown, that are available at finAPI
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          parameters:
+ *            - in: path
+ *              name: searchString
+ *              type: string
+ *          responses:
+ *              200:
+ *                  description:
+ *                      OK. Matched banks are shown.
+ */
+// todo filter!
+// todo add schema, add example for 200 response!
+router.get('/bank/search/:searchString',async (req, res) => {
+    const searchString = req.params.searchString;
+    const banks = await finAPI.searchBanks(searchString);
+    res.status(200).send(banks);
+});
+
+/**
+ * @swagger
+ *  /user/bank/connections/add/:bankId:
+ *      post:
+ *          summary:
+ *              starts the process for adding a bank via finAPI
+ *          description:
+ *              The bank-ID will be used to specify a bank for a "bank-connection-import" on finAPI.<br>
+ *              <b>A link to a webform</b> (leading to finAPI) will be returned. The user can input sensitive bank data on that page, because we are legally not allowed to do so.<br>
+ *              If the user confirmed his connection successfully on that other page, his securities (portfolios) will be available to us on finAPI.
+ *          tags:
+ *            - user
+ *          parameters:
+ *            - in: path
+ *              name: bankId
+ *              type: integer
+ *          security:
+ *            - bearerAuth: []
+ *          responses:
+ *              200:
+ *                  description:
+ *                      OK. Webform passed in body.
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          webform:
+ *                              type: string
+ *                      example:
+ *                          webform: "some link"
+ *
+ */
+router.post('/bank/connections/add/:bankId',passport.authenticate('jwt', {session: false}), async (req, res) => {
+    // todo should be redirected?
+
+    const bankId = req.params.bankId;
+    const user = req.user;
+    const finResponse = await finAPI.importBankConnection(user, bankId)
+    res.send(finResponse);
+});
+
+/**
+ * @swagger
+ *  /user/bank/connections:
+ *      get:
+ *          summary:
+ *              Get all bank-connections of a user
+ *          description:
+ *              Specify a user by JWT. <br>
+ *              All of the users currently registered bank-connections will be returned as an array.
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          security:
+ *            - bearerAuth: []
+ *
+ */
+// get bankconnections
+router.get('/bank/connections',passport.authenticate('jwt', {session: false}), async (req, res) => {
+    const user = req.user;
+    const finResponse = await finAPI.getAllBankConnections(user)
+    res.send(finResponse);
+});
+
+/**
+ * @swagger
+ *  /user/bank/refresh (not working as specified) :
+ *      get:
+ *          summary:
+ *              Refresh all bank-connections of a user, importing his securities into our database
+ *          description:
+ *              Specify a user by JWT. <br>
+ *              All of the users securities will be refreshed and new ones will be imported.<br>
+ *              Has to happen after the successful import of a bank-connection, because <b>we don't <br>
+ *              get notified about the (successful) import of a bank-connection.</b>
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          security:
+ *            - bearerAuth: []
+ */
+// getSecurities todo (?) what used for (?)
+router.get('/securities',passport.authenticate('jwt', {session: false}), async (req, res) => {
+    const user = req.user;
+    const finResponse = await finAPI.getSecurities(user)
+    res.send(finResponse);
+});
+
+/**
+ * @swagger
+ *  /user/bank/connections/:id (not working as specified):
+ *      delete:
+ *          summary:
+ *              Get all bank-connections of a user
+ *          description:
+ *              Specify a user by JWT. <br>
+ *              All of the users currently registered bank-connections will be returned as an array.
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          security:
+ *            - bearerAuth: []
+ */
+// delete bankConnection by id
+// todo delete all connected portfolios from our database as well
+router.delete('/bank/connections/:id',passport.authenticate('jwt', {session: false}), async (req, res) => {
+    const user = req.user;
+    const bankConnectionId = params.id;
+    await finAPI.deleteOneBankConnection(user, bankConnectionId);
+    res.status(200).json({"message": "deleted bank connection " + bankConnectionId})
+});
+
+/**
+ * @swagger
+ *  /user/bank/connections (not working as specified):
+ *      delete:
+ *          summary:
+ *              Delete all of a users bank-connections.
+ *          description:
+ *              <h2> (securities not deleted from our database yet! todo)</h2>
+ *              Specify a user by JWT. <br>
+ *              All of the users currently registered bank-connections will be deleted from finAPI <br>
+ *              and our database.
+ *          tags:
+ *            - user
+ *          produces:
+ *            - application/json
+ *          security:
+ *            - bearerAuth: []
+ *
+ */
+// delete all bankConnections
+// todo delete all connected portfolios from our database as well
+router.delete('/bank/connections',passport.authenticate('jwt', {session: false}), async (req, res) => {
+    const user = req.user;
+    await finAPI.deleteAllBankConnections(user)
+    res.status(200).json({"message": "deleted all bank connection"});
+});
+
+/**
+ * @swagger
+ * /user/delete (not working as specified (bank not removed properly)):
  *  delete:
  *   description:
  *      Delete a user account and if exists portfolio details as well as user information on finAPI. JWT needs to be passed as Bearer-Token in header.
@@ -449,10 +751,8 @@ router.put('/edit', passport.authenticate('jwt', {session: false}), async (req, 
 // delete profile
 router.delete('/profile', passport.authenticate('jwt', {session: false}),  async (req, res) => {
     // implement the following authorization: http://www.passportjs.org/docs/username-password/
-
     // JWT token in header as bearer token
 
-    // todo: delete user from finAPI
     // todo: delete portfolios
 
     try{
@@ -460,79 +760,14 @@ router.delete('/profile', passport.authenticate('jwt', {session: false}),  async
         await UserModel.deleteOne({_id: req.user.id});
         await UserTokenModel.deleteMany({email: user.email});
 
+        // todo uncomment when last testing has begun
+        // await finAPI.deleteFinAPIUser(user);
+
         res.json("successfully deleted user").status(200);
     } catch(err){
         console.log(err);
         res.json("error occured");
     }
-});
-
-/**
- * swagger
- *  /user/bank:
- *     get:
- *       description: get a bank
- *       summary: get bank
- *       tags:
- *        - user
- *       responses:
- *         '200':
- *           description: .
- *         '404':
- *           description: .
- */
-
-// search for a bank
-router.get('/bank', (req,res) => {
-
-//    req: query: Searchstring
-
-    res.statusCode = 200;
-    res.json({
-        banks: [{
-            id: 277672,
-            name: "FinAPI Test Bank",
-            location: "DE",
-            city: "München",
-        }]
-    });
-})
-/**
- * swagger
- *  /user/bank:
- *    post:
- *      description: add a bank connection
- *      summary: Adds bank connection
- *      tags:
- *       - user
- *      responses:
- *        '200':
- *          description: success
- *        '404':
- *          description: not found
- */
-// add a bank_connection
-router.post('/bank_connection', (req, res) => {
-    res.statusCode = 200;
-    res.send("bank added")
-});
-
-/**
- * swagger
- *  /user/bank:
- *    delete:
- *      description: bank-connection with id will be deleted.
- *      summary: Bank-connection with id wil be deleted
- *      tags:
- *      - user
- *      responses:
- *        '200':
- *          description: Accepted, bank-connection deleted.
- */
-// delete a bank connection
-router.delete('/bank_connection/:id', (req, res) => {
-    res.statusCode = 200;
-    res.send("bank deleted");
 });
 
 module.exports = router

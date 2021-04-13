@@ -3,6 +3,11 @@ const express = require('express');
 const router = express.Router();
 const stockModel = require("../models/stock");
 const dataPointModel = require('../models/dataPoint');
+const stockAnalysisModel = require('../models/stockAnalysis');
+const stockDetailedAnalysisModel = require('../models/stockDetailedAnalysis');
+const dividendModel = require("../models/dividend");
+const keyFigureModel = require("../models/keyFigure");
+const balanceSheetModel = require("../models/balanceSheet");
 const fetch = require('node-fetch');
 
 const ibmStock = {
@@ -252,7 +257,7 @@ router.get('/list', async (req, res) => {
                 }
             }
         }
-        const stocks = await stockModel.find(query, includeFiels);
+        const stocks = await stockModel.find(query, listIncludeFields);
         res.json({ "stocks": stocks });
     }
 });
@@ -274,110 +279,6 @@ router.get('/search', async (req, res) => {
 
     res.json({ "stocks": stocks })
 });
-
-// router.get('/details/search', (req, res) => {
-//     let isError = false;
-//     let id = req.query.id;
-//     let response;
-//     if (id === "IBM") {
-//         response = ibmStockDetails;
-//     } else if (id === "AAPL") {
-//         response = appleStockDetails;
-//     } else if (id === "MSFT") {
-//         response = microsoftStockDetails;
-//     } else if (id === "MS") {
-//         response = morganStanleyStockDetails;
-//     } else if (id === "SAP") {
-//         response = sapStockDetails;
-//     } else {
-//         isError = true;
-//         response = {"error": "STOCK_ID_INVALID"}
-//     }
-//     !isError && res.json(response);
-//     isError && res.status(404).json(response);
-// });
-
-// const dataPoint1 = {"date": "2021-01-19", "close": "1.1770"}
-// const dataPoint2 = {"date": "2021-01-20", "close": "1.1727"}
-// const dataPoint3 = {"date": "2021-01-21", "close": "1.1718"}
-// const dataPoint4 = {"date": "2021-01-22", "close": "1.1766"}
-// const dataPoint5 = {"date": "2021-01-23", "close": "1.1793"}
-// const dataPoint6 = {"date": "2021-01-24", "close": "1.1768"}
-// const dataPoint7 = {"date": "2021-01-25", "close": "1.1812"}
-// const dataPoint8 = {"date": "2021-01-26", "close": "1.1849"}
-// const dataPoint9 = {"date": "2021-01-27", "close": "1.1932"}
-// const dataPoint10 = {"date": "2021-01-28", "close": "1.1904"}
-// const dataPoint11 = {"date": "2021-01-29", "close": "1.1912"}
-// const dataPoint12 = {"date": "2021-01-30", "close": "1.1770"}
-// const dataPoint13 = {"date": "2021-01-31", "close": "1.1727"}
-// const dataPoint14 = {"date": "2021-02-01", "close": "1.1718"}
-// const dataPoint15 = {"date": "2021-02-02", "close": "1.1766"}
-// const dataPoint16 = {"date": "2021-02-03", "close": "1.1793"}
-// const dataPoint17 = {"date": "2021-02-04", "close": "1.1768"}
-// const dataPoint18 = {"date": "2021-02-05", "close": "1.1812"}
-// const dataPoint19 = {"date": "2021-02-06", "close": "1.1849"}
-// const dataPoint20 = {"date": "2021-02-07", "close": "1.1932"}
-// const dataPoint21 = {"date": "2021-02-08", "close": "1.1904"}
-// const dataPoint22 = {"date": "2021-02-09", "close": "1.1912"}
-//
-// const dataPointsLess = {
-//     "dataPoints": [dataPoint1, dataPoint2, dataPoint3, dataPoint4, dataPoint5,
-//         dataPoint6, dataPoint7, dataPoint8, dataPoint9, dataPoint10, dataPoint11]
-// };
-// const dataPointsMore = {
-//     "dataPoints": [dataPoint1, dataPoint2, dataPoint3, dataPoint4, dataPoint5, dataPoint6,
-//         dataPoint7, dataPoint8, dataPoint9, dataPoint10, dataPoint11, dataPoint12, dataPoint13, dataPoint14,
-//         dataPoint15, dataPoint16, dataPoint17, dataPoint18, dataPoint19, dataPoint20, dataPoint21, dataPoint22]
-// };
-//
-// router.get('/charts/historic/search', (req, res) => {
-//     let isError = false;
-//     let id = req.query.id;
-//     let max = req.query.max;
-//     let response;
-//
-//     if (id !== undefined && max !== undefined) {
-//
-//         if (max === "false") {
-//             if (id === "IBM") {
-//                 response = dataPointsLess;
-//             } else if (id === "AAPL") {
-//                 response = dataPointsLess;
-//             } else if (id === "MSFT") {
-//                 response = dataPointsLess;
-//             } else if (id === "MS") {
-//                 response = dataPointsLess;
-//             } else if (id === "SAP") {
-//                 response = dataPointsLess;
-//             } else {
-//                 isError = true;
-//                 response = {"error": "STOCK_ID_INVALID"}
-//             }
-//         } else if (max === "true") {
-//             if (id === "IBM") {
-//                 response = dataPointsMore;
-//             } else if (id === "AAPL") {
-//                 response = dataPointsMore;
-//             } else if (id === "MSFT") {
-//                 response = dataPointsMore;
-//             } else if (id === "MS") {
-//                 response = dataPointsMore;
-//             } else if (id === "SAP") {
-//                 response = dataPointsMore;
-//             } else {
-//                 isError = true;
-//                 response = {"error": "STOCK_ID_INVALID"}
-//             }
-//         } else {
-//             isError = true;
-//             response = {"error": "STOCK_ID_INVALID"}
-//         }
-//     } else {
-//         response = {"error": "STOCK_ID_INVALID"}
-//     }
-//     !isError && res.json(response);
-//     isError && res.status(404).json(response);
-// });
 
 router.get('/overview', async (req, res) => {
     let response;
@@ -406,6 +307,37 @@ router.get('/details', async (req, res) => {
     res.json({ "stocks": stock });
 });
 
+router.get('/charts/analysts', async (req, res) => {
+    let symbol = req.query.id;
+    let stockAnalysis;
+
+    stockAnalysis = await stockAnalysisModel.find({ "symbol": symbol }, {
+        _id: false
+    });
+
+    if (stockAnalysis) {
+        res.json(stockAnalysis);
+    } else {
+        res.json({ "error": "STOCK_ID_INVALID" })
+    }
+
+});
+
+router.get('/charts/detailed-analysts', async (req, res) => {
+    let symbol = req.query.id;
+    let stockDetailedAnalysis;
+
+    stockDetailedAnalysis = await stockDetailedAnalysisModel.find({ "symbol": symbol }, {
+        _id: false
+    });
+
+    if (stockDetailedAnalysis) {
+        res.json(stockDetailedAnalysis);
+    } else {
+        res.json({ "error": "STOCK_ID_INVALID" })
+    }
+});
+
 router.get('/charts/historic', async (req, res) => {
     let symbol = req.query.id;
     let maxParam = req.query.max;
@@ -432,89 +364,6 @@ router.get('/charts/historic', async (req, res) => {
 
 });
 
-
-// const keyFigure1 = {"date": "2021-01-19", "pte": "1.587", "PriceToBookRatio": "5.345", "ptg": "1.7978", "eps": "1.789"}
-// const keyFigure2 = {"date": "2021-01-20", "pte": "1.678", "PriceToBookRatio": "5.645", "ptg": "1.789", "eps": "1.789"}
-// const keyFigure3 = {"date": "2021-01-21", "pte": "1.786", "PriceToBookRatio": "5.789", "ptg": "1.7897", "eps": "1.97"}
-// const keyFigure4 = {"date": "2021-01-22", "pte": "1.543", "PriceToBookRatio": "5.34", "ptg": "1.798", "eps": "1.678"}
-// const keyFigure5 = {"date": "2021-01-23", "pte": "1.687", "PriceToBookRatio": "5.435", "ptg": "1.978", "eps": "1.6798"}
-// const keyFigure6 = {"date": "2021-01-24", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6798"}
-// const keyFigure7 = {"date": "2021-01-25", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.6789"}
-// const keyFigure8 = {"date": "2021-01-26", "pte": "1.456", "PriceToBookRatio": "5.435", "ptg": "1.97", "eps": "1.6789"}
-// const keyFigure9 = {"date": "2021-01-27", "pte": "1.54", "PriceToBookRatio": "5.45", "ptg": "1.978", "eps": "1.956"}
-// const keyFigure10 = {"date": "2021-01-28", "pte": "1.456", "PriceToBookRatio": "5.786", "ptg": "1.789", "eps": "1.769"}
-// const keyFigure11 = {"date": "2021-01-29", "pte": "1.456", "PriceToBookRatio": "5.345", "ptg": "1.789", "eps": "1.7698"}
-// const keyFigure12 = {"date": "2021-01-30", "pte": "1.687", "PriceToBookRatio": "5.45", "ptg": "1.997", "eps": "1.67"}
-// const keyFigure13 = {"date": "2021-01-31", "pte": "1.546", "PriceToBookRatio": "5.645", "ptg": "1.798", "eps": "1.6789"}
-// const keyFigure14 = {"date": "2021-02-01", "pte": "1.768", "PriceToBookRatio": "5.786", "ptg": "1.789", "eps": "1.7689"}
-// const keyFigure15 = {"date": "2021-02-02", "pte": "1.354", "PriceToBookRatio": "5.456", "ptg": "1.78", "eps": "1.7698"}
-// const keyFigure16 = {"date": "2021-02-03", "pte": "1.678", "PriceToBookRatio": "5.245", "ptg": "1.789", "eps": "1.7698"}
-// const keyFigure17 = {"date": "2021-02-04", "pte": "1.876", "PriceToBookRatio": "5.786", "ptg": "1.978", "eps": "1.7689"}
-// const keyFigure18 = {"date": "2021-02-05", "pte": "1.645", "PriceToBookRatio": "5.94", "ptg": "1.789", "eps": "1.97"}
-// const keyFigure19 = {"date": "2021-02-06", "pte": "1.786", "PriceToBookRatio": "5.78", "ptg": "1.978", "eps": "1.7"}
-// const keyFigure20 = {"date": "2021-02-07", "pte": "1.456", "PriceToBookRatio": "5.456", "ptg": "1.789", "eps": "1.68"}
-//
-// const keyFiguresLess = {
-//     "keyFigures": [keyFigure1, keyFigure2, keyFigure3, keyFigure4, keyFigure5, keyFigure6,
-//         keyFigure7, keyFigure8, keyFigure9, keyFigure10]
-// };
-// const keyFiguresMore = {
-//     "keyFigures": [keyFigure1, keyFigure2, keyFigure3, keyFigure4, keyFigure5, keyFigure6,
-//         keyFigure7, keyFigure8, keyFigure9, keyFigure10,
-//         keyFigure11, keyFigure12, keyFigure13, keyFigure14, keyFigure15,
-//         keyFigure16, keyFigure17, keyFigure18, keyFigure19, keyFigure20]
-// };
-//
-// router.get('/charts/key_figures', (req, res) => {
-//     let isError = false;
-//     let id = req.query.id;
-//     let max = req.query.max;
-//     let response;
-//
-//     if (id !== undefined && max !== undefined) {
-//
-//         if (max === "false") {
-//             if (id === "IBM") {
-//                 response = keyFiguresLess;
-//             } else if (id === "AAPL") {
-//                 response = keyFiguresLess;
-//             } else if (id === "MSFT") {
-//                 response = keyFiguresLess;
-//             } else if (id === "MS") {
-//                 response = keyFiguresLess;
-//             } else if (id === "SAP") {
-//                 response = keyFiguresLess;
-//             } else {
-//                 isError = true;
-//                 response = {"error": "STOCK_ID_INVALID"}
-//             }
-//         } else if (max === "true") {
-//             if (id === "IBM") {
-//                 response = keyFiguresMore;
-//             } else if (id === "AAPL") {
-//                 response = keyFiguresMore;
-//             } else if (id === "MSFT") {
-//                 response = keyFiguresMore;
-//             } else if (id === "MS") {
-//                 response = keyFiguresMore;
-//             } else if (id === "SAP") {
-//                 response = keyFiguresMore;
-//             } else {
-//                 isError = true;
-//                 response = {"error": "STOCK_ID_INVALID"}
-//             }
-//         } else {
-//             isError = true;
-//             response = {"error": "STOCK_ID_INVALID"}
-//         }
-//     } else {
-//         response = {"error": "STOCK_ID_INVALID"}
-//     }
-//
-//     !isError && res.json(response);
-//     isError && res.status(404).json(response);
-//
-// });
 
 const rating1 = { "date": "2021-01-19", "goal": "345770", "strategy": "buy", "source": "investing.com" }
 const rating2 = { "date": "2021-01-20", "goal": "345727", "strategy": "hold", "source": "investing.com" }
@@ -563,68 +412,110 @@ router.get('/charts/analysts', (req, res) => {
 
 });
 
-router.get('/charts/dividend', async (req, res) => { //fixme: sometimes inconsistent
+router.get('/charts/dividend', async (req, res) => {
     let id = req.query.id;
     let max = req.query.max;
+    let date;
+    let quota;
+    let dataPoints;
 
     let query = {};
     query["symbol"] = id;
     let stocks = await stockModel.find(query, '-_id');
-    let name;
     try {
-        name = stocks[0]["name"];
+        stocks[0]["name"];
     } catch (e) {
         res.status(404).json({ "error": "STOCK_ID_INVALID" });
     }
 
-    let urlOverview = 'https://www.alphavantage.co/query?' +
-        'function=OVERVIEW' +
-        '&symbol=' + id +
-        '&apikey=' + process.env.alpha_vantage_key;
-
-    let urlCashFlow = 'https://www.alphavantage.co/query?' +
-        'function=CASH_FLOW' +
-        '&symbol=' + id +
-        '&apikey=' + process.env.alpha_vantage_key;
-
-    let settings = { method: "Get" };
-
-    if (!!id && !!max) {
-        let dividendDate;
-        let quota;
-        let dataPoints = [];
-
-        await fetch(urlOverview, settings)
-            .then(res => res.json())
-            .then((json) => {
-                dividendDate = json['DividendDate'];
-                quota = json['PayoutRatio'];
-            });
-        await fetch(urlCashFlow, settings)
-            .then(res => res.json())
-            .then((json) => {
-                let annualReports = json['annualReports'];
-                let counter = 0;
-                !!annualReports && annualReports.forEach(annualReport => {
-                    if (counter < 5) {
-                        dataPoints.push(
-                            {
-                                "date": annualReport['fiscalDateEnding'],
-                                "div": annualReport['dividendPayout'] / annualReport['netIncome']
-                            }
-                        )
-                    }
-                    if (max !== 'true') counter++;
-                })
-
-            });
-
-        res.json({ "dataPoints": dataPoints, "date": dividendDate, "quota": quota });
+    if (max !== 'true') {
+        dataPoints = await dividendModel.find({ "symbol": id }, {
+            symbol: false,
+            _id: false
+        });
+        date = dataPoints[0]["date"];
+        quota = dataPoints[0]["quota"];
+        dataPoints = dataPoints[0]["dataPoints"].slice(0, 5);
     } else {
-        res.status(404).json({ "error": "STOCK_ID_INVALID" });
+        dataPoints = await dividendModel.find({ "symbol": id }, {
+            symbol: false,
+            _id: false
+        });
+        date = dataPoints[0]["date"];
+        quota = dataPoints[0]["quota"];
+        dataPoints = dataPoints[0]["dataPoints"];
     }
 
+    if (dataPoints) {
+        res.json({ "symbol": id, dataPoints, date, quota });
+    } else {
+        res.json({ "error": "STOCK_ID_INVALID" })
+    }
 });
+
+
+// router.get('/charts/dividend', async (req, res) => {
+//     let id = req.query.id;
+//     let max = req.query.max;
+//
+//     let query = {};
+//     query["symbol"] = id;
+//     let stocks = await stockModel.find(query, '-_id');
+//     let name;
+//     try {
+//         name = stocks[0]["name"];
+//     } catch (e) {
+//         res.status(404).json({ "error": "STOCK_ID_INVALID" });
+//     }
+//
+//     let urlOverview = 'https://www.alphavantage.co/query?' +
+//         'function=OVERVIEW' +
+//         '&symbol=' + id +
+//         '&apikey=' + process.env.alpha_vantage_key;
+//
+//     let urlCashFlow = 'https://www.alphavantage.co/query?' +
+//         'function=CASH_FLOW' +
+//         '&symbol=' + id +
+//         '&apikey=' + process.env.alpha_vantage_key;
+//
+//     let settings = { method: "Get" };
+//
+//     if (!!id && !!max) {
+//         let dividendDate;
+//         let quota;
+//         let dataPoints = [];
+//
+//         await fetch(urlOverview, settings)
+//             .then(res => res.json())
+//             .then((json) => {
+//                 dividendDate = json['DividendDate'];
+//                 quota = json['PayoutRatio'];
+//             });
+//         await fetch(urlCashFlow, settings)
+//             .then(res => res.json())
+//             .then((json) => {
+//                 let annualReports = json['annualReports'];
+//                 let counter = 0;
+//                 !!annualReports && annualReports.forEach(annualReport => {
+//                     if (counter < 5) {
+//                         dataPoints.push(
+//                             {
+//                                 "date": annualReport['fiscalDateEnding'],
+//                                 "div": String(annualReport['dividendPayout'] / annualReport['netIncome'])
+//                             }
+//                         )
+//                     }
+//                     if (max !== 'true') counter++;
+//                 })
+//
+//             });
+//
+//         res.json({ "symbol" : id, "dataPoints": dataPoints, "date": dividendDate, "quota": quota });
+//     } else {
+//         res.status(404).json({ "error": "STOCK_ID_INVALID" });
+//     }
+//
+// });
 
 router.get('/news', async (req, res) => {
     var date = new Date();
@@ -676,69 +567,139 @@ router.get('/news', async (req, res) => {
 });
 
 router.get('/balanceSheet', async (req, res) => {
-    var id = req.query.id;
+    let id = req.query.id;
+    let max = req.query.max;
+    let keyFigures;
+    let isExist = false;
 
     let query = {};
     query["symbol"] = id;
     let stocks = await stockModel.find(query, '-_id');
-    let name;
     try {
-        name = stocks[0]["name"];
+        stocks[0]["name"];
+        isExist = true;
     } catch (e) {
+        isExist = false;
         res.status(404).json({ "error": "STOCK_ID_INVALID" });
     }
 
-    let url = 'https://www.alphavantage.co/query?function=BALANCE_SHEET' +
-        '&symbol=' + id +
-        '&apikey=' + process.env.alpha_vantage_key;
+    if (isExist) {
+        let balanceSheet = await balanceSheetModel.find({ "symbol": id }, {
+            symbol: false,
+            _id: false
+        });
+        res.json({
+            "symbol": id,
+            "annualReports": balanceSheet[0]["annualReports"],
+            "quarterlyReports": balanceSheet[0]["quarterlyReports"]
+        });
+    } else {
+        res.json({ "error": "STOCK_ID_INVALID" })
+    }
 
-    await fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            res.json(data);
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(404).json(err);
-        })
 });
+
+// router.get('/balanceSheet', async (req, res) => {
+//     var id = req.query.id;
+//
+//     let query = {};
+//     query["symbol"] = id;
+//     let stocks = await stockModel.find(query, '-_id');
+//     try {
+//         stocks[0]["name"];
+//     } catch (e) {
+//         res.status(404).json({ "error": "STOCK_ID_INVALID" });
+//     }
+//
+//     let url = 'https://www.alphavantage.co/query?function=BALANCE_SHEET' +
+//         '&symbol=' + id +
+//         '&apikey=' + process.env.alpha_vantage_key;
+//
+//     await fetch(url)
+//         .then(response => response.json())
+//         .then(data => {
+//             res.json(data);
+//         })
+//         .catch(err => {
+//             console.log(err);
+//             res.status(404).json(err);
+//         })
+// });
 
 router.get('/charts/key_figures', async (req, res) => {
-    var id = req.query.id;
-    var max = req.query.max;
+    let id = req.query.id;
+    let max = req.query.max;
+    let keyFigures;
 
     let query = {};
     query["symbol"] = id;
     let stocks = await stockModel.find(query, '-_id');
-    let name;
     try {
-        name = stocks[0]["name"];
+        stocks[0]["name"];
     } catch (e) {
         res.status(404).json({ "error": "STOCK_ID_INVALID" });
     }
 
-    let url = 'https://www.alphavantage.co/query?function=EARNINGS' +
-        '&symbol=' + id +
-        '&apikey=' + process.env.alpha_vantage_key;
+    if (max !== 'true') {
+        keyFigures = await keyFigureModel.find({ "symbol": id }, {
+            symbol: false,
+            _id: false
+        });
+        keyFigures = keyFigures[0]["keyFigures"].slice(0, 20);
+    } else {
+        keyFigures = await keyFigureModel.find({ "symbol": id }, {
+            symbol: false,
+            _id: false
+        });
+        keyFigures = keyFigures[0]["keyFigures"];
+    }
 
-    await fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            let symbol = data["symbol"];
-            let quarterlyEarnings = data["quarterlyEarnings"];
-            let keyFigures = []
-            let counter = 0;
+    if (keyFigures) {
+        res.json({ "symbol": id, keyFigures });
+    } else {
+        res.json({ "error": "STOCK_ID_INVALID" })
+    }
 
-            quarterlyEarnings.forEach(quarterlyEarning => {
-                if (counter < 5 * 4) keyFigures.push(quarterlyEarning)
-                if (max !== 'true') counter++;
-            })
-            res.json({ "symbol": symbol, "keyFigures": keyFigures });
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(404).json(err);
-        })
 });
+
+
+// router.get('/charts/key_figures', async (req, res) => {
+//     var id = req.query.id;
+//     var max = req.query.max;
+//
+//     let query = {};
+//     query["symbol"] = id;
+//     let stocks = await stockModel.find(query, '-_id');
+//     let name;
+//     try {
+//         name = stocks[0]["name"];
+//     } catch (e) {
+//         res.status(404).json({ "error": "STOCK_ID_INVALID" });
+//     }
+//
+//     let url = 'https://www.alphavantage.co/query?function=EARNINGS' +
+//         '&symbol=' + id +
+//         '&apikey=' + process.env.alpha_vantage_key;
+//
+//     await fetch(url)
+//         .then(response => response.json())
+//         .then(data => {
+//             let symbol = data["symbol"];
+//             let quarterlyEarnings = data["quarterlyEarnings"];
+//             let keyFigures;
+//
+//             if (max !== false) {
+//                 keyFigures = quarterlyEarnings.slice(0, 20);
+//             } else {
+//                 keyFigures = quarterlyEarnings;
+//             }
+//
+//             res.json({ "symbol": symbol, "keyFigures": keyFigures });
+//         })
+//         .catch(err => {
+//             console.log(err);
+//             res.status(404).json(err);
+//         })
+// });
 
 module.exports = router

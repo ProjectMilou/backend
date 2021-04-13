@@ -3,14 +3,16 @@ const dotenv = require('dotenv');
 const fs = require('fs');
 const readline = require('readline');
 const stockModel = require("../models/stock");
+const stockAnalysisModel = require("../models/stockAnalysis");
+const stockDetailedAnalysisModel = require("../models/stockDetailedAnalysis");
 const balanceSheetModel = require("../models/balanceSheet");
 const db = require('../db/worker_index.js');
 dotenv.config();
 
 module.exports.updateAllStocks = async function () {
-
     let api_key_alphavantage = process.env.alpha_vantage_key;
     let api_key_finhub = process.env.finnhub_key;
+    let api_key_benzinga = process.env.benzinga_key;
 
     const fileStream = fs.createReadStream('./public/assets/company_symbols.txt');
 
@@ -19,17 +21,18 @@ module.exports.updateAllStocks = async function () {
         crlfDelay: Infinity
     });
 
-
     const startFetching = async () => {
         for await (const symbol of rl) {
             console.log(symbol)
             // await getStockOverview(symbol, api_key_alphavantage);
             // await getTimeIntervalPerformance(symbol, api_key_alphavantage);
-            await updateMcSize(symbol, api_key_alphavantage)
+            // await getAnalysis(symbol, api_key_finhub)
+            // await updateMcSize(symbol, api_key_alphavantage)
             // await getYearlyPerformance(symbol, api_key_alphavantage);
             // await getImage(symbol, api_key_finhub);
-            await getBalanceSheet(symbol, api_key_alphavantage);
-            await sleep(1200)
+            // await getBalanceSheet(symbol, api_key_alphavantage);
+            // await getDetailedAnalysis(symbol, api_key_benzinga)
+            await sleep(200)
         }
         rl.close()
         return
@@ -156,7 +159,6 @@ async function getStockOverview(symbol, api_key) {
 async function getImage(symbol, api_key) {
     let url = 'https://finnhub.io/api/v1/stock/profile2?symbol=' + symbol + '&token=' + api_key;
 
-    console.log(api_key)
     await fetch(url)
         .then(response => response.json())
         .then(data => {
@@ -172,6 +174,82 @@ async function getImage(symbol, api_key) {
                 {
                     upsert: true,
                     new: true
+                },
+                function (err, _stockInstance) {
+                    if (err)
+                        console.log(err)
+
+                });
+        })
+        .catch(err => console.log(err))
+}
+
+async function getAnalysis(symbol, api_key) {
+    let url = 'https://finnhub.io/api/v1/stock/recommendation?symbol=' + symbol + '&token=' + api_key;
+
+    await fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            data = data[0]
+            let strategy;
+            if (parseInt(data.buy) > parseInt(data.sell) && parseInt(data.buy) > parseInt(data.hold)) {
+                strategy = "buy"
+            } else if (parseInt(data.hold) >= parseInt(data.sell) && parseInt(data.hold) >= parseInt(data.buy)) {
+                strategy = "hold"
+            } else {
+                strategy = "sell"
+            }
+            let stock = stockAnalysisModel.findOneAndUpdate(
+                { symbol: symbol },
+                {
+                    $set:
+                    {
+                        "buy": data.buy,
+                        "hold": data.hold,
+                        "sell": data.sell,
+                        "date": data.period,
+                        "source": "finnhub.io/api",
+                        "strategy": strategy,
+                    },
+                },
+                {
+                    upsert: true,
+                    new: true
+                },
+                function (err, _stockInstance) {
+                    if (err)
+                        console.log(err)
+
+                });
+        })
+        .catch(err => console.log(err))
+}
+
+async function getDetailedAnalysis(symbol, api_key) {
+    let url = 'https://api.benzinga.com/api/v2.1/calendar/ratings?parameters%5Btickers%5D=' + symbol + '&token=' + api_key;
+
+    await fetch(url, { headers: { 'accept': 'application/json' } })
+        .then(response => response.json())
+        .then(data => {
+
+            data = data["ratings"]
+
+            let ratings = [];
+            let averageGoal = 0;
+            let totalNumberOfRatings = 0;
+            for (const rating of data) {
+                if (rating.pt_current) {
+                    totalNumberOfRatings = totalNumberOfRatings + 1;
+                    averageGoal = averageGoal + parseInt(rating.pt_current);
+                }
+                ratings.push({ source: rating.analyst, goal: rating.pt_current, date: rating.date, strategy: rating.rating_current })
+            }
+            averageGoal = averageGoal / totalNumberOfRatings;
+            stockDetailedAnalysisModel.create(
+                {
+                    symbol: symbol,
+                    averageGoal: averageGoal,
+                    rating: ratings
                 },
                 function (err, _stockInstance) {
                     if (err)
@@ -308,14 +386,13 @@ async function getBalanceSheet(symbol, api_key) {
     await fetch(url)
         .then(response => response.json())
         .then(data => {
-            console.log(data['symbol']);
             let balanceSheet = balanceSheetModel.findOneAndUpdate(
                 { symbol: data['symbol'] },
                 {
                     $set:
                     {
-                        "totalAssets": data['annualReports'][0]['totalAssets'],
-                        "totalLiabilities": data['annualReports'][0]['totalLiabilities'],
+                        "annualReports": data['annualReports'],
+                        "quarterlyReports": data['quarterlyReports'],
                     },
                 },
                 {
