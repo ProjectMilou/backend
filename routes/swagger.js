@@ -824,7 +824,7 @@
  *        description: DATABASE_ERROR
  *        schema:
  *            $ref: '#/definitions/error2'
- *      403:
+ *      401:
  *        description: Unauthorized
  *        schema:
  *            type: string
@@ -861,7 +861,7 @@
  *        description: DATABASE_ERROR
  *        schema:
  *            $ref: '#/definitions/error2'
- *       403:
+ *       401:
  *        description: Unauthorized
  *        schema:
  *            type: string
@@ -906,7 +906,7 @@
  *        description: DATABASE_ERROR
  *        schema:
  *            $ref: '#/definitions/error2'
- *       403:
+ *       401:
  *        description: Unauthorized
  *        schema:
  *            type: string
@@ -949,7 +949,7 @@
  *        description: DATABASE_ERROR
  *        schema:
  *            $ref: '#/definitions/error2'
- *       403:
+ *       401:
  *        description: Unauthorized
  *        schema:
  *            type: string
@@ -981,7 +981,7 @@
  *        description: DATABASE_ERROR
  *        schema:
  *            $ref: '#/definitions/error2'
- *       403:
+ *       401:
  *        description: Unauthorized
  *        schema:
  *            type: string
@@ -1027,7 +1027,7 @@
  *        description: DATABASE_ERROR
  *        schema:
  *            $ref: '#/definitions/error2'
- *       403:
+ *       401:
  *        description: Unauthorized
  *        schema:
  *            type: string
@@ -1087,7 +1087,7 @@
  *        description: DATABASE_ERROR
  *        schema:
  *            $ref: '#/definitions/error2'
- *       403:
+ *       401:
  *         description: Unauthorized
  *         schema:
  *            type: string
@@ -1138,7 +1138,7 @@
  *        description: DATABASE_ERROR
  *        schema:
  *            $ref: '#/definitions/error2'
- *       403:
+ *       401:
  *        description: Unauthorized
  *        schema:
  *            type: string
@@ -1180,7 +1180,7 @@
  *        description: DATABASE_ERROR
  *        schema:
  *            $ref: '#/definitions/error2'
- *       403:
+ *       401:
  *        description: Unauthorized
  *        schema:
  *            type: string
@@ -1236,7 +1236,7 @@
  *        description: DATABASE_ERROR
  *        schema:
  *            $ref: '#/definitions/error2'
- *       403:
+ *       401:
  *        description: Unauthorized
  *        schema:
  *            type: string
