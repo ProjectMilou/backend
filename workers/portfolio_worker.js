@@ -7,7 +7,7 @@ const stockTimeSeries = require('../data-analytics/dynamic_data/stock-time-serie
 const stockModel = require("../models/stock");
 
 const percent = (nr1, nr2) => {
-    if (nr1 && nr2 && !isNaN(nr1) && !isNaN(nr2))
+    if (nr1 && nr2 && !isNaN(nr1) && !isNaN(nr2) && nr2 != 0)
         return nr1 / (nr2) * 100
     else
         return 0
@@ -23,6 +23,14 @@ const searchStock = async (searchString) => {
     ]
     var stocks = await stockModel.find(query);
     return stocks
+}
+
+const returnValueIfDefined = (value) => {
+    if (value == undefined) {
+        return 0
+    } else {
+        return value
+    }
 }
 
 function tofinAPIPortfolio(returnedPortfolio) {
@@ -58,6 +66,14 @@ async function updateStock(position) {
         position.stock.perf1yPercent = percent(stock.per365d, (stock.price * position.qty))
         //volatility and debt equity is done in updatePortfolio()
         //TODO score
+    } else {
+        position.stock.price = 0
+        position.stock.quote = 0
+        position.stock.quoteDate = 0
+        position.stock.perf7d = 0
+        position.stock.perf1y = 0
+        position.stock.perf7dPercent = 0
+        position.stock.perf1yPercent = 0
     }
 }
 
@@ -71,7 +87,11 @@ async function updateStockCronjob(position) {
     var oldPerf7d = position.stock.perf7d
     await updateStock(position)
     // TODO check if this makes sense
-    position.totalReturn += (position.stock.perf7d - oldPerf7d) * position.qty
+    if (!position.totalReturn) {
+        position.totalReturn = 0
+        position.totalReturnPercent = 0
+    }
+    position.totalReturn += returnValueIfDefined((position.stock.perf7d - oldPerf7d) * position.qty)
     position.totalReturnPercent = percent(position.totalReturn, position.stock.price * position.qty)
 }
 
@@ -88,12 +108,17 @@ async function updatePortfolio(portfolio) {
         overview.perf7dPercent = 0
         overview.perf1yPercent = 0
     } else {
-        overview.perf7d = portfolio.portfolio.positions.map(({ stock: { perf7d: performance } }) => performance).reduce((a, b) => a + b, 0)
-        overview.perf1y = portfolio.portfolio.positions.map(({ stock: { perf1y: performance } }) => performance).reduce((a, b) => a + b, 0)
+        //what if NaN is the result=
+        overview.perf7d = portfolio.portfolio.positions.map(({ stock: { perf7d: performance } }) => {
+            return returnValueIfDefined(performance)
+        }).reduce((a, b) => a + b, 0)
+
+        overview.perf1y = portfolio.portfolio.positions.map(({ stock: { perf1y: performance } }) => { return returnValueIfDefined(performance) }).reduce((a, b) => a + b, 0)
         overview.perf7dPercent = percent(overview.perf7d, overview.value)
         overview.perf1yPercent = percent(overview.perf1y, overview.value)
         //TODO score
-
+        //TODO value
+        overview.value = portfolio.portfolio.positions.map(({ stock: { price: price }, qty: qty }) => { return returnValueIfDefined(price*qty) }).reduce((a, b) => a + b, 0)
         //risk
         var currPortfolio = tofinAPIPortfolio(portfolio)
         var currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
@@ -169,12 +194,14 @@ async function updatePortfolioCronjob(portfolio) {
         await portfolio.portfolio.positions.forEach(async (position) => {
             await updateStockCronjob(position)
         });
+
+    // update other values of portfolio
+    await updatePortfolio(portfolio)
     //performance
     var newDataPoint = [Date.now(), portfolio.portfolio.overview.value]
     portfolio.portfolio.performance.push(newDataPoint)
 
-    // update other values of portfolio
-    await updatePortfolio(portfolio)
+
 
 }
 

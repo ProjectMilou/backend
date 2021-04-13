@@ -8,6 +8,9 @@ async function getStocksDataBySymbol(symbol) {
         console.log(`Could not find a stock with symbol=${symbol}`)
         return undefined;
     }
+    if(!data){//please keep this thanks ~Rebecca
+        return undefined;
+    }
     const stocksData = {};
     data.dataPoints.forEach(currDataPoint => {
         const currFourthClose = {

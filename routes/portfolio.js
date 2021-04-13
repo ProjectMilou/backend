@@ -31,16 +31,15 @@ const handle_database_error = (res, err) => {
 //cronjob
 const cron = require("node-cron");
 
-cron.schedule("39 15 * * *", () => {
-    //portfolio_workers()
-    console.log("it's 21 20")//it worked :)
-    Portfolio.find({}, function (err, portf) {
+cron.schedule("39 17 * * *", () => {
+    console.log("it's 21 20")
+    Portfolio.find({}, async function (err, portf) {
         if (err) {
             //do nothing
         } else {
             for (var j = 0; j < portf.length; j++) {
                 try {
-                    //portfolioWorkers.updatePortfolioCronjob(portf[j])
+                    await portfolioWorkers.updatePortfolioCronjob(portf[j])
                     portf[j].save()
                 } catch (e) {
                     //? doesn't work
