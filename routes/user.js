@@ -90,9 +90,9 @@ router.post(
  */
 router.post(
     '/confirm/resent',
-    passport.authenticate('login', {session: false}),
+    passport.authenticate('jwt', {session: false}),
     async (req, res) => {
-        await confirmation.startResetProcess(req.user);
+        await confirmation.startConfirmationProcess(req.user);
         res.status(201).json({message: "Resent confirmation email."});
     }
 );
@@ -478,7 +478,7 @@ router.get('/reset/confirm/:id/:token', async (req, res) => {
     else {
         const newToken = resetResponse.token
         // todo redirect to frontend with changed token
-        res.redirect("https://www.google.de/search?q=please+insert+useful+link");
+        res.redirect("https://www.google.de/search?q=please+insert+link+to+password+reset+webform");
     }
 });
 
@@ -545,7 +545,8 @@ router.put('/reset/change/:id/:token', async (req, res) => {
         res.status(401).json({message: "Unauthorized, confirmation failed."});
     } else {
         await UserModel.updateOne({_id: reqUserId},{password: newHashedPassword},null);
-        res.status(204).json({message: "Password was successfully changed"});
+        console.log("bong");
+        res.status(201).json({message: "Password was successfully changed"});
     }
 });
 
