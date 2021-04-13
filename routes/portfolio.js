@@ -5,7 +5,6 @@ const Portfolio = require('../models/portfolio');
 const mongoose = require('mongoose');
 const { ResourceGroups } = require('aws-sdk');
 const cookieParser = require('cookie-parser');
-const stockModel = require("../models/stock");
 const portfolioWorkers = require('../workers/portfolio_worker')
 
 
@@ -13,34 +12,26 @@ const portfolioWorkers = require('../workers/portfolio_worker')
 //cronjob
 const cron = require("node-cron");
 
-cron.schedule("0 2 * * *", () => {
+cron.schedule("39 15 * * *", () => {
     //portfolio_workers()
     console.log("it's 21 20")//it worked :)
+    Portfolio.find({}, function (err, portf) {
+        if (err) {
+            //do nothing
+        } else {
+            for (var j = 0; j < portf.length; j++) {
+                try {
+                    //portfolioWorkers.updatePortfolioCronjob(portf[j])
+                    portf[j].save()
+                } catch (e) {
+                    //? doesn't work
+                }
+
+            }
+        }
+    })
 });
 
-const secret = require('../secret/secret')();
-const dotenv = require('dotenv');
-dotenv.config();
-
-const router = express.Router();
-router.use(express.json()); // for parsing application/json
-router.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
-
-router.use(cookieParser(process.env.auth_jwt_secret));
-
-const fetch = require('node-fetch');
-const passport = require('passport');
-
-router.use(express.json()); // for parsing application/json
-router.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
-
-const handle_database_error = (res, err) => {
-    var response = {}
-    response.error = "DATABASE_ERROR"
-    response.message = "" + err
-    console.log(err)
-    res.status(500).json(response);
-}
 
 const stockMock1 = {
     stock: {
