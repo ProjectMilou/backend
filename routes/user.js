@@ -84,9 +84,12 @@ router.post(
  *  /user/confirm/resent:
  *      post:
  *          summary:
- *              todo
+ *              resent a confirmation link to an email-address
  *          description:
- *              allows user to resent a confirmation mail.
+ *              If a user has not confirmed the account right away or has lost the email with the confirmation link somehow, <br>
+ *              this route enables sending another one, restarting the confirmation process internally.
+ *          tags:
+ *            - user
  */
 router.post(
     '/confirm/resent',
