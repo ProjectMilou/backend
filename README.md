@@ -10,6 +10,18 @@ Furthermore, [finAPI](https://www.finapi.io/?gclid=Cj0KCQjw38-DBhDpARIsADJ3kjnOQ
 is used to enable users to connect their bank-accounts, which allows 
 the application to import their real portfolios. Besides that, the Analytics part of Milou is integrated in a subfolder 
 called `data-analytics` and one file called `analyticsRoutes.js`, which offers a connection to the Analyzer part of Milou.
+
+​
+## Progress
+​
+What's not working yet?
+- data on the database is not stored encrypted (only password hashed), but the functions for encryption/decryption can be accessed
+- password reset process is finished, redirect link to frontend-webform not provided yet
+- almost all stocks-endpoints are working, one is blocked by the analytics-part (12.04.)
+- bank-connections can be imported, a cron-job or refresh-route has to be set up, so that portfolios can actually be viewed.
+- deletion of a user or bank-connection does not delete all user-sensitive data yet.
+- project needs a restructuring, regarding the folder structure
+
 ​
 ## Dependencies
 ​
