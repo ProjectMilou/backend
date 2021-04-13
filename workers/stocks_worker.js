@@ -4,6 +4,7 @@ const fs = require('fs');
 const readline = require('readline');
 const stockModel = require("../models/stock");
 const stockAnalysisModel = require("../models/stockAnalysis");
+const stockDetailedAnalysisModel = require("../models/stockDetailedAnalysis");
 const balanceSheetModel = require("../models/balanceSheet");
 const db = require('../db/worker_index.js');
 dotenv.config();
@@ -11,6 +12,7 @@ dotenv.config();
 module.exports.updateAllStocks = async function () {
     let api_key_alphavantage = process.env.alpha_vantage_key;
     let api_key_finhub = process.env.finnhub_key;
+    let api_key_benzinga = process.env.benzinga_key;
 
     const fileStream = fs.createReadStream('./public/assets/company_symbols.txt');
 
@@ -29,7 +31,8 @@ module.exports.updateAllStocks = async function () {
             // await getYearlyPerformance(symbol, api_key_alphavantage);
             // await getImage(symbol, api_key_finhub);
             // await getBalanceSheet(symbol, api_key_alphavantage);
-            await sleep(1200)
+            // await getDetailedAnalysis(symbol, api_key_benzinga)
+            await sleep(200)
         }
         rl.close()
         return
@@ -212,6 +215,41 @@ async function getAnalysis(symbol, api_key) {
                 {
                     upsert: true,
                     new: true
+                },
+                function (err, _stockInstance) {
+                    if (err)
+                        console.log(err)
+
+                });
+        })
+        .catch(err => console.log(err))
+}
+
+async function getDetailedAnalysis(symbol, api_key) {
+    let url = 'https://api.benzinga.com/api/v2.1/calendar/ratings?parameters%5Btickers%5D=' + symbol + '&token=' + api_key;
+
+    await fetch(url, { headers: { 'accept': 'application/json' } })
+        .then(response => response.json())
+        .then(data => {
+
+            data = data["ratings"]
+
+            let ratings = [];
+            let averageGoal = 0;
+            let totalNumberOfRatings = 0;
+            for (const rating of data) {
+                if (rating.pt_current) {
+                    totalNumberOfRatings = totalNumberOfRatings + 1;
+                    averageGoal = averageGoal + parseInt(rating.pt_current);
+                }
+                ratings.push({ source: rating.analyst, goal: rating.pt_current, date: rating.date, strategy: rating.rating_current })
+            }
+            averageGoal = averageGoal / totalNumberOfRatings;
+            stockDetailedAnalysisModel.create(
+                {
+                    symbol: symbol,
+                    averageGoal: averageGoal,
+                    rating: ratings
                 },
                 function (err, _stockInstance) {
                     if (err)

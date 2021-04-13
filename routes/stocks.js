@@ -4,6 +4,7 @@ const router = express.Router();
 const stockModel = require("../models/stock");
 const dataPointModel = require('../models/dataPoint');
 const stockAnalysisModel = require('../models/stockAnalysis');
+const stockDetailedAnalysisModel = require('../models/stockDetailedAnalysis');
 const dividendModel = require("../models/dividend");
 const keyFigureModel = require("../models/keyFigure");
 const balanceSheetModel = require("../models/balanceSheet");
@@ -320,6 +321,21 @@ router.get('/charts/analysts', async (req, res) => {
         res.json({ "error": "STOCK_ID_INVALID" })
     }
 
+});
+
+router.get('/charts/detailed-analysts', async (req, res) => {
+    let symbol = req.query.id;
+    let stockDetailedAnalysis;
+
+    stockDetailedAnalysis = await stockDetailedAnalysisModel.find({ "symbol": symbol }, {
+        _id: false
+    });
+
+    if (stockDetailedAnalysis) {
+        res.json(stockDetailedAnalysis);
+    } else {
+        res.json({ "error": "STOCK_ID_INVALID" })
+    }
 });
 
 router.get('/charts/historic', async (req, res) => {
