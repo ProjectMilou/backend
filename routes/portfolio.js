@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const { ResourceGroups } = require('aws-sdk');
 const cookieParser = require('cookie-parser');
 const stockModel = require("../models/stock");
-const updatePortfolioFields = require('../workers/portfolio_worker')
+const portfolioWorkers = require('../workers/portfolio_worker')
 
 
 
@@ -123,55 +123,14 @@ const emptyPortfolio = (portfolioId, userId, name) => {
                 "modified": Date.now()
             },
             "positions": [],
-            //optional values
-            // "risk": {
-            //     "countries": {
-            //         "count": 0,
-            //         "score": 0,
-            //         "warnings": []
-            //     },
-            //     "segments": {
-            //         "count": 0,
-            //         "score": 0,
-            //         "warnings": []
-            //     },
-            //     "currency": {
-            //         "count": 0,
-            //         "score": 0,
-            //         "warnings": []
-            //     }
-            // },
-            // "keyFigures": [{
-            //     "year": 0,
-            //     "pte": 0,
-            //     "ptb": 0,
-            //     "ptg": 0,
-            //     "eps": 0,
-            //     "div": 0,
-            //     "dividendPayoutRatio": 0
-            // }],
-            // "nextDividend": 0,
-            // "dividendPayoutRatio": 0,
-            // "totalReturn": 0,
-            // "totalReturnPercent": 0,
-            // "performance": []
+            "performance": []
         }
     }
 }
-const searchStock = async (searchString) => {
-    let query = {};
-    query["$or"] = [
-        { "isin": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
-        { "wkn": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
-        { "name": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
-        { "symbol": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
-    ]
-    var stocks = await stockModel.find(query);
-    return stocks
-}
+
 
 const newStock = async (symbol, qty) => {
-    var stockArray = await searchStock(symbol);//?
+    var stockArray = await portfolioWorkers.searchStock(symbol);
     var stock = stockArray[0]
     if (!stock) {
         stock = {
@@ -185,12 +144,14 @@ const newStock = async (symbol, qty) => {
             "marketValueCurrency": "?",
             "quote": 0,
             "quoteCurrency": "?",
-            "quoteDate": "?",
+            "quoteDate": Date.now(),
             "entryQuote": 0,
             "entryQuoteCurrency": "?",
             "perf7d": 0,
             "perf1y": 0,
             "perf7dPercent": 0,
+            "volatility": 0,
+            "debtEquity": 0,
             "perf1yPercent": 0,
             "country": "?",
             "industry": "?",
@@ -207,11 +168,11 @@ const newStock = async (symbol, qty) => {
             "name": stock.name,
             "price": stock.price,
             "marketValueCurrency": stock.currency,
-            "quote": 0, //TODO
-            "quoteCurrency": "?", //TODO
-            "quoteDate": "?", //TODO
-            "entryQuote": 0, //TODO (=quote)
-            "entryQuoteCurrency": "?", //TODO
+            "quote": stock.price, //TODO
+            "quoteCurrency": stock.currency, //TODO
+            "quoteDate": stock.date, //TODO
+            "entryQuote": stock.price, //TODO (=quote)
+            "entryQuoteCurrency": stock.currency, //TODO
             "perf7d": stock.per7d,
             "perf1y": stock.per365d,
             "perf7dPercent": percent(stock.per7d, (stock.price * qty)),
@@ -464,7 +425,7 @@ const modifyPortfolio = async (portfolio, positionId, qty) => {
         positions.push(stock)
         portfolio.portfolio.overview.value += stock.stock.price * stock.qty
     }
-    await updatePortfolioFields(portfolio)
+    await portfolioWorkers.updatePortfolioWhenModified(portfolio)
 
 
 }
