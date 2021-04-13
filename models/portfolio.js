@@ -37,6 +37,8 @@ const portfolioSchema = new mongoose.Schema({
                     perf1y: Number,
                     perf7dPercent: Number,
                     perf1yPercent: Number,
+                    volatility: Number,
+                    debtEquity: Number,
                     country: String,
                     industry: String,
                     score: Number//? -> finnHub reccomendation trends, for 10 biggest position, average of score multiplied with value, sum divided with total amount of reccomendations
@@ -48,27 +50,9 @@ const portfolioSchema = new mongoose.Schema({
             }
         ],
         risk: {//?
-            countries: {
-                count: Number,
-                score: Number,
-                warnings: [
-                    String
-                ]
-            },
-            segments: {
-                count: Number,
-                score: Number,
-                warnings: [
-                    String
-                ]
-            },
-            currency: {
-                count: Number,
-                score: Number,
-                warnings: [
-                    String
-                ]
-            }
+            countries: {},//any type can be in here
+            segments: {},
+            currency: {},
         },
         keyFigures: [//no data
             {
@@ -82,9 +66,16 @@ const portfolioSchema = new mongoose.Schema({
             }
         ],
         nextDividend: Number,//no data, maybe Alpha Vantage
-        dividendPayoutRatio: Number,//?
         totalReturn: Number,
         totalReturnPercent: Number,
+        analytics: {
+            volatility: Number,
+            standardDeviation: Number,
+            sharpeRatio: Number,
+            treynorRatio: Number,
+            debtEquity: Number,
+            correlations: {}
+        },
         performance: [// cron scheduler time as parameter how often should it work
             [Number]
         ]

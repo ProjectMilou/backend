@@ -45,16 +45,28 @@
  *    properties: 
  *      isin:
  *        type: string
+ *      wkn:
+ *          type: string
  *      symbol:
  *        type: string
  *      name:
  *        type: string
  *      price:
  *        type: number
+ *      marketValueCurrency:
+ *          type: string
  *      perf7d:
  *        type: number
  *      perf1y: 
  *        type: number
+ *      perf7dPercent:
+ *          type: number
+ *      perf1yPercent:
+ *          type: number
+ *      volatility:
+ *          type: number
+ *      debtEquity:
+ *          type: number
  *      country:
  *        type: string
  *      industry:
@@ -215,6 +227,10 @@
  *        type: number
  *      perf1y:
  *        type: number
+ *      perf7dPercent:
+ *          type: number
+ *      perf1yPercent:
+ *          type: number
  *      modified: 
  *        type: number
  *        format: UNIX timestamp
@@ -225,6 +241,8 @@
  *        $ref: '#/definitions/stock'
  *      qty:
  *        type: number
+ *      quantityNominalType:
+ *          type: string
  *      totalReturn:
  *        type: number
  *      totalReturnPercent:
@@ -248,14 +266,12 @@
  *  risk:
  *    type: object
  *    properties:
- *      count:
- *        type: integer
- *      score:
+ *      USA:
  *        type: number
- *      warnings:
- *        type: array
- *        items:
- *          type: string
+ *      DE:
+ *        type: number
+ *      etc:
+ *          type: number
  *  riskAnalysis:
  *    type: object
  *    properties:
@@ -282,6 +298,22 @@
  *        type: number
  *      dividendPayoutRatio:
  *        type: number
+ *  analytics:
+ *      type: object
+ *      properties:
+ *          volatility:
+ *              type: number
+ *          standardDeviation:
+ *              type: number
+ *          sharpeRatio:
+ *              type: number
+ *          treynorRatio:
+ *              type: number
+ *          debtEquity:
+ *              type: number
+ *          correlations:
+ *              type: object
+ * 
  *  portfolioDetails:
  *    type: object
  *    properties:
@@ -300,12 +332,12 @@
  *      nextDividend:
  *        type: number
  *        format: UNIX timestamp
- *      dividendPayoutRatio:
- *        type: number
  *      totalReturn:
  *          type: number
  *      totalReturnPercent:
  *          type: number
+ *      analytics:
+ *          $ref: '#/definitions/analytics'
  *
  *  bestYear:
  *      properties:
