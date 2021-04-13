@@ -31,24 +31,24 @@ const handle_database_error = (res, err) => {
 //cronjob
 const cron = require("node-cron");
 
-cron.schedule("39 17 * * *", () => {
-    console.log("it's 21 20")
-    Portfolio.find({}, async function (err, portf) {
-        if (err) {
-            //do nothing
-        } else {
-            for (var j = 0; j < portf.length; j++) {
-                try {
-                    await portfolioWorkers.updatePortfolioCronjob(portf[j])
-                    portf[j].save()
-                } catch (e) {
-                    //? doesn't work
-                }
+// cron.schedule("39 17 * * *", () => {
+//     console.log("it's 21 20")
+//     Portfolio.find({}, async function (err, portf) {
+//         if (err) {
+//             //do nothing
+//         } else {
+//             for (var j = 0; j < portf.length; j++) {
+//                 try {
+//                     await portfolioWorkers.updatePortfolioCronjob(portf[j])
+//                     portf[j].save()
+//                 } catch (e) {
+//                     //? doesn't work
+//                 }
 
-            }
-        }
-    })
-});
+//             }
+//         }
+//     })
+// });
 
 
 const stockMock1 = {
@@ -232,7 +232,7 @@ router.get('/details/:id', passport.authenticate('jwt', { session: false }), (re
         res.status(404).json(response);
     } else {
         // find all data of portfolio
-        Portfolio.findOne({ "userId": req.user.id, "id": id }, (err, portf) => {
+        Portfolio.findOne({ "userId": req.user.id, "id": id }, { "portfolio.performance" : false, "portfolio.overview._id" : false }, (err, portf) => {
             if (err) {
                 handle_database_error(res, err)
             } else if (!portf) { //portfolio doesn't exist
