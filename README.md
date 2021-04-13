@@ -1,7 +1,7 @@
 # Milou-backend
 ​
 This is the repository for the backend which powers [Milou](api.milou.io/api-docs), 
-which is running on an [Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/) environment on AWS. 
+running on an [Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/) environment on AWS. 
 It includes a MongoDB database 
 connection and can be interfaced via HTTPS requests. It is also fetching from different 
 financial apis such as [Alpha Vantage](https://www.alphavantage.co/), [finnHub](https://finnhub.io/) and [newsAPI](https://newsapi.org/) 
