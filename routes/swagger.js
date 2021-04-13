@@ -14,15 +14,12 @@
  *      error:
  *        type: string
  *        enum:
- *        - AUTH_TOKEN_INVALID
- *        - AUTH_TOKEN_EXPIRED
  *        - PORTFOLIO_ID_INVALID
  *        - PORTFOLIO_NAME_INVALID
  *        - PORTFOLIO_NAME_DUPLICATE
  *        - TIMESTAMP_INVALID
  *        - SYMBOL_INVALID  
  *        - QTY_INVALID
- *        - RANGE_INVALID
  *        - REAL_PORTFOLIO_MODIFICATION
  *  error2:
  *    type: object
@@ -380,9 +377,12 @@
  *      500:
  *        description: DATABASE_ERROR
  *        schema:
- *          type: array
- *          items:
  *            $ref: '#/definitions/error2'
+ *      403:
+ *        description: Unauthorized
+ *        schema:
+ *            type: string
+ *            example: Unauthorized
  * 
  *    security:
  *    - api_key: [] 
@@ -414,9 +414,12 @@
  *       500:
  *        description: DATABASE_ERROR
  *        schema:
- *          type: array
- *          items:
  *            $ref: '#/definitions/error2'
+ *       403:
+ *        description: Unauthorized
+ *        schema:
+ *            type: string
+ *            example: Unauthorized
  *
  * /portfolio/performance/{portfolioId}:
  *   get:
@@ -456,9 +459,12 @@
  *       500:
  *        description: DATABASE_ERROR
  *        schema:
- *          type: array
- *          items:
  *            $ref: '#/definitions/error2'
+ *       403:
+ *        description: Unauthorized
+ *        schema:
+ *            type: string
+ *            example: Unauthorized
 
  * 
  * /portfolio/create:
@@ -496,9 +502,12 @@
  *       500:
  *        description: DATABASE_ERROR
  *        schema:
- *          type: array
- *          items:
  *            $ref: '#/definitions/error2'
+ *       403:
+ *        description: Unauthorized
+ *        schema:
+ *            type: string
+ *            example: Unauthorized
  *
  * /portfolio/{portfolioId}:
  *   delete:
@@ -525,9 +534,12 @@
  *       500:
  *        description: DATABASE_ERROR
  *        schema:
- *          type: array
- *          items:
  *            $ref: '#/definitions/error2'
+ *       403:
+ *        description: Unauthorized
+ *        schema:
+ *            type: string
+ *            example: Unauthorized
  *
  * /portfolio/rename/{portfolioId}:
  *   put:
@@ -568,9 +580,12 @@
  *       500:
  *        description: DATABASE_ERROR
  *        schema:
- *          type: array
- *          items:
  *            $ref: '#/definitions/error2'
+ *       403:
+ *        description: Unauthorized
+ *        schema:
+ *            type: string
+ *            example: Unauthorized
  *
  * /portfolio/modify/{portfolioId}:
  *   put:
@@ -625,10 +640,12 @@
  *       500:
  *        description: DATABASE_ERROR
  *        schema:
- *          type: array
- *          items:
  *            $ref: '#/definitions/error2'
- *
+ *       403:
+ *         description: Unauthorized
+ *         schema:
+ *            type: string
+ *            example: Unauthorized
  * /portfolio/duplicate/{portfolioId}:
  *   post:
  *     tags:
@@ -674,9 +691,12 @@
  *       500:
  *        description: DATABASE_ERROR
  *        schema:
- *          type: array
- *          items:
  *            $ref: '#/definitions/error2'
+ *       403:
+ *        description: Unauthorized
+ *        schema:
+ *            type: string
+ *            example: Unauthorized
  * /portfolio/stock/{symbol}:
  *   get:
  *     tags:
@@ -713,9 +733,12 @@
  *       500:
  *        description: DATABASE_ERROR
  *        schema:
- *          type: array
- *          items:
  *            $ref: '#/definitions/error2'
+ *       403:
+ *        description: Unauthorized
+ *        schema:
+ *            type: string
+ *            example: Unauthorized
  *   put:
  *     tags:
  *     - portfolio
@@ -766,9 +789,12 @@
  *       500:
  *        description: DATABASE_ERROR
  *        schema:
- *          type: array
- *          items:
  *            $ref: '#/definitions/error2'
+ *       403:
+ *        description: Unauthorized
+ *        schema:
+ *            type: string
+ *            example: Unauthorized
  * /stocks/list?{country}&{currency}&{industry}&{mc}:
  *  get:
  *   summary: Returns a stock list according to filter.

@@ -6,11 +6,17 @@ const mongoose = require('mongoose');
 const { ResourceGroups } = require('aws-sdk');
 const cookieParser = require('cookie-parser');
 const stockModel = require("../models/stock");
+const updatePortfolioFields = require('../workers/portfolio_worker')
 
-//analytics
-const diversification = require('../data-analytics/analytics/analytics');
-const companyOverviews = require('../data-analytics/dynamic_data/company-overviews');
-const portfolioFetcher = require('../data-analytics/dynamic_data/portfolio-fetcher');
+
+
+//cronjob
+const cron = require("node-cron");
+
+cron.schedule("0 2 * * *", () => {
+    //portfolio_workers()
+    console.log("it's 21 20")//it worked :)
+});
 
 const secret = require('../secret/secret')();
 const dotenv = require('dotenv');
@@ -222,46 +228,6 @@ const newStock = async (symbol, qty) => {
     return result;
 }
 
-function tofinAPIPortfolio(returnedPortfolio) {
-    const reformattedPortfolio = {
-        securities: []
-    }
-    returnedPortfolio.portfolio.positions.forEach(position => {
-        const currSecurity = {};
-        currSecurity["name"] = position.stock.name;
-        currSecurity["symbol"] = position.stock.symbol;
-        currSecurity["entryQuote"] = position.stock.entryQuote;
-        currSecurity["quoteDate"] = position.stock.quoteDate;
-        currSecurity["quantityNominal"] = position.qty;
-        currSecurity["isin"] = position.stock.isin;
-        reformattedPortfolio.securities.push(currSecurity)
-    });
-    return reformattedPortfolio;
-}
-
-
-const updatePortfolioFields = async (portfolio) => {
-    portfolio.portfolio.overview.modified = Date.now() // current timestamp
-    var overview = portfolio.portfolio.overview
-    overview.positionCount = portfolio.portfolio.positions.length;
-    overview.perf7d = portfolio.portfolio.positions.map(({ stock: { perf7d: performance } }) => performance).reduce((a, b) => a + b)
-    overview.perf1y = portfolio.portfolio.positions.map(({ stock: { perf1y: performance } }) => performance).reduce((a, b) => a + b)
-    overview.perf7dPercent = percent(overview.perf7d, overview.value)
-    overview.perf1yPercent = percent(overview.perf1y, overview.value)
-    //TODO risk
-    var currPortfolio = tofinAPIPortfolio(portfolio)
-    var currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
-    var currCompanyOverviews = await companyOverviews.getCompanyOverviewForSymbols(currSymbols);
-    var portfDiversification = diversification.calculateDiversification(currPortfolio,currCompanyOverviews)//TODO
-    console.log(portfDiversification)
-    //TODO keyfigures
-    portfolio.portfolio.totalReturn = portfolio.portfolio.positions.map(({ totalReturn: performance }) => performance).reduce((a, b) => a + b)
-    portfolio.portfolio.totalReturnPercent = percent(portfolio.portfolio.totalReturn, overview.value)
-    //TODO nextDividend: Number,//no data, maybe Alpha Vantage
-    //dividendPayoutRatio: Number,//?
-    //TODO score
-    //TODO new values
-}
 
 // can it be cast to mongoose.ObjectId?
 const is_valid_id = (id) => {
