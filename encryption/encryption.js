@@ -33,5 +33,9 @@ const hash = (text) => {
     return crypto.createHash('sha256').update(text).digest("hex");
 }
 
-module.exports = { encrypt, decrypt, hash }
+const randomToken = () => {
+    return crypto.randomBytes(16).toString('hex');
+}
+
+module.exports = { encrypt, decrypt, hash, randomToken }
 
