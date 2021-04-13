@@ -7,7 +7,26 @@ const { ResourceGroups } = require('aws-sdk');
 const cookieParser = require('cookie-parser');
 const portfolioWorkers = require('../workers/portfolio_worker')
 
+const secret = require('../secret/secret')();
+const dotenv = require('dotenv');
+dotenv.config();
 
+const router = express.Router();
+router.use(express.json()); // for parsing application/json
+router.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+
+router.use(cookieParser(process.env.auth_jwt_secret));
+
+const fetch = require('node-fetch');
+const passport = require('passport');
+
+const handle_database_error = (res, err) => {
+    var response = {}
+    response.error = "DATABASE_ERROR"
+    response.message = "" + err
+    console.log(err)
+    res.status(500).json(response);
+}
 
 //cronjob
 const cron = require("node-cron");
