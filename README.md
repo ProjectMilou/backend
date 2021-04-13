@@ -29,12 +29,15 @@ retrieve data from other APIs, the analytics team uses
 You can install our dependencies by running `npm install`.
 ## Installation
 ​
-Except for importing the secrets (next step), no major effort is required to run the project locally
+Except for importing the secrets (next step), no major effort is required to run the project locally. 
 
 ```sh
 npm i
 npm start
 ```
+
+For local development you should keep in mind, that the application is connected to the database (if your aws-secrets are correct). 
+Thus you are able to run CRUD opperations on the real database using [postman](https://www.postman.com/), for example.
 ​
 ## Credentials
 ​
