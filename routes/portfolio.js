@@ -5,6 +5,7 @@ const Portfolio = require('../models/portfolio');
 const mongoose = require('mongoose');
 const { ResourceGroups } = require('aws-sdk');
 const cookieParser = require('cookie-parser');
+const portfolioWorkers = require('../workers/portfolio_worker')
 
 const secret = require('../secret/secret')();
 const dotenv = require('dotenv');
@@ -14,22 +15,10 @@ const router = express.Router();
 router.use(express.json()); // for parsing application/json
 router.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
-//var userId ='7066e49a553a5c0447248073'// invalid
-var userId = '6066e49a553a5c0447248073'
-//var userId = '6066e49a553a5c0000000000'
-//var userId = '606c983e747e639f685affd0';
-router.use(cookieParser(process.env.auth_jwt_secret + userId));
+router.use(cookieParser(process.env.auth_jwt_secret));
 
 const fetch = require('node-fetch');
-const cors = require('cors');
 const passport = require('passport');
-
-router.use(express.json()); // for parsing application/json
-router.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
-router.use(cors({
-    exposedHeaders: ['Location'],
-}));
-
 
 const handle_database_error = (res, err) => {
     var response = {}
@@ -38,6 +27,29 @@ const handle_database_error = (res, err) => {
     console.log(err)
     res.status(500).json(response);
 }
+
+//cronjob
+const cron = require("node-cron");
+
+// cron.schedule("39 17 * * *", () => {
+//     console.log("it's 21 20")
+//     Portfolio.find({}, async function (err, portf) {
+//         if (err) {
+//             //do nothing
+//         } else {
+//             for (var j = 0; j < portf.length; j++) {
+//                 try {
+//                     await portfolioWorkers.updatePortfolioCronjob(portf[j])
+//                     portf[j].save()
+//                 } catch (e) {
+//                     //? doesn't work
+//                 }
+
+//             }
+//         }
+//     })
+// });
+
 
 const stockMock1 = {
     stock: {
@@ -93,6 +105,14 @@ const stockMock2 = {
     totalReturnPercent: 1 //=?
 }
 
+// what percent nr1 is in realtion to nr2
+const percent = (nr1, nr2) => {
+    if (nr1 && nr2 && !isNaN(nr1) && !isNaN(nr2))
+        return nr1 / (nr2) * 100
+    else
+        return 0
+}
+
 const emptyPortfolio = (portfolioId, userId, name) => {
     return {
         "id": portfolioId,
@@ -112,64 +132,62 @@ const emptyPortfolio = (portfolioId, userId, name) => {
                 "modified": Date.now()
             },
             "positions": [],
-            //optional values
-            // "risk": {
-            //     "countries": {
-            //         "count": 0,
-            //         "score": 0,
-            //         "warnings": []
-            //     },
-            //     "segments": {
-            //         "count": 0,
-            //         "score": 0,
-            //         "warnings": []
-            //     },
-            //     "currency": {
-            //         "count": 0,
-            //         "score": 0,
-            //         "warnings": []
-            //     }
-            // },
-            // "keyFigures": [{
-            //     "year": 0,
-            //     "pte": 0,
-            //     "ptb": 0,
-            //     "ptg": 0,
-            //     "eps": 0,
-            //     "div": 0,
-            //     "dividendPayoutRatio": 0
-            // }],
-            // "nextDividend": 0,
-            // "dividendPayoutRatio": 0,
-            // "totalReturn": 0,
-            // "totalReturnPercent": 0,
-            // "performance": []
+            "performance": []
         }
     }
 }
 
-const newStock = (symbol, qty) => {
-    return {
-        "stock": {
+
+const newStock = async (symbol, qty) => {
+    var stockArray = await portfolioWorkers.searchStock(symbol);
+    var stock = stockArray[0]
+    if (!stock) {
+        stock = {
             //id: Number?
             //accountId?
             "isin": "?",
-            "wkn": "?", //TODO
-            "symbol": symbol, //TODO
-            "name": "?", //TODO
-            "price": 0, //=marketValue?//TODO
-            "marketValueCurrency": "?", //TODO
-            "quote": 0, //TODO
-            "quoteCurrency": "?", //TODO
-            "quoteDate": "?", //TODO
-            "entryQuote": 0, //TODO (=quote)
-            "entryQuoteCurrency": "?", //TODO
-            "perf7d": 0, //TODO
-            "perf1y": 0, //TODO
+            "wkn": "?",
+            "symbol": symbol,
+            "name": symbol,
+            "price": 0,
+            "marketValueCurrency": "?",
+            "quote": 0,
+            "quoteCurrency": "?",
+            "quoteDate": Date.now(),
+            "entryQuote": 0,
+            "entryQuoteCurrency": "?",
+            "perf7d": 0,
+            "perf1y": 0,
             "perf7dPercent": 0,
+            "volatility": 0,
+            "debtEquity": 0,
             "perf1yPercent": 0,
-            "country": "?", //TODO
-            "industry": "?", //TODO
+            "country": "?",
+            "industry": "?",
+            "score": 0
+        }
+    }
+    var result = {
+        "stock": {
+            //id: Number?
+            //accountId?
+            "isin": stock.isin,
+            "wkn": stock.wkn,
+            "symbol": stock.symbol,
+            "name": stock.name,
+            "price": stock.price,
+            "marketValueCurrency": stock.currency,
+            "quote": stock.price, //TODO
+            "quoteCurrency": stock.currency, //TODO
+            "quoteDate": stock.date, //TODO
+            "entryQuote": stock.price, //TODO (=quote)
+            "entryQuoteCurrency": stock.currency, //TODO
+            "perf7d": stock.per7d,
+            "perf1y": stock.per365d,
+            "perf7dPercent": percent(stock.per7d, (stock.price * qty)),
+            "perf1yPercent": percent(stock.per365d, (stock.price * qty)),
+            "country": stock.country,
+            "industry": stock.industry,
             "score": 0 //TODO-> finnHub reccomendation trends, for 10 biggest position, average of score multiplied with value, sum divided with total amount of reccomendations
         },
         "qty": qty, // = quantityNominal?
@@ -177,6 +195,7 @@ const newStock = (symbol, qty) => {
         "totalReturn": 0, //=profitOrLoss?
         "totalReturnPercent": 0 //=?
     }
+    return result;
 }
 
 
@@ -192,10 +211,10 @@ const is_valid_qty = (qty) => {
 
 
 //returns all portfolios of current user
-router.get('/list', (req, res) => {
+router.get('/list', passport.authenticate('jwt', { session: false }), (req, res) => {
     var response = { "portfolios": [] };
 
-    Portfolio.find({ "userId": userId }, 'portfolio.overview', function(err, portf) {
+    Portfolio.find({ "userId": req.user.id }, 'portfolio.overview', function(err, portf) {
         if (err) {
             handle_database_error(res, err)
         } else {
@@ -205,7 +224,7 @@ router.get('/list', (req, res) => {
     })
 });
 
-router.get('/details/:id', (req, res) => {
+router.get('/details/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
     var id = req.params.id;
     var response = {};
     if (!is_valid_id(id)) {
@@ -213,7 +232,7 @@ router.get('/details/:id', (req, res) => {
         res.status(404).json(response);
     } else {
         // find all data of portfolio
-        Portfolio.findOne({ "userId": userId, "id": id }, (err, portf) => {
+        Portfolio.findOne({ "userId": req.user.id, "id": id }, { "portfolio.performance" : false, "portfolio.overview._id" : false }, (err, portf) => {
             if (err) {
                 handle_database_error(res, err)
             } else if (!portf) { //portfolio doesn't exist
@@ -229,7 +248,7 @@ router.get('/details/:id', (req, res) => {
 
 
 // TODO: implement something which calculates the performance every day
-router.get('/performance/:id', function (req, res) {
+router.get('/performance/:id', passport.authenticate('jwt', { session: false }), function(req, res) {
     var id = req.params.id;
     var response = {};
     if (!is_valid_id(id)) {
@@ -237,7 +256,7 @@ router.get('/performance/:id', function (req, res) {
         res.status(404).json(response);
     } else {
         // find all data of portfolio
-        Portfolio.findOne({ "userId": userId, "id": id }, (err, portf) => {
+        Portfolio.findOne({ "userId": req.user.id, "id": id }, (err, portf) => {
             if (err) {
                 handle_database_error(res, err)
             } else if (!portf) { //portfolio doesn't exist
@@ -256,7 +275,7 @@ router.get('/performance/:id', function (req, res) {
 });
 
 //creates new portfolio with the given name and gives the id as a response
-router.post('/create', (req, res) => {
+router.post('/create', passport.authenticate('jwt', { session: false }), (req, res) => {
     // request: {"name" : name}
     var name = req.body.name;
     var response = {}
@@ -266,15 +285,15 @@ router.post('/create', (req, res) => {
     } else {
         var portfolioId = new mongoose.Types.ObjectId();
         // check if the name already exists
-        Portfolio.findOne({ "userId": userId, "portfolio.overview.name": name }).exec((err, result) => {
+        Portfolio.findOne({ "userId": req.user.id, "portfolio.overview.name": name }).exec((err, result) => {
             if (err) {
                 handle_database_error(res, err)
             } else if (result) {
                 response.error = "PORTFOLIO_NAME_DUPLICATE";
                 res.status(400).json(response);
             } else {
-                var portfolio = new Portfolio(emptyPortfolio(portfolioId, userId, name))
-                    // save new portfolio in database
+                var portfolio = new Portfolio(emptyPortfolio(portfolioId, req.user.id, name))
+                // save new portfolio in database
                 portfolio.save(
                     function(err, portfolio) {
                         if (err) {
@@ -291,7 +310,7 @@ router.post('/create', (req, res) => {
     }
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
     var id = req.params.id;
     var response = {};
     if (!is_valid_id(id)) { // otherwise the id can't be cast to ObjectId and a Database Error is thrown
@@ -299,7 +318,7 @@ router.delete('/:id', (req, res) => {
         res.status(404).json(response);
     } else {
         //delete from database
-        Portfolio.findOneAndDelete({ "id": id, "userId": userId }, (err, portf) => {
+        Portfolio.findOneAndDelete({ "id": id, "userId": req.user.id }, (err, portf) => {
             if (err) {
                 handle_database_error(res, err);
             } else if (!portf) {
@@ -312,7 +331,7 @@ router.delete('/:id', (req, res) => {
     }
 });
 
-router.put('/rename/:id', (req, res) => {
+router.put('/rename/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
     // request: {"name" : name} 
     var id = req.params.id;
     var name = req.body.name;
@@ -326,7 +345,7 @@ router.put('/rename/:id', (req, res) => {
             res.status(400).json(response);
         } else {
             //check if the name already exists
-            Portfolio.findOne({ "userId": userId, "portfolio.overview.name": name }).exec((err, result) => {
+            Portfolio.findOne({ "userId": req.user.id, "portfolio.overview.name": name }).exec((err, result) => {
                 if (err) {
                     handle_database_error(res, err)
                 } else if (result) {
@@ -334,7 +353,7 @@ router.put('/rename/:id', (req, res) => {
                     res.status(400).json(response);
                 } else {
                     //update name
-                    Portfolio.findOneAndUpdate({ "id": id, "userId": userId }, { "portfolio.overview.name": name }, (err, portf) => {
+                    Portfolio.findOneAndUpdate({ "id": id, "userId": req.user.id }, { "portfolio.overview.name": name }, (err, portf) => {
                         if (err) {
                             handle_database_error(res, err)
                         } else if (!portf) {
@@ -386,14 +405,14 @@ const query = (userId, positionId) => {
  * Otherwise, the position in the specified portfolio is updated to match the specified quantity.
  * The position which is changed is the one which has isin, wkn, symbol or name equal to positionId
  */
-const modifyPortfolio = (portfolio, positionId, qty) => {
+const modifyPortfolio = async (portfolio, positionId, qty) => {
     // modify portfolio
     var positions = portfolio.portfolio.positions
     // find the right position, if already present in portfolio
     var pos = positions.find((position) => {
         return idBelongsToThisPosition(positionId, position)
     })
-    if (pos) {// if present
+    if (pos) { // if present
         var oldstockvalue = pos.stock.price * pos.qty
         portfolio.portfolio.overview.value -= oldstockvalue
         if (qty == 0) {
@@ -411,21 +430,19 @@ const modifyPortfolio = (portfolio, positionId, qty) => {
         }
     } else if (qty != 0) {
         // add new stock/position to portfolio
-        var stock = newStock(positionId, qty)//TODO modify new Stock
+        var stock = await newStock(positionId, qty)
         positions.push(stock)
         portfolio.portfolio.overview.value += stock.stock.price * stock.qty
     }
+    await portfolioWorkers.updatePortfolioWhenModified(portfolio)
 
-    //TODO modify totalReturn of portfolio and all the other fields
-    portfolio.portfolio.overview.modified = Date.now() // current timestamp
-    portfolio.portfolio.overview.positionCount = portfolio.portfolio.positions.length;
 
 }
 
 
 
 // if one of the modifications causes an error, nothing gets modified in the database
-router.put('/modify/:id', async (req, res) => {
+router.put('/modify/:id', passport.authenticate('jwt', { session: false }), async(req, res) => {
     // request: {"modifications": 
     //                  [{"isin": "string", -> could also be symbol, wkn or name
     //                  "qty": 0}]}
@@ -437,7 +454,7 @@ router.put('/modify/:id', async (req, res) => {
         res.json(response)
     } else {
         // find Portfolio
-        await Portfolio.findOne({ "id": id, "userId": userId }, (err, portfolio) => {
+        await Portfolio.findOne({ "id": id, "userId": req.user.id }, async (err, portfolio) => {
             if (err) {
                 handle_database_error(res, err)
             } else if (!portfolio) {
@@ -457,15 +474,15 @@ router.put('/modify/:id', async (req, res) => {
                         success = false;
                         break;
                     } else {
-                        modifyPortfolio(portfolio, portfolioId, qty)
+                        await modifyPortfolio(portfolio, portfolioId, qty)
                     }
                 }
-                if (success) {// all modifications done
+                if (success) { // all modifications done
                     portfolio.save(
                         function (err, portfolio) {
                             if (err) handle_database_error(res, err)
                             else
-                                res.json(response)// success
+                                res.json(response) // success
                         }
                     )
 
@@ -490,7 +507,7 @@ const duplicate_portfolio = (portf, portfolioId, name) => {
 }
 
 
-router.post('/duplicate/:id', (req, res) => {
+router.post('/duplicate/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
     // request: {"name" : name} 
     var id = req.params.id;
     var name = req.body.name;
@@ -501,7 +518,7 @@ router.post('/duplicate/:id', (req, res) => {
     } else {
         var portfolioId = new mongoose.Types.ObjectId(); // id of new portfolio
         // check if name already exists
-        Portfolio.findOne({ "userId": userId, "portfolio.overview.name": name }).exec((err, result) => {
+        Portfolio.findOne({ "userId": req.user.id, "portfolio.overview.name": name }).exec((err, result) => {
             if (err) {
                 handle_database_error(res, err)
             } else {
@@ -510,7 +527,7 @@ router.post('/duplicate/:id', (req, res) => {
                     res.status(400).json(response);
                 } else {
                     // find portfolio with this id
-                    Portfolio.findOne({ "id": id, "userId": userId }, (err, portf) => {
+                    Portfolio.findOne({ "id": id, "userId": req.user.id }, (err, portf) => {
                         if (err) {
                             handle_database_error(res, err)
                         } else if (!portf) {
@@ -541,12 +558,12 @@ router.post('/duplicate/:id', (req, res) => {
 
 
 
-router.get('/stock/:isin', (req, res) => { // get portfolioId, name, qty of stock
+router.get('/stock/:isin', passport.authenticate('jwt', { session: false }), (req, res) => { // get portfolioId, name, qty of stock
     var isin = req.params.isin;
 
     var response = {};
     //? = %3F
-    Portfolio.find(query(userId, isin), 'id portfolio.overview.name portfolio.positions', function (err, portf) {
+    Portfolio.find(query(req.user.id, isin), 'id portfolio.overview.name portfolio.positions', function (err, portf) {
         if (err) {
             handle_database_error(res, err)
         } else {
@@ -573,7 +590,7 @@ router.get('/stock/:isin', (req, res) => { // get portfolioId, name, qty of stoc
 });
 
 
-router.put('/stock/:isin', (req, res) => {// get portfolioId, name, qty of stock
+router.put('/stock/:isin', passport.authenticate('jwt', { session: false }), (req, res) => { // get portfolioId, name, qty of stock
     // request: {
     // "modifications": [
     //     {
@@ -599,7 +616,7 @@ router.put('/stock/:isin', (req, res) => {// get portfolioId, name, qty of stock
                 res.status(404).json(response)
         } else {
             // find Portfolio
-            Portfolio.findOne({ "id": id, "userId": userId }, (err, portfolio) => {
+            Portfolio.findOne({ "id": id, "userId": req.user.id }, async (err, portfolio) => {
                 var currentIndex = j;
                 if (err) {
                     handle_database_error(res, err)
@@ -621,15 +638,15 @@ router.put('/stock/:isin', (req, res) => {// get portfolioId, name, qty of stock
                             res.status(400).json(response)
                         success = false;
                     } else {
-                        modifyPortfolio(portfolio, portfolioId, qty)
+                        await modifyPortfolio(portfolio, portfolioId, qty)
                     }
                 }
-                if (success) {// all modifications done
+                if (success) { // all modifications done
                     portfolio.save(
                         function (err, portfolio) {
                             if (err) handle_database_error(res, err)
                             else if (!res.headersSent)
-                                res.json(response)// success
+                                res.json(response) // success
                         }
                     )
 
@@ -640,17 +657,10 @@ router.put('/stock/:isin', (req, res) => {// get portfolioId, name, qty of stock
 });
 
 
-
-// is not in the documentation any more
-router.post('/import', (req, res) => {
-    res.json({});
-});
-
-
 // finapi part
 
 // token/user gives user auth, for any other thing - client, e.g. token/client
-router.get('/token/:person', async(req, res) => {
+router.get('/token/:person', passport.authenticate('jwt', { session: false }), async(req, res) => {
     let person = req.params.person;
 
     //no merged secret configuration yet, so not specified
@@ -658,7 +668,6 @@ router.get('/token/:person', async(req, res) => {
         'grant_type': "client_credentials",
         'client_id': process.env.finAPI_client_id,
         'client_secret': process.env.finAPI_client_secret,
-
     });
 
     // credentials taken from db 
@@ -691,7 +700,7 @@ router.get('/token/:person', async(req, res) => {
     }
 });
 
-router.post('/newUser', async(req, res) => {
+router.post('/newUser', passport.authenticate('jwt', { session: false }), async(req, res) => {
     let body = {
         id: req.body.id, // read: username
         password: req.body.password,
@@ -718,7 +727,7 @@ router.post('/newUser', async(req, res) => {
 
 });
 
-router.get('/deleteUser', async(req, res) => {
+router.get('/deleteUser', passport.authenticate('jwt', { session: false }), async(req, res) => {
 
     const api_url = `https://sandbox.finapi.io/api/v1/users`;
 
@@ -740,7 +749,7 @@ router.get('/deleteUser', async(req, res) => {
     }
 });
 
-router.post('/searchBanks', async(req, res) => {
+router.post('/searchBanks', passport.authenticate('jwt', { session: false }), async(req, res) => {
     let params = new URLSearchParams({
         'search': req.body.search, // main field, others if needed
         'ids': req.body.ids, // integer array
@@ -772,7 +781,7 @@ router.post('/searchBanks', async(req, res) => {
 
 });
 
-router.get('/importConnection/:bankId', async(req, res) => {
+router.get('/importConnection/:bankId', passport.authenticate('jwt', { session: false }), async(req, res) => {
     let body = { //e.g. 26628 - stadtsparkasse
         bankId: req.params.bankId
     };
@@ -803,7 +812,7 @@ router.get('/importConnection/:bankId', async(req, res) => {
 
 });
 
-router.post('/bankConnections/', async(req, res) => {
+router.post('/bankConnections/', passport.authenticate('jwt', { session: false }), async(req, res) => {
     if (req.body.ids !== undefined) {
         var ids = new URLSearchParams({});
         for (let id of req.body.ids) {
@@ -831,7 +840,7 @@ router.post('/bankConnections/', async(req, res) => {
 
 });
 
-router.get('/deleteConnection/:id', async(req, res) => {
+router.get('/deleteConnection/:id', passport.authenticate('jwt', { session: false }), async(req, res) => {
     var id = req.params.id;
 
     const api_url = `https://sandbox.finapi.io/api/v1/bankConnections/${id}`;
@@ -854,7 +863,7 @@ router.get('/deleteConnection/:id', async(req, res) => {
     }
 });
 
-router.get('/deleteAllConnections', async(req, res) => {
+router.get('/deleteAllConnections', passport.authenticate('jwt', { session: false }), async(req, res) => {
 
     const api_url = `https://sandbox.finapi.io/api/v1/bankConnections`;
 
@@ -877,7 +886,7 @@ router.get('/deleteAllConnections', async(req, res) => {
 
 });
 
-router.post('/securities', async(req, res) => {
+router.post('/securities', passport.authenticate('jwt', { session: false }), async(req, res) => {
     // if no body, all securities given
     let params = new URLSearchParams({
         'search': req.body.search, // isin, name, wkn contain
@@ -914,7 +923,7 @@ router.post('/securities', async(req, res) => {
 
 });
 
-router.post('/saveAllSecurities', (req, res) => {
+router.post('/saveAllSecurities', passport.authenticate('jwt', { session: false }), async(req, res) => {
     var name = req.body.name;
     var response = {};
 
@@ -923,7 +932,7 @@ router.post('/saveAllSecurities', (req, res) => {
         res.status(400).json(response);
     } else {
         var portfolioId = new mongoose.Types.ObjectId();
-        Portfolio.findOne({ "userId": userId, "portfolio.overview.name": name }).exec(async(err, result) => {
+        Portfolio.findOne({ "userId": req.user.id, "portfolio.overview.name": name }).exec(async(err, result) => {
             if (err) {
                 handle_database_error(res, err);
             } else {
@@ -942,19 +951,22 @@ router.post('/saveAllSecurities', (req, res) => {
                     const json_response = await api_response.json();
 
                     var positions = [];
-                    if (json_response.securities !== undefined)
+                    var totalCount = 0;
+                    if (json_response.securities !== undefined) {
                         positions = convertSecurities(json_response.securities);
+                        totalCount = json_response.paging.totalCount;
+                    }
 
                     if (!result) {
                         var portfolio = new Portfolio({
                             "id": portfolioId,
-                            "userId": userId,
+                            "userId": req.user.id,
                             "portfolio": {
                                 "overview": {
                                     "id": portfolioId,
                                     "name": name,
                                     "virtual": false,
-                                    "positionCount": json_response.paging.totalCount,
+                                    "positionCount": totalCount,
                                     "value": 0,
                                     "score": 0,
                                     "perf7d": 0,
@@ -1005,7 +1017,7 @@ router.post('/saveAllSecurities', (req, res) => {
                             }
                         );
                     } else {
-                        Portfolio.findOneAndUpdate({ "portfolio.overview.name": name, "userId": userId }, { "portfolio.positions": positions }, (error, portfolioRes) => {
+                        Portfolio.findOneAndUpdate({ "portfolio.overview.name": name, "userId": req.user.id }, { "portfolio.positions": positions }, (error, portfolioRes) => {
                             if (error) {
                                 handle_database_error(res, error2)
                             } else {
