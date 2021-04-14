@@ -124,7 +124,7 @@ const emptyPortfolio = (portfolioId, userId, name) => {
                 "virtual": true,
                 "positionCount": 0,
                 "value": 0,
-                //"score": 0, optional
+                "score": 0,
                 "perf7d": 0,
                 "perf1y": 0,
                 "perf7dPercent": 0,
@@ -406,6 +406,7 @@ const query = (userId, positionId) => {
  * The position which is changed is the one which has isin, wkn, symbol or name equal to positionId
  */
 const modifyPortfolio = async (portfolio, positionId, qty) => {
+    var validPosition = true
     // modify portfolio
     var positions = portfolio.portfolio.positions
     // find the right position, if already present in portfolio
@@ -431,18 +432,22 @@ const modifyPortfolio = async (portfolio, positionId, qty) => {
     } else if (qty != 0) {
         // add new stock/position to portfolio
         var stock = await newStock(positionId, qty)
-        positions.push(stock)
-        portfolio.portfolio.overview.value += stock.stock.price * stock.qty
+        if (stock.stock.country != "?") {
+            positions.push(stock)
+            portfolio.portfolio.overview.value += stock.stock.price * stock.qty
+        } else {
+            validPosition = false
+        }
     }
-    await portfolioWorkers.updatePortfolioWhenModified(portfolio)
-
-
+    if (validPosition)
+        await portfolioWorkers.updatePortfolioWhenModified(portfolio)
+    return validPosition;
 }
 
 
 
 // if one of the modifications causes an error, nothing gets modified in the database
-router.put('/modify/:id', passport.authenticate('jwt', { session: false }), async(req, res) => {
+router.put('/modify/:id', passport.authenticate('jwt', { session: false }), async (req, res) => {
     // request: {"modifications": 
     //                  [{"isin": "string", -> could also be symbol, wkn or name
     //                  "qty": 0}]}
@@ -474,7 +479,13 @@ router.put('/modify/:id', passport.authenticate('jwt', { session: false }), asyn
                         success = false;
                         break;
                     } else {
-                        await modifyPortfolio(portfolio, portfolioId, qty)
+                        success = await modifyPortfolio(portfolio, portfolioId, qty)
+                        if (!success) {
+                            response.error = "SYMBOL_INVALID"
+                            res.status(400).json(response)
+                            success = false;
+                            break;
+                        }
                     }
                 }
                 if (success) { // all modifications done
@@ -638,10 +649,16 @@ router.put('/stock/:isin', passport.authenticate('jwt', { session: false }), (re
                             res.status(400).json(response)
                         success = false;
                     } else {
-                        await modifyPortfolio(portfolio, portfolioId, qty)
+                        success = await modifyPortfolio(portfolio, portfolioId, qty)
+                        if (!success) {
+                            response.error = "SYMBOL_INVALID"
+                            if (!res.headersSent)
+                                res.status(400).json(response)
+                            success = false;
+                        }
                     }
                 }
-                if (success) { // all modifications done
+                if (success) { 
                     portfolio.save(
                         function (err, portfolio) {
                             if (err) handle_database_error(res, err)
