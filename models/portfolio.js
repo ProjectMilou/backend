@@ -6,17 +6,17 @@ const portfolioOverviewSchema = new mongoose.Schema({
     virtual: Boolean,
     positionCount: Number,
     value: Number,
-    score: Number,//?
-    perf7d: Number,//?
-    perf1y: Number,//?
-    perf7dPercent: Number,//?
-    perf1yPercent: Number,//?
+    score: Number,
+    perf7d: Number,
+    perf1y: Number,
+    perf7dPercent: Number,
+    perf1yPercent: Number,
     modified: Number
 });
 
 const portfolioSchema = new mongoose.Schema({
     id: mongoose.ObjectId,
-    userId: mongoose.ObjectId,//String!
+    userId: mongoose.ObjectId,
     portfolio: {
         overview: portfolioOverviewSchema,
         positions: [
@@ -28,11 +28,11 @@ const portfolioSchema = new mongoose.Schema({
                     name: String,
                     price: Number,//=marketValue!
                     marketValueCurrency: String,
-                    quote: Number,//??
-                    quoteCurrency: String,//??
-                    quoteDate: String,//??
-                    entryQuote: Number,//only makes sense in real ones I guess
-                    entryQuoteCurrency: String,//same
+                    quote: Number,
+                    quoteCurrency: String,
+                    quoteDate: String,
+                    entryQuote: Number,
+                    entryQuoteCurrency: String,
                     perf7d: Number,
                     perf1y: Number,
                     perf7dPercent: Number,
@@ -41,15 +41,15 @@ const portfolioSchema = new mongoose.Schema({
                     debtEquity: Number,
                     country: String,
                     industry: String,
-                    score: Number//? -> finnHub reccomendation trends, for 10 biggest position, average of score multiplied with value, sum divided with total amount of reccomendations
+                    score: Number
                 },
                 qty: Number,// = quantityNominal?
                 quantityNominalType: String,
                 totalReturn: Number, //=profitOrLoss?
-                totalReturnPercent: Number//=?
+                totalReturnPercent: Number
             }
         ],
-        risk: {//?
+        risk: {
             countries: {},//any type can be in here
             segments: {},
             currency: {},
@@ -76,7 +76,7 @@ const portfolioSchema = new mongoose.Schema({
             debtEquity: Number,
             correlations: {}
         },
-        performance: [// cron scheduler time as parameter how often should it work
+        performance: [
             [Number]
         ]
         //DE000BASF111
@@ -85,7 +85,5 @@ const portfolioSchema = new mongoose.Schema({
 
 
 const Portfolio = mongoose.model('Portfolio', portfolioSchema)
-//const PortfolioOverview = mongoose.model('PortfolioOverview', portfolioOverviewSchema)
 
 module.exports = Portfolio
-//module.exports.portfolioOverview = PortfolioOverview

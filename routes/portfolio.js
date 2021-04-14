@@ -6,6 +6,8 @@ const mongoose = require('mongoose');
 const { ResourceGroups } = require('aws-sdk');
 const cookieParser = require('cookie-parser');
 const portfolioWorkers = require('../workers/portfolio_worker')
+const stockDetailedAnalysisModel = require('../models/stockDetailedAnalysis');
+
 
 const secret = require('../secret/secret')();
 const dotenv = require('dotenv');
@@ -51,60 +53,6 @@ const cron = require("node-cron");
 // });
 
 
-const stockMock1 = {
-    stock: {
-        //id: Number?
-        //accountId?
-        isin: "DE000A1PG979",
-        wkn: "A1PG97",
-        symbol: "AEE",
-        name: "Ameren Corporation",
-        price: 83.84, //=marketValue?
-        marketValueCurrency: "USD",
-        quote: 81.13,
-        quoteCurrency: "USD",
-        quoteDate: "Mon Apr 05 2021 17:55:14 GMT+0300 (GMT+03:00)",
-        entryQuote: 66.98,
-        entryQuoteCurrency: "USD",
-        perf7d: 0.993, //?
-        perf1y: 1.032, //?
-        country: "USA",
-        industry: "Utilities-Regulated Electric",
-        score: 0 //? -> finnHub reccomendation trends, for 10 biggest position, average of score multiplied with value, sum divided with total amount of reccomendations
-    },
-    qty: 2, // = quantityNominal?
-    quantityNominalType: "UNIT",
-    totalReturn: 10, //=profitOrLoss?
-    totalReturnPercent: 5 //=?
-}
-
-const stockMock2 = {
-    stock: {
-        //id: Number?
-        //accountId?
-        isin: "?",
-        wkn: "?",
-        symbol: "CCI",
-        name: "Crown Castle International Corp. (REIT)",
-        price: 175.26, //=marketValue?
-        marketValueCurrency: "EUR",
-        quote: 176.69,
-        quoteCurrency: "EUR",
-        quoteDate: "Mon Apr 05 2021 17:57:32 GMT+0300 (GMT+03:00)",
-        entryQuote: 74.2383,
-        entryQuoteCurrency: "EUR",
-        perf7d: 1.042, //?
-        perf1y: 1.081, //?
-        country: "USA",
-        industry: "REIT-Specialty",
-        score: 0 //? -> finnHub reccomendation trends, for 10 biggest position, average of score multiplied with value, sum divided with total amount of reccomendations
-    },
-    qty: 20, // = quantityNominal?
-    quantityNominalType: "UNIT",
-    totalReturn: 5, //=profitOrLoss?
-    totalReturnPercent: 1 //=?
-}
-
 // what percent nr1 is in realtion to nr2
 const percent = (nr1, nr2) => {
     if (nr1 && nr2 && !isNaN(nr1) && !isNaN(nr2))
@@ -143,8 +91,6 @@ const newStock = async (symbol, qty) => {
     var stock = stockArray[0]
     if (!stock) {
         stock = {
-            //id: Number?
-            //accountId?
             "isin": "?",
             "wkn": "?",
             "symbol": symbol,
@@ -167,33 +113,37 @@ const newStock = async (symbol, qty) => {
             "score": 0
         }
     }
+    var detailedAnalysis = await stockDetailedAnalysisModel.findOne({"symbol": stock.symbol})
+    if (!detailedAnalysis) {
+        detailedAnalysis = {
+            "averageGoal": 0 
+        }
+    }
     var result = {
         "stock": {
-            //id: Number?
-            //accountId?
             "isin": stock.isin,
             "wkn": stock.wkn,
             "symbol": stock.symbol,
             "name": stock.name,
             "price": stock.price,
             "marketValueCurrency": stock.currency,
-            "quote": stock.price, //TODO
-            "quoteCurrency": stock.currency, //TODO
-            "quoteDate": stock.date, //TODO
-            "entryQuote": stock.price, //TODO (=quote)
-            "entryQuoteCurrency": stock.currency, //TODO
+            "quote": stock.price, 
+            "quoteCurrency": stock.currency, 
+            "quoteDate": stock.date,
+            "entryQuote": stock.price, 
+            "entryQuoteCurrency": stock.currency, 
             "perf7d": stock.per7d,
             "perf1y": stock.per365d,
             "perf7dPercent": percent(stock.per7d, (stock.price * qty)),
             "perf1yPercent": percent(stock.per365d, (stock.price * qty)),
             "country": stock.country,
             "industry": stock.industry,
-            "score": 0 //TODO-> finnHub reccomendation trends, for 10 biggest position, average of score multiplied with value, sum divided with total amount of reccomendations
+            "score": detailedAnalysis.averageGoal
         },
-        "qty": qty, // = quantityNominal?
+        "qty": qty,
         "quantityNominalType": "UNIT",
-        "totalReturn": 0, //=profitOrLoss?
-        "totalReturnPercent": 0 //=?
+        "totalReturn": 0, 
+        "totalReturnPercent": 0 
     }
     return result;
 }
@@ -247,7 +197,7 @@ router.get('/details/:id', passport.authenticate('jwt', { session: false }), (re
 });
 
 
-// TODO: implement something which calculates the performance every day
+
 router.get('/performance/:id', passport.authenticate('jwt', { session: false }), function(req, res) {
     var id = req.params.id;
     var response = {};
