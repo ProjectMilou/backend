@@ -569,16 +569,16 @@ router.post('/duplicate/:id', passport.authenticate('jwt', { session: false }), 
 
 
 
-router.get('/stock/:isin', passport.authenticate('jwt', { session: false }), (req, res) => { // get portfolioId, name, qty of stock
+router.get('/stock/:isin', passport.authenticate('jwt', { session: false }), (req, res) => { // get portfolioId, name, virtual, qty of stock
     var isin = req.params.isin;
 
     var response = {};
     //? = %3F
-    Portfolio.find(query(req.user.id, isin), 'id portfolio.overview.name portfolio.positions', function (err, portf) {
+    Portfolio.find({ "userId": req.user.id }, 'id portfolio.overview.name portfolio.overview.virtual portfolio.positions', function (err, portf) {
         if (err) {
             handle_database_error(res, err)
         } else {
-            response.portfolios = portf.map(({ id: pfId, portfolio: { overview: { name: pfName }, positions: arrayStocks } }) => {
+            response.portfolios = portf.map(({ id: pfId, portfolio: { overview: { name: pfName, virtual: pfVirtual }, positions: arrayStocks } }) => {
                 var positionsWithCurrentISIN = arrayStocks.filter((position) => {
                     return idBelongsToThisPosition(isin, position)
                 }) // the resulting array should have length 1
@@ -591,6 +591,7 @@ router.get('/stock/:isin', passport.authenticate('jwt', { session: false }), (re
                 var result = {
                     "id": pfId,
                     "name": pfName,
+                    "virtual": pfVirtual,
                     "qty": qty
                 };
                 return result;
