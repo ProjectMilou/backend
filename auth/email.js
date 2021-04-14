@@ -12,7 +12,6 @@ const SES_CONFIG = {
 const AWS_SES = new AWS.SES(SES_CONFIG);
 
 let  sendConfirmationEmail =  (recipientEmail,id, confirmationCode) =>{
-    //TODO: set up params
     var templateData = {};
     templateData.id = id;
     templateData.confirmationCode= confirmationCode;

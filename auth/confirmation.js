@@ -19,7 +19,7 @@ const startConfirmationProcess = async (user) => {
     const confirmationToken = await userToken.token;
 
     // send email with token
-    // await sendConfirmationEmail(userEmail,userId,confirmationToken);
+    await sendConfirmationEmail(userEmail,userId,confirmationToken);
 }
 
 const startResetProcess = async (email) => {
@@ -41,7 +41,7 @@ const startResetProcess = async (email) => {
     const confirmationToken = await userToken.token;
 
     // send email with token
-    // await sendPasswordResetEmail(email,userId,userName,confirmationToken);
+    await sendPasswordResetEmail(email,userId,userName,confirmationToken);
     return true;
 }
 
