@@ -23,7 +23,7 @@ const init = async () => {
     const HOST = '0.0.0.0';
     const app = express();
 
-    cron.schedule("30 1 * * *", () => {
+    cron.schedule("50 1 * * *", () => {
         stockWorkers.updateAllStocks()
     }, {
         timezone: "Europe/Berlin"
