@@ -841,6 +841,9 @@
  *     - portfolio
  *     summary: Get details of portfolio
  *     description: Gets portfolio details including key figures, scores and positions.
+ *                      
+ *                      The currency of the price of the single stocks is the currency specified inside of the "stock" parameter.
+ *                      The currency of the portfolio fields "totalReturn", "value" and "perf7d/perf1y" are always in EUR.
  *     operationId: getPortfolio
  *     produces:
  *     - application/json

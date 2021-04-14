@@ -364,8 +364,6 @@ const modifyPortfolio = async (portfolio, positionId, qty) => {
         return idBelongsToThisPosition(positionId, position)
     })
     if (pos) { // if present
-        var oldstockvalue = pos.stock.price * pos.qty
-        portfolio.portfolio.overview.value -= oldstockvalue
         if (qty == 0) {
             // delete position from portfolio
             for (var i = 0; i < positions.length; i++) {
@@ -375,8 +373,6 @@ const modifyPortfolio = async (portfolio, positionId, qty) => {
             }
         } else {
             // update position of portfolio
-            var newstockvalue = pos.stock.price * qty
-            portfolio.portfolio.overview.value += newstockvalue
             pos.qty = qty
         }
     } else if (qty != 0) {
@@ -384,7 +380,6 @@ const modifyPortfolio = async (portfolio, positionId, qty) => {
         var stock = await newStock(positionId, qty)
         if (stock.stock.country != "?") {
             positions.push(stock)
-            portfolio.portfolio.overview.value += stock.stock.price * stock.qty
         } else {
             validPosition = false
         }

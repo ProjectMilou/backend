@@ -7,6 +7,15 @@ const stockTimeSeries = require('../data-analytics/dynamic_data/stock-time-serie
 const stockModel = require("../models/stock");
 const stockDetailedAnalysisModel = require('../models/stockDetailedAnalysis');
 
+const getExchangeRate = (from_currency, to_currency) => {//from currency would be "base" I guess
+    //TODO get information from Alpha Vantage or ratesapi.io
+    return 1;
+}
+
+const toEur = (money, currency) => {
+    var exchangeRate = getExchangeRate(currency, "EUR")
+    return money * exchangeRate
+}
 
 const percent = (nr1, nr2) => {
     if (nr1 && nr2 && !isNaN(nr1) && !isNaN(nr2))
@@ -92,7 +101,8 @@ async function updateStock(position) {
 async function updateStockWhenModifed(position) {
     await updateStock(position)
     //entryQuote is the price of the Stock at buy time, therefore it should only be changed when we modify it, not when the cronjob happens
-    position.stock.entryQuote = position.stock.quote
+    // no wait it should only be changed when a new stock is added
+    //position.stock.entryQuote = position.stock.quote
 }
 
 async function updateStockCronjob(position) {
@@ -127,14 +137,14 @@ async function updatePortfolio(portfolio) {
             "correlations": {}
         }
     } else {
-        overview.value = portfolio.portfolio.positions.map(({ stock: { price: price }, qty: qty }) => returnValueIfDefined(price * qty)).reduce((a, b) => a + b, 0)
+        overview.value = portfolio.portfolio.positions.map(({ stock: { price: price, marketValueCurrency: currency }, qty: qty }) => returnValueIfDefined(toEur(price, currency) * qty)).reduce((a, b) => a + b, 0)
         if (overview.value) {
-            overview.score = portfolio.portfolio.positions.map(({ stock: { price: price, score: score }, qty: qty }) => returnValueIfDefined(price * qty * score)).reduce((a, b) => a + b, 0) / (overview.value)
+            overview.score = portfolio.portfolio.positions.map(({ stock: { price: price, score: score }, qty: qty }) => returnValueIfDefined(toEur(price) * qty * score)).reduce((a, b) => a + b, 0) / (overview.value)
         } else {
             overview.score = 0
         }
-        overview.perf7d = portfolio.portfolio.positions.map(({ stock: { perf7d: performance } }) => returnValueIfDefined(performance)).reduce((a, b) => a + b, 0)
-        overview.perf1y = portfolio.portfolio.positions.map(({ stock: { perf1y: performance } }) => returnValueIfDefined(performance)).reduce((a, b) => a + b, 0)
+        overview.perf7d = portfolio.portfolio.positions.map(({ stock: { perf7d: performance } }) => toEur(returnValueIfDefined(performance))).reduce((a, b) => a + b, 0)
+        overview.perf1y = portfolio.portfolio.positions.map(({ stock: { perf1y: performance } }) => toEur(returnValueIfDefined(performance))).reduce((a, b) => a + b, 0)
         overview.perf7dPercent = percent(overview.perf7d, overview.value)
         overview.perf1yPercent = percent(overview.perf1y, overview.value)
         //risk
@@ -183,7 +193,7 @@ async function updatePortfolio(portfolio) {
         pAnalytics.correlations = SDandCorr.correlations
 
         //others
-        portfolio.portfolio.totalReturn = portfolio.portfolio.positions.map(({ totalReturn: performance }) => performance).reduce((a, b) => a + b, 0)
+        portfolio.portfolio.totalReturn = portfolio.portfolio.positions.map(({ totalReturn: performance }) => toEur(performance)).reduce((a, b) => a + b, 0)
         portfolio.portfolio.totalReturnPercent = percent(portfolio.portfolio.totalReturn, overview.value)
         //TODO nextDividend: Number,//no data, maybe Alpha Vantage
     }
