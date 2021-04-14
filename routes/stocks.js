@@ -10,158 +10,6 @@ const keyFigureModel = require("../models/keyFigure");
 const balanceSheetModel = require("../models/balanceSheet");
 const fetch = require('node-fetch');
 
-const ibmStock = {
-    "symbol": "IBM",
-    "isin": "US4592001014",
-    "wkn": "851399",
-    "name": "International Business Machines Corporation",
-    "price": "175.29",
-    "per1d": "2.25",
-    "per7d": "1.52",
-    "per30d": "0.92",
-    "per365d": "0.71",
-    "marketCapitalization": "114263867392",
-    "analystTargetPrice": "137",
-    "valuation": "20.6803",
-    "growth": "1.5",
-    "div": "0.0508",
-    "currency": "USD",
-    "country": "USA",
-    "industry": "Consumer Electronics",
-    "picture": "https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg",
-    "date": "2021-03-23T18:25:43.511Z"
-}
-const appleStock = {
-    "symbol": "AAPL",
-    "isin": "US0378331005",
-    "wkn": "865985",
-    "name": "Apple Inc",
-    "price": "252.19",
-    "per1d": "1.79",
-    "per7d": "1.52",
-    "per30d": "0.92",
-    "per365d": "0.45",
-    "marketCapitalization": "172637867392",
-    "analystTargetPrice": "290.24",
-    "valuation": "27.6803",
-    "growth": "3.2",
-    "div": "0.1208",
-    "currency": "USD",
-    "country": "USA",
-    "industry": "Information Technology Services",
-    "picture": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
-    "date": "2021-03-23T18:25:43.511Z"
-}
-const sapStock = {
-    "symbol": "SAP",
-    "isin": "US0378331013",
-    "wkn": "865984",
-    "name": "SAP SE",
-    "price": "252.19",
-    "per1d": "1.79",
-    "per7d": "1.52",
-    "per30d": "0.92",
-    "per365d": "0.45",
-    "marketCapitalization": "172637867392",
-    "analystTargetPrice": "290.24",
-    "valuation": "27.6803",
-    "growth": "3.2",
-    "div": "0.1208",
-    "currency": "EUR",
-    "country": "Germany",
-    "industry": "Information Technology Services",
-    "picture": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/SAP_2011_logo.svg/800px-SAP_2011_logo.svg.png",
-    "date": "2021-03-23T18:25:43.511Z"
-}
-const microsoftStock = {
-    "symbol": "MSFT",
-    "isin": "US9278331005",
-    "wkn": "358331",
-    "name": "Microsoft Corporation",
-    "price": "278.19",
-    "per1d": "3.29",
-    "per7d": "1.12",
-    "per30d": "1.02",
-    "per365d": "0.97",
-    "marketCapitalization": "282737867392",
-    "analystTargetPrice": "290.24",
-    "valuation": "33.6803",
-    "growth": "3.2",
-    "div": "0.1208",
-    "currency": "USD",
-    "country": "USA",
-    "industry": "Software-Infrastructure",
-    "picture": "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
-    "date": "2021-03-23T18:25:43.511Z"
-}
-const morganStanleyStock = {
-    "symbol": "MS",
-    "isin": "US9383331005",
-    "wkn": "871985",
-    "name": "Morgan Stanley",
-    "price": "97.22",
-    "per1d": "1.19",
-    "per7d": "1.22",
-    "per30d": "0.75",
-    "per365d": "0.67",
-    "marketCapitalization": "23137867392",
-    "analystTargetPrice": "150.34",
-    "valuation": "33.2203",
-    "growth": "3.2",
-    "div": "0.518",
-    "currency": "USD",
-    "country": "USA",
-    "industry": "Capital Markets",
-    "picture": "https://upload.wikimedia.org/wikipedia/commons/3/34/Morgan_Stanley_Logo_1.svg",
-    "date": "2021-03-23T18:25:43.511Z"
-}
-
-const ibmStockDetails = {
-    "symbol": "IBM",
-    "intro": "International Business Machines Corporation provides integrated solutions and services worldwide.",
-    "founded": "2014",
-    "website": "ibm.com",
-    "fullTimeEmployees": "345900",
-    "address": "One New Orchard Road, Armonk, NY, United States, 10504",
-    "assembly": "2021-04-19"
-}
-const appleStockDetails = {
-    "symbol": "AAPL",
-    "intro": "Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide.",
-    "founded": "1988",
-    "website": "apple.com",
-    "fullTimeEmployees": "345900",
-    "address": "Adana Street, Washington, United States, 10504",
-    "assembly": "2021-04-19"
-}
-const microsoftStockDetails = {
-    "symbol": "MSFT",
-    "intro": "Microsoft Corporation develops, licenses, and supports software, services, devices, and solutions worldwide.",
-    "founded": "1992",
-    "website": "microsoft.com",
-    "fullTimeEmployees": "212900",
-    "address": "Kensel Street, Boston, United States, 10504",
-    "assembly": "2021-06-05"
-}
-const morganStanleyStockDetails = {
-    "symbol": "MS",
-    "intro": "Morgan Stanley, a financial holding company, provides various financial products and services to corporations, governments, financial institutions worldwide.",
-    "founded": "1935",
-    "website": "morganstanley.com",
-    "fullTimeEmployees": "142300",
-    "address": "One New Worshe Road, Armark, NY, United States, 10514",
-    "assembly": "2021-05-19"
-}
-const sapStockDetails = {
-    "symbol": "SAP",
-    "intro": "SAP, software services company",
-    "founded": "1935",
-    "website": "sap.com",
-    "fullTimeEmployees": "142300",
-    "address": "Walldorf, 10237, Germany",
-    "assembly": "2021-05-23"
-}
-
 const excludeFields = {
     _id: false,
     founded: false,
@@ -197,9 +45,6 @@ const listIncludeFields = {
 // fixme: stocks from database are reformated wrongly
 
 router.get('/list', async (req, res) => {
-    let response;
-    let isError = false;
-
     let currency = req.query.currency;
     let country = req.query.country;
     let industry = req.query.industry;
@@ -263,9 +108,6 @@ router.get('/list', async (req, res) => {
 });
 
 router.get('/search', async (req, res) => {
-    let response;
-    let isError = false;
-
     let searchString = req.query.id;
     let query = {};
     query["$or"] = [
@@ -281,9 +123,6 @@ router.get('/search', async (req, res) => {
 });
 
 router.get('/overview', async (req, res) => {
-    let response;
-    let isError = false;
-
     let symbol = req.query.id;
     const stock = await stockModel.find({ "symbol": symbol }, {
         _id: false,
@@ -298,9 +137,6 @@ router.get('/overview', async (req, res) => {
 });
 
 router.get('/details', async (req, res) => {
-    let response;
-    let isError = false;
-
     let symbol = req.query.id;
 
     const stock = await stockModel.find({ "symbol": symbol }, { _id: false });
@@ -453,70 +289,6 @@ router.get('/charts/dividend', async (req, res) => {
     }
 });
 
-
-// router.get('/charts/dividend', async (req, res) => {
-//     let id = req.query.id;
-//     let max = req.query.max;
-//
-//     let query = {};
-//     query["symbol"] = id;
-//     let stocks = await stockModel.find(query, '-_id');
-//     let name;
-//     try {
-//         name = stocks[0]["name"];
-//     } catch (e) {
-//         res.status(404).json({ "error": "STOCK_ID_INVALID" });
-//     }
-//
-//     let urlOverview = 'https://www.alphavantage.co/query?' +
-//         'function=OVERVIEW' +
-//         '&symbol=' + id +
-//         '&apikey=' + process.env.alpha_vantage_key;
-//
-//     let urlCashFlow = 'https://www.alphavantage.co/query?' +
-//         'function=CASH_FLOW' +
-//         '&symbol=' + id +
-//         '&apikey=' + process.env.alpha_vantage_key;
-//
-//     let settings = { method: "Get" };
-//
-//     if (!!id && !!max) {
-//         let dividendDate;
-//         let quota;
-//         let dataPoints = [];
-//
-//         await fetch(urlOverview, settings)
-//             .then(res => res.json())
-//             .then((json) => {
-//                 dividendDate = json['DividendDate'];
-//                 quota = json['PayoutRatio'];
-//             });
-//         await fetch(urlCashFlow, settings)
-//             .then(res => res.json())
-//             .then((json) => {
-//                 let annualReports = json['annualReports'];
-//                 let counter = 0;
-//                 !!annualReports && annualReports.forEach(annualReport => {
-//                     if (counter < 5) {
-//                         dataPoints.push(
-//                             {
-//                                 "date": annualReport['fiscalDateEnding'],
-//                                 "div": String(annualReport['dividendPayout'] / annualReport['netIncome'])
-//                             }
-//                         )
-//                     }
-//                     if (max !== 'true') counter++;
-//                 })
-//
-//             });
-//
-//         res.json({ "symbol" : id, "dataPoints": dataPoints, "date": dividendDate, "quota": quota });
-//     } else {
-//         res.status(404).json({ "error": "STOCK_ID_INVALID" });
-//     }
-//
-// });
-
 router.get('/news', async (req, res) => {
     var date = new Date();
     date.setDate(date.getDate() - 3);
@@ -599,33 +371,6 @@ router.get('/balanceSheet', async (req, res) => {
 
 });
 
-// router.get('/balanceSheet', async (req, res) => {
-//     var id = req.query.id;
-//
-//     let query = {};
-//     query["symbol"] = id;
-//     let stocks = await stockModel.find(query, '-_id');
-//     try {
-//         stocks[0]["name"];
-//     } catch (e) {
-//         res.status(404).json({ "error": "STOCK_ID_INVALID" });
-//     }
-//
-//     let url = 'https://www.alphavantage.co/query?function=BALANCE_SHEET' +
-//         '&symbol=' + id +
-//         '&apikey=' + process.env.alpha_vantage_key;
-//
-//     await fetch(url)
-//         .then(response => response.json())
-//         .then(data => {
-//             res.json(data);
-//         })
-//         .catch(err => {
-//             console.log(err);
-//             res.status(404).json(err);
-//         })
-// });
-
 router.get('/charts/key_figures', async (req, res) => {
     let id = req.query.id;
     let max = req.query.max;
@@ -659,47 +404,6 @@ router.get('/charts/key_figures', async (req, res) => {
     } else {
         res.json({ "error": "STOCK_ID_INVALID" })
     }
-
 });
-
-
-// router.get('/charts/key_figures', async (req, res) => {
-//     var id = req.query.id;
-//     var max = req.query.max;
-//
-//     let query = {};
-//     query["symbol"] = id;
-//     let stocks = await stockModel.find(query, '-_id');
-//     let name;
-//     try {
-//         name = stocks[0]["name"];
-//     } catch (e) {
-//         res.status(404).json({ "error": "STOCK_ID_INVALID" });
-//     }
-//
-//     let url = 'https://www.alphavantage.co/query?function=EARNINGS' +
-//         '&symbol=' + id +
-//         '&apikey=' + process.env.alpha_vantage_key;
-//
-//     await fetch(url)
-//         .then(response => response.json())
-//         .then(data => {
-//             let symbol = data["symbol"];
-//             let quarterlyEarnings = data["quarterlyEarnings"];
-//             let keyFigures;
-//
-//             if (max !== false) {
-//                 keyFigures = quarterlyEarnings.slice(0, 20);
-//             } else {
-//                 keyFigures = quarterlyEarnings;
-//             }
-//
-//             res.json({ "symbol": symbol, "keyFigures": keyFigures });
-//         })
-//         .catch(err => {
-//             console.log(err);
-//             res.status(404).json(err);
-//         })
-// });
 
 module.exports = router
