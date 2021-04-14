@@ -675,6 +675,8 @@
  *              type: string
  *          name:
  *              type: string
+ *          virtual:
+ *              type: boolean
  *          qty:
  *              type: number
  *  risk:
