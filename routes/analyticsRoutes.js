@@ -177,6 +177,7 @@ router.get('/backtest/:id', async (req, res) => {
         response.error="Portfolio with ID: " + id + " was not found!"
         return res.status(404).json(response)
     }
+    console.log(currPortfolio)
 
     const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
     const currBalanceSheetPerSymbol = await balanceSheets.getBalanceSheetForSymbols(currSymbols);

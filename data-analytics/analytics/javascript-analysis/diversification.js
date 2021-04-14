@@ -1,3 +1,6 @@
+
+const weight = require('./weighting')
+
 /**
  * Returns the distribution of a portfolio over different 
  * industries, countries, currencies, asset classes and sectors.
@@ -12,19 +15,7 @@
  * }} Diversification among different criterion
  */
 function getDiversification(portfolio, symbolCompanyOverview, namesToSymbols) {
-    let symbolsToQuantity = {};
-
-    let totalQuantity = 0;
-    portfolio.securities.forEach((element) => {
-        symbolsToQuantity[namesToSymbols[element.name]] =
-            element.quantityNominal;
-        totalQuantity += element.quantityNominal;
-    });
-
-    let lambda = 1 / totalQuantity;
-    Object.keys(symbolsToQuantity).forEach((symbol) => {
-        symbolsToQuantity[symbol] *= lambda
-    });
+    let symbolsToQuantity = weight.getWeightingForPortfolio(portfolio, namesToSymbols)
 
     let industries = {};
     let countries = {};

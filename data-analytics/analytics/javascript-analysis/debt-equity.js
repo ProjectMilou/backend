@@ -1,3 +1,6 @@
+
+const weight = require('./weighting')
+
 /**
  *  Debt/Equity = Total Liabilities / Total Shareholders Equity
  *  `WHERE`
@@ -9,19 +12,7 @@
  * the average debt/equity of the portfolio
  */
 function debtEquity(portfolio, balanceSheetPerSymbol, namesToSymbols) {
-    let symbolsToQuantity = {};
-
-    let totalQuantity = 0;
-    portfolio.securities.forEach((element) => {
-        symbolsToQuantity[namesToSymbols[element.name]] =
-            element.quantityNominal;
-        totalQuantity += element.quantityNominal;
-    });
-
-    let lambda = 1 / totalQuantity;
-    Object.keys(symbolsToQuantity).forEach((symbol) => {
-        symbolsToQuantity[symbol] *= lambda
-    });
+    let symbolsToQuantity = weight.getWeightingForPortfolio(portfolio, namesToSymbols)
 
     let results = {}
 

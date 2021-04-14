@@ -1,3 +1,5 @@
+const weight = require('./weighting')
+
 /**
  * Returns the average and the dividendyield in % of the company overview
  * regarding the quantity of stocks bought
@@ -12,18 +14,7 @@ function getDividendyield(portfolio, symbolCompanyOverview, namesToSymbols) {
     let dividendyield = {};
     let totalDividendyield = 0;
 
-    let symbolsToQuantity = {};
-    let totalQuantity = 0;
-    portfolio.securities.forEach((element) => {
-        symbolsToQuantity[namesToSymbols[element.name]] =
-            element.quantityNominal;
-        totalQuantity += element.quantityNominal;
-    });
-
-    let lambda = 1 / totalQuantity;
-    Object.keys(symbolsToQuantity).forEach((symbol) => {
-        symbolsToQuantity[symbol] *= lambda
-    });
+    let symbolsToQuantity = weight.getWeightingForPortfolio(portfolio, namesToSymbols)
 
     Object.keys(symbolCompanyOverview).forEach((symbol) => {
         let content = symbolCompanyOverview[symbol].DividendYield;
