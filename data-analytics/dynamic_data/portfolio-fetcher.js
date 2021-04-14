@@ -3,7 +3,7 @@ const Portfolio = require('../../models/portfolio');
 async function findPortfolioByID(id) {
     let returnedPortfolio;
     try {
-        returnedPortfolio = await Portfolio.findById(id).exec();
+        returnedPortfolio = await Portfolio.findOne({'id': id});
     } catch (err) {
         console.log(`ERROR: Portfolio with an id of ${id} was not found`)
         return undefined

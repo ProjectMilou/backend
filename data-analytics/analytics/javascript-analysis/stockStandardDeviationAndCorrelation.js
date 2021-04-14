@@ -96,8 +96,8 @@ function returnAnnual(portfolio, stocksData, namesToSymbols) {
 }
 
 function getCorrelationKey(stock1, stock2) {
-    if (stock1.isin < stock2.isin) return stock1.isin + ";" + stock2.isin;
-    else return stock2.isin + ";" + stock1.isin;
+    if (stock1.symbol < stock2.symbol) return stock1.symbol + ";" + stock2.symbol;
+    else return stock2.symbol + ";" + stock1.symbol;
 }
 
 exports.standardDeviationAndCorrelation = standardDeviationAndCorrelation;
