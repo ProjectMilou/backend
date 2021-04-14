@@ -139,12 +139,12 @@ async function updatePortfolio(portfolio) {
     } else {
         overview.value = portfolio.portfolio.positions.map(({ stock: { price: price, marketValueCurrency: currency }, qty: qty }) => returnValueIfDefined(toEur(price, currency) * qty)).reduce((a, b) => a + b, 0)
         if (overview.value) {
-            overview.score = portfolio.portfolio.positions.map(({ stock: { price: price, score: score }, qty: qty }) => returnValueIfDefined(toEur(price) * qty * score)).reduce((a, b) => a + b, 0) / (overview.value)
+            overview.score = portfolio.portfolio.positions.map(({ stock: { price: price, score: score, marketValueCurrency: currency }, qty: qty }) => returnValueIfDefined(toEur(price, currency) * qty * score)).reduce((a, b) => a + b, 0) / (overview.value)
         } else {
             overview.score = 0
         }
-        overview.perf7d = portfolio.portfolio.positions.map(({ stock: { perf7d: performance } }) => toEur(returnValueIfDefined(performance))).reduce((a, b) => a + b, 0)
-        overview.perf1y = portfolio.portfolio.positions.map(({ stock: { perf1y: performance } }) => toEur(returnValueIfDefined(performance))).reduce((a, b) => a + b, 0)
+        overview.perf7d = portfolio.portfolio.positions.map(({ stock: { perf7d: performance, marketValueCurrency: currency } }) => returnValueIfDefined(toEur(performance, currency))).reduce((a, b) => a + b, 0)
+        overview.perf1y = portfolio.portfolio.positions.map(({ stock: { perf1y: performance, marketValueCurrency: currency } }) => returnValueIfDefined(toEur(performance, currency))).reduce((a, b) => a + b, 0)
         overview.perf7dPercent = percent(overview.perf7d, overview.value)
         overview.perf1yPercent = percent(overview.perf1y, overview.value)
         //risk
@@ -193,7 +193,7 @@ async function updatePortfolio(portfolio) {
         pAnalytics.correlations = SDandCorr.correlations
 
         //others
-        portfolio.portfolio.totalReturn = portfolio.portfolio.positions.map(({ totalReturn: performance }) => toEur(performance)).reduce((a, b) => a + b, 0)
+        portfolio.portfolio.totalReturn = portfolio.portfolio.positions.map(({ stock: { marketValueCurrency: currency }, totalReturn: performance }) => returnValueIfDefined(toEur(performance, currency))).reduce((a, b) => a + b, 0)
         portfolio.portfolio.totalReturnPercent = percent(portfolio.portfolio.totalReturn, overview.value)
         //TODO nextDividend: Number,//no data, maybe Alpha Vantage
     }
