@@ -4,7 +4,7 @@ This is the repository for the backend which powers [Milou](api.milou.io/api-doc
 running on an [Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/) environment on AWS. 
 It includes a MongoDB database 
 connection and can be interfaced via HTTPS requests. It is also fetching from different 
-financial apis such as [Alpha Vantage](https://www.alphavantage.co/), [finnHub](https://finnhub.io/) and [newsAPI](https://newsapi.org/) 
+financial apis such as [Alpha Vantage](https://www.alphavantage.co/), [finnHub](https://finnhub.io/), [benzinga](https://benzinga.com/) and [newsAPI](https://newsapi.org/) 
 to retrieve information/news about stocks and companies.
 Furthermore, [finAPI](https://www.finapi.io/?gclid=Cj0KCQjw38-DBhDpARIsADJ3kjnOQGANlF8mcGFtSLsq282GzMtaaJbcH2X7xnKWLfNM-PJck63tdHwaAofPEALw_wcB) 
 is used to enable users to connect their bank-accounts, which allows 
