@@ -5,6 +5,7 @@ const portfolioFetcher = require('../data-analytics/dynamic_data/portfolio-fetch
 const companyOverviews = require('../data-analytics/dynamic_data/company-overviews');
 const stockTimeSeries = require('../data-analytics/dynamic_data/stock-time-series');
 const balanceSheets = require('../data-analytics/dynamic_data/balance-sheets');
+const portfolioGenerator = require('../data-analytics/dynamic_data/portfolio-generator');
 
 const router = express.Router();
 
@@ -185,6 +186,30 @@ router.get('/backtest/:id', async (req, res) => {
     }
     const analyzedData = analytics.calculateDebtEquity(currPortfolio, currBalanceSheetPerSymbol);
     response.success= analyzedData;
+    return res.json(response)
+})
+
+router.get('/risk/:symbol', async (req, res) => {
+    let response = {error: "", success: {}};
+    const symbol = req.params.symbol;
+    const currSymbols = [symbol]
+
+    const currStocksData = await stockTimeSeries.getStocksDataForSymbols(currSymbols);
+    if(!currStocksData) {
+        response.error = "No stock time series data for " + symbol
+        return res.status(404).json(response)
+    }
+
+    const currPortfolio = await portfolioGenerator.generatePortfolioForSymbol(symbol);
+
+    const analyzedData = analytics.calculateSDAndCorrelationAndVolatility(currPortfolio, currStocksData)
+    const result = {
+        volatility: 0,
+        averageMarketVolatility: 0.15
+    }
+    result.volatility = analyzedData.volatility[Object.keys(analyzedData.volatility)[0]]
+    response.success = result;
+    
     return res.json(response)
 })
 

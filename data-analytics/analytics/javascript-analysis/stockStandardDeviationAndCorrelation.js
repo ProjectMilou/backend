@@ -50,7 +50,7 @@ function standardDeviationAndCorrelation(portfolio, stocksData, namesToSymbols) 
 
     let volatility = {};
     portfolio.securities.forEach((stock) => {
-        volatility[stock.name] = stats.stdev(valuesOfStock[stock.name]) * Math.sqrt(252);
+        volatility[stock.symbol] = stats.stdev(valuesOfStock[stock.name]) * Math.sqrt(252);
     });
 
     const standardDeviation = backtesting.standardDeviation(portfolio, stocksData, namesToSymbols);
