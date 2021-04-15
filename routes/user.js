@@ -7,6 +7,8 @@ const UserTokenModel = require ("../models/userToken")
 const {hash, encrypt, decrypt} = require("../encryption/encryption");
 const finAPI = require('../models/finAPI');
 const confirmation = require ('../auth/confirmation');
+const {refreshPortfolios} = require("./portfolio");
+const {refreshBankConnections} = require("./portfolio");
 
 const router = express.Router();
 
@@ -576,9 +578,10 @@ router.put('/reset/change/:id/:token', async (req, res) => {
  *                  description:
  *                      OK. Matched banks are shown.
  */
-// todo filter!
-// todo add schema, add example for 200 response!
 router.get('/bank/search/:searchString',async (req, res) => {
+
+    // todo use aiinas implementation
+
     const searchString = req.params.searchString;
     const banks = await finAPI.searchBanks(searchString);
     res.status(200).send(banks);
@@ -616,8 +619,6 @@ router.get('/bank/search/:searchString',async (req, res) => {
  *
  */
 router.post('/bank/connections/add/:bankId',passport.authenticate('jwt', {session: false}), async (req, res) => {
-    // todo should be redirected?
-
     const bankId = req.params.bankId;
     const user = req.user;
     const finResponse = await finAPI.importBankConnection(user, bankId)
@@ -641,11 +642,18 @@ router.post('/bank/connections/add/:bankId',passport.authenticate('jwt', {sessio
  *            - bearerAuth: []
  *
  */
+
 // get bankconnections
 router.get('/bank/connections',passport.authenticate('jwt', {session: false}), async (req, res) => {
+
+    // todo refresh the bankconnections of the user in the database
+    // todo return the bank-connections
+
+    /*
     const user = req.user;
     const finResponse = await finAPI.getAllBankConnections(user)
     res.send(finResponse);
+     */
 });
 
 /**
@@ -666,12 +674,27 @@ router.get('/bank/connections',passport.authenticate('jwt', {session: false}), a
  *          security:
  *            - bearerAuth: []
  */
-// getSecurities todo (?) what used for (?)
-router.get('/securities',passport.authenticate('jwt', {session: false}), async (req, res) => {
+// getSecurities
+router.get('/bank/refresh',passport.authenticate('jwt', {session: false}), async (req, res) => {
+
+    const userId = req.user._id;
+    await refreshBankConnections(userId);
+    await refreshPortfolios(userId);
+
+    res.status(200).json("User-related bank information successfully updated.")
+    /*
     const user = req.user;
     const finResponse = await finAPI.getSecurities(user)
     res.send(finResponse);
+     */
 });
+
+// todo: /user/bank_connections/refresh
+
+// todo: /user/portfolio/refresh
+
+
+
 
 /**
  * @swagger
@@ -690,12 +713,8 @@ router.get('/securities',passport.authenticate('jwt', {session: false}), async (
  *            - bearerAuth: []
  */
 // delete bankConnection by id
-// todo delete all connected portfolios from our database as well
 router.delete('/bank/connections/:id',passport.authenticate('jwt', {session: false}), async (req, res) => {
-    const user = req.user;
-    const bankConnectionId = params.id;
-    await finAPI.deleteOneBankConnection(user, bankConnectionId);
-    res.status(200).json({"message": "deleted bank connection " + bankConnectionId})
+    // todo: aiina please insert your code here
 });
 
 /**
@@ -720,9 +739,7 @@ router.delete('/bank/connections/:id',passport.authenticate('jwt', {session: fal
 // delete all bankConnections
 // todo delete all connected portfolios from our database as well
 router.delete('/bank/connections',passport.authenticate('jwt', {session: false}), async (req, res) => {
-    const user = req.user;
-    await finAPI.deleteAllBankConnections(user)
-    res.status(200).json({"message": "deleted all bank connection"});
+    // todo: aiina please insert your code here
 });
 
 /**
@@ -756,12 +773,17 @@ router.delete('/profile', passport.authenticate('jwt', {session: false}),  async
     // todo: delete portfolios
 
     try{
+        // todo aiina put your code here!
+        // todo uncomment when last testing has begun
+        // todo delete virtual portfolios!
+        // await finAPI.deleteFinAPIUser(user);
+
+
         const user = await UserModel.findOne({_id: req.user.id});
         await UserModel.deleteOne({_id: req.user.id});
         await UserTokenModel.deleteMany({email: user.email});
 
-        // todo uncomment when last testing has begun
-        // await finAPI.deleteFinAPIUser(user);
+
 
         res.json("successfully deleted user").status(200);
     } catch(err){
