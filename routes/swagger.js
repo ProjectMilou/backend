@@ -1915,6 +1915,43 @@
  *    '400':
  *      description: Invalid
  *
+ * /stocks/finanzen?id={id}:
+ *  get:
+ *   summary: Get finanzen data.
+ *   description: Get finanzen data.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: symbol
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *       type: object
+ *       properties:
+ *        id:
+ *         type: string
+ *        first:
+ *         type: array
+ *         items:
+ *          type: string
+ *        second:
+ *         type: array
+ *         items:
+ *          type: string
+ *        third:
+ *         type: array
+ *         items:
+ *          type: string
+ *    '400':
+ *      description: Invalid
+ *
  *
  *
  * /analytics/backtest/{portfolioId}?fromDate={fromDate}&toDate={toDate}:
