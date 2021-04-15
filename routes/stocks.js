@@ -9,6 +9,7 @@ const dividendModel = require("../models/dividend");
 const keyFigureModel = require("../models/keyFigure");
 const balanceSheetModel = require("../models/balanceSheet");
 const incomeStatementModel = require("../models/incomeStatement");
+const cashFlowModel = require("../models/cashFlow");
 const fetch = require('node-fetch');
 
 const excludeFields = {
@@ -393,6 +394,36 @@ router.get('/incomeStatement', async (req, res) => {
             "symbol": id,
             "annualReports": incomeStatement[0]["annualReports"],
             "quarterlyReports": incomeStatement[0]["quarterlyReports"]
+        });
+    } else {
+        res.json({ "error": "STOCK_ID_INVALID" })
+    }
+});
+
+router.get('/cashFlow', async (req, res) => {
+    let id = req.query.id;
+    let isExist = false;
+
+    let query = {};
+    query["symbol"] = id;
+    let stocks = await stockModel.find(query, '-_id');
+    try {
+        stocks[0]["name"];
+        isExist = true;
+    } catch (e) {
+        isExist = false;
+        res.status(404).json({ "error": "STOCK_ID_INVALID" });
+    }
+
+    if (isExist) {
+        let cashFlow = await cashFlowModel.find({ "symbol": id }, {
+            symbol: false,
+            _id: false
+        });
+        res.json({
+            "symbol": id,
+            "annualReports": cashFlow[0]["annualReports"],
+            "quarterlyReports": cashFlow[0]["quarterlyReports"]
         });
     } else {
         res.json({ "error": "STOCK_ID_INVALID" })
