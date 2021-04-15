@@ -7,6 +7,7 @@ const stockTimeSeries = require('../data-analytics/dynamic_data/stock-time-serie
 const balanceSheets = require('../data-analytics/dynamic_data/balance-sheets');
 const portfolioGenerator = require('../data-analytics/dynamic_data/portfolio-generator');
 const KeyFigure = require('../models/keyFigure');
+const IncomeStatement = require('../models/incomeStatement');
 
 const router = express.Router();
 // TODO: Refactor http status codes
@@ -265,8 +266,18 @@ router.get('/treynorRatio/:id', async (req, res) => {
 router.get('/interestCoverage/:symbol', async (req, res) => {
     let response = {error: "", success: {}};
     const symbol = req.params.symbol;
+    
+    let incomeStatementData;
+    try {
+        incomeStatementData = await IncomeStatement.findOne({'symbol': symbol});
+    } catch (err) {
+        response.error = `Could not find a stock with symbol=${symbol}`
+        return res.status(400).json(response);
+    }
 
-    response.success = symbol
+    const analyzedData = analytics.calculateInterestCoverage(incomeStatementData)
+    response.success = analyzedData
+    
     return res.json(response)
 })
 
