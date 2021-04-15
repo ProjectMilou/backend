@@ -415,8 +415,6 @@
  *          $ref: '#/definitions/dataPointtt'
  *
  *
- *
- *
  *  annualReport:
  *    type: object
  *    properties:
@@ -500,7 +498,6 @@
  *        type: array
  *        items:
  *          $ref: '#/definitions/annualReport'
- *
  *
  *  quarterlyReport:
  *    type: object
@@ -586,9 +583,262 @@
  *        items:
  *          $ref: '#/definitions/quarterlyReport'
  *
+ *  incomeStatementAnnualReport:
+ *    type: object
+ *    properties:
+ *      fiscalDateEnding:
+ *        type: string
+ *      reportedCurrency:
+ *        type: string
+ *      grossProfit:
+ *        type: string
+ *      totalRevenue:
+ *        type: string
+ *      costOfRevenue:
+ *        type: string
+ *      costofGoodsAndServicesSold:
+ *        type: string
+ *      operatingIncome:
+ *        type: string
+ *      sellingGeneralAndAdministrative:
+ *        type: string
+ *      researchAndDevelopment:
+ *        type: string
+ *      operatingExpenses:
+ *        type: string
+ *      investmentIncomeNet:
+ *        type: string
+ *      netInterestIncome:
+ *        type: string
+ *      interestIncome:
+ *        type: string
+ *      interestExpense:
+ *        type: string
+ *      nonInterestIncome:
+ *        type: string
+ *      otherNonOperatingIncome:
+ *        type: string
+ *      depreciation:
+ *        type: string
+ *      depreciationAndAmortization:
+ *        type: string
+ *      incomeBeforeTax:
+ *        type: string
+ *      incomeTaxExpense:
+ *        type: string
+ *      interestAndDebtExpense:
+ *        type: string
+ *      netIncomeFromContinuingOperations:
+ *        type: string
+ *      comprehensiveIncomeNetOfTax:
+ *        type: string
+ *      ebit:
+ *        type: string
+ *      ebitda:
+ *        type: string
+ *      netIncome:
+ *        type: string
+ *
+ *  incomeStatementAnnualReports:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/incomeStatementAnnualReport'
+ *
+ *  incomeStatementQuarterlyReport:
+ *    type: object
+ *    properties:
+ *      fiscalDateEnding:
+ *        type: string
+ *      reportedCurrency:
+ *        type: string
+ *      grossProfit:
+ *        type: string
+ *      totalRevenue:
+ *        type: string
+ *      costOfRevenue:
+ *        type: string
+ *      costofGoodsAndServicesSold:
+ *        type: string
+ *      operatingIncome:
+ *        type: string
+ *      sellingGeneralAndAdministrative:
+ *        type: string
+ *      researchAndDevelopment:
+ *        type: string
+ *      operatingExpenses:
+ *        type: string
+ *      investmentIncomeNet:
+ *        type: string
+ *      netInterestIncome:
+ *        type: string
+ *      interestIncome:
+ *        type: string
+ *      interestExpense:
+ *        type: string
+ *      nonInterestIncome:
+ *        type: string
+ *      otherNonOperatingIncome:
+ *        type: string
+ *      depreciation:
+ *        type: string
+ *      depreciationAndAmortization:
+ *        type: string
+ *      incomeBeforeTax:
+ *        type: string
+ *      incomeTaxExpense:
+ *        type: string
+ *      interestAndDebtExpense:
+ *        type: string
+ *      netIncomeFromContinuingOperations:
+ *        type: string
+ *      comprehensiveIncomeNetOfTax:
+ *        type: string
+ *      ebit:
+ *        type: string
+ *      ebitda:
+ *        type: string
+ *      netIncome:
+ *        type: string
+ *
+ *  incomeStatementQuarterlyReports:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/incomeStatementQuarterlyReport'
  *
  *
+ *  cashFlowAnnualReport:
+ *    type: object
+ *    properties:
+ *      fiscalDateEnding:
+ *        type: string
+ *      reportedCurrency:
+ *        type: string
+ *      operatingCashflow:
+ *        type: string
+ *      paymentsForOperatingActivities:
+ *        type: string
+ *      proceedsFromOperatingActivities:
+ *        type: string
+ *      changeInOperatingLiabilities:
+ *        type: string
+ *      changeInOperatingAssets:
+ *        type: string
+ *      depreciationDepletionAndAmortization:
+ *        type: string
+ *      capitalExpenditures:
+ *        type: string
+ *      changeInReceivables:
+ *        type: string
+ *      changeInInventory:
+ *        type: string
+ *      profitLoss:
+ *        type: string
+ *      cashflowFromInvestment:
+ *        type: string
+ *      cashflowFromFinancing:
+ *        type: string
+ *      proceedsFromRepaymentsOfShortTermDebt:
+ *        type: string
+ *      paymentsForRepurchaseOfCommonStock:
+ *        type: string
+ *      paymentsForRepurchaseOfEquity:
+ *        type: string
+ *      paymentsForRepurchaseOfPreferredStock:
+ *        type: string
+ *      dividendPayout:
+ *        type: string
+ *      dividendPayoutCommonStock:
+ *        type: string
+ *      dividendPayoutPreferredStock:
+ *        type: string
+ *      proceedsFromIssuanceOfCommonStock:
+ *        type: string
+ *      proceedsFromIssuanceOfLongTermDebtAndCapitalSecuritiesNet:
+ *        type: string
+ *      proceedsFromIssuanceOfPreferredStock:
+ *        type: string
+ *      proceedsFromRepurchaseOfEquity:
+ *        type: string
+ *      proceedsFromSaleOfTreasuryStock:
+ *        type: string
+ *      changeInCashAndCashEquivalents:
+ *        type: string
+ *      changeInExchangeRate:
+ *        type: string
+ *      netIncome:
+ *        type: string
  *
+ *  cashFlowAnnualReports:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/cashFlowAnnualReport'
+ *
+ *  cashFlowQuarterlyReport:
+ *    type: object
+ *    properties:
+ *      fiscalDateEnding:
+ *        type: string
+ *      reportedCurrency:
+ *        type: string
+ *      operatingCashflow:
+ *        type: string
+ *      paymentsForOperatingActivities:
+ *        type: string
+ *      proceedsFromOperatingActivities:
+ *        type: string
+ *      changeInOperatingLiabilities:
+ *        type: string
+ *      changeInOperatingAssets:
+ *        type: string
+ *      depreciationDepletionAndAmortization:
+ *        type: string
+ *      capitalExpenditures:
+ *        type: string
+ *      changeInReceivables:
+ *        type: string
+ *      changeInInventory:
+ *        type: string
+ *      profitLoss:
+ *        type: string
+ *      cashflowFromInvestment:
+ *        type: string
+ *      cashflowFromFinancing:
+ *        type: string
+ *      proceedsFromRepaymentsOfShortTermDebt:
+ *        type: string
+ *      paymentsForRepurchaseOfCommonStock:
+ *        type: string
+ *      paymentsForRepurchaseOfEquity:
+ *        type: string
+ *      paymentsForRepurchaseOfPreferredStock:
+ *        type: string
+ *      dividendPayout:
+ *        type: string
+ *      dividendPayoutCommonStock:
+ *        type: string
+ *      dividendPayoutPreferredStock:
+ *        type: string
+ *      proceedsFromIssuanceOfCommonStock:
+ *        type: string
+ *      proceedsFromIssuanceOfLongTermDebtAndCapitalSecuritiesNet:
+ *        type: string
+ *      proceedsFromIssuanceOfPreferredStock:
+ *        type: string
+ *      proceedsFromRepurchaseOfEquity:
+ *        type: string
+ *      proceedsFromSaleOfTreasuryStock:
+ *        type: string
+ *      changeInCashAndCashEquivalents:
+ *        type: string
+ *      changeInExchangeRate:
+ *        type: string
+ *      netIncome:
+ *        type: string
+ *
+ *  cashFlowQuarterlyReports:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/cashFlowQuarterlyReport'
  *
  *  rating:
  *    type: object
@@ -1606,6 +1856,66 @@
  *         $ref: '#/definitions/quarterlyReports'
  *    '400':
  *      description: Invalid
+ *
+ * /stocks/incomeStatement?id={id}:
+ *  get:
+ *   summary: Get income statement.
+ *   description: Get income statement.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: symbol of a stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *       type : object
+ *       properties:
+ *        symbol:
+ *         type : string
+ *        annualReports:
+ *         $ref: '#/definitions/incomeStatementAnnualReports'
+ *        quarterlyReports:
+ *         $ref: '#/definitions/incomeStatementQuarterlyReports'
+ *    '400':
+ *      description: Invalid
+ *
+ * /stocks/cashFlow?id={id}:
+ *  get:
+ *   summary: Get cash flow.
+ *   description: Get cash flow.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: symbol of a stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *       type : object
+ *       properties:
+ *        symbol:
+ *         type : string
+ *        annualReports:
+ *         $ref: '#/definitions/cashFlowAnnualReports'
+ *        quarterlyReports:
+ *         $ref: '#/definitions/cashFlowQuarterlyReports'
+ *    '400':
+ *      description: Invalid
+ *
+ *
  *
  * /analytics/backtest/{portfolioId}?fromDate={fromDate}&toDate={toDate}:
  *  get:
