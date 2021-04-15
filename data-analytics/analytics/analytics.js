@@ -76,9 +76,9 @@ function calculateDebtEquity(portfolio, balanceSheetPerSymbol) {
     return DE.debtEquity(portfolio, balanceSheetPerSymbol, namesToSymbols);
 }
 
-function calculateKeyFigures(stocksData, keyFigures, fromDate, toDate) {
+function calculateKeyFigures(stocksData, keyFigures, balanceSheet, fromDate, toDate) {
     const filteredStocksData = filterStocksDataForBackTesting(stocksData, fromDate, toDate)
-    const peratios = keyfigures.getHistoricalPERatios(filteredStocksData, keyFigures)
+    const peratios = keyfigures.getHistoricalPERatios(filteredStocksData, keyFigures, balanceSheet)
     return peratios;
 }
 

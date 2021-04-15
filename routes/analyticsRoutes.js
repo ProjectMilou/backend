@@ -227,9 +227,15 @@ router.get('/keyfigures/:symbol', async (req, res) => {
         return res.status(404).json(response)
     }
 
-    let data;
+    const currBalanceSheetPerSymbol = await balanceSheets.getBalanceSheetForSymbols(currSymbols);
+    if(!currBalanceSheetPerSymbol) {
+        response.error = "No balance sheet data for some of the stocks"
+        return res.status(404).json(response)
+    }
+
+    let keyFigureData;
     try {
-        data = await KeyFigure.findOne({'symbol': symbol});
+        keyFigureData = await KeyFigure.findOne({'symbol': symbol});
     } catch (err) {
         response.error = `Could not find a stock with symbol=${symbol}`
         return res.status(401).json(response);
@@ -238,8 +244,9 @@ router.get('/keyfigures/:symbol', async (req, res) => {
     const toDate = new Date().setFullYear(today.getFullYear()-1)
     const fiveYearsAgo = new Date().setFullYear(today.getFullYear()-6)
 
-    
-    const result = analytics.calculateKeyFigures(currStocksData, data, fiveYearsAgo, toDate)
+
+    const result = analytics.calculateKeyFigures(currStocksData, keyFigureData,
+        currBalanceSheetPerSymbol[symbol], fiveYearsAgo, toDate)
     response.success = result;
     return res.json(response)
 })
