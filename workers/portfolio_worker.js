@@ -6,10 +6,32 @@ const analytics = require('../data-analytics/analytics/analytics');
 const stockTimeSeries = require('../data-analytics/dynamic_data/stock-time-series');
 const stockModel = require("../models/stock");
 const stockDetailedAnalysisModel = require('../models/stockDetailedAnalysis');
+const fetch = require('node-fetch');
 
-const getExchangeRate = (from_currency, to_currency) => {//from currency would be "base" I guess
-    //TODO get information from Alpha Vantage or ratesapi.io
-    return 1;
+const getExchangeRate = async(from_currency, to_currency) => { //from currency would be "base" I guess
+    let rate = 1;
+    if (from_currency != to_currency && from_currency !== undefined) {
+        var params = new URLSearchParams({
+            "base": from_currency,
+            "symbols": to_currency
+        });
+
+        const api_url = `https://api.ratesapi.io/api/latest?${params}`;
+
+        try {
+            const api_response = await fetch(api_url, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const json_response = await api_response.json();
+
+            rate = json_response.rates[to_currency];
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
+    return rate;
 }
 
 const toEur = (money, currency) => {
@@ -24,7 +46,7 @@ const percent = (nr1, nr2) => {
         return 0
 }
 
-const searchStock = async (searchString) => {
+const searchStock = async(searchString) => {
     let query = {};
     query["$or"] = [
         { "isin": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
@@ -61,8 +83,6 @@ function tofinAPIPortfolio(returnedPortfolio) {
     return reformattedPortfolio;
 }
 
-
-
 async function updateStock(position) {
     //search updated stock data in database
     var stockArray = await searchStock(position.stock.symbol);
@@ -75,7 +95,7 @@ async function updateStock(position) {
         position.stock.perf1y = stock.per365d
         position.stock.perf7dPercent = percent(stock.per7d, (stock.price * position.qty))
         position.stock.perf1yPercent = percent(stock.per365d, (stock.price * position.qty))
-        //volatility and debt equity is done in updatePortfolio()
+            //volatility and debt equity is done in updatePortfolio()
         var detailedAnalysis = await stockDetailedAnalysisModel.findOne({ "symbol": stock.symbol })
         if (detailedAnalysis) {
             position.stock.score = detailedAnalysis.averageGoal
@@ -99,10 +119,12 @@ async function updateStock(position) {
 }
 
 async function updateStockWhenModifed(position) {
-    await updateStock(position)
+    await updateStock(position);
+
     //entryQuote is the price of the Stock at buy time, therefore it should only be changed when we modify it, not when the cronjob happens
     // no wait it should only be changed when a new stock is added
     //position.stock.entryQuote = position.stock.quote
+
 }
 
 async function updateStockCronjob(position) {
@@ -147,7 +169,7 @@ async function updatePortfolio(portfolio) {
         overview.perf1y = portfolio.portfolio.positions.map(({ stock: { perf1y: performance, marketValueCurrency: currency } }) => returnValueIfDefined(toEur(performance, currency))).reduce((a, b) => a + b, 0)
         overview.perf7dPercent = percent(overview.perf7d, overview.value)
         overview.perf1yPercent = percent(overview.perf1y, overview.value)
-        //risk
+            //risk
         var currPortfolio = tofinAPIPortfolio(portfolio)
         var currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
         var currCompanyOverviews
@@ -155,6 +177,7 @@ async function updatePortfolio(portfolio) {
             currCompanyOverviews = await companyOverviews.getCompanyOverviewForSymbols(currSymbols);
         if (currCompanyOverviews) {
             var portfDiversification = diversification.calculateDiversification(currPortfolio, currCompanyOverviews)
+
             portfolio.portfolio.risk.countries = portfDiversification.countries
             portfolio.portfolio.risk.currency = portfDiversification.currencies
             portfolio.portfolio.risk.segments = portfDiversification.industries
@@ -181,30 +204,30 @@ async function updatePortfolio(portfolio) {
         if (!pAnalytics)
             pAnalytics = {}
         pAnalytics.volatility = SDandCorr.portfolioVolatility
-        //volatility of positions
+            //volatility of positions
         portfolio.portfolio.positions.forEach(position => {
             position.stock.volatility = returnValueIfDefined(SDandCorr.volatility[position.stock.name])
         });
         pAnalytics.standardDeviation = SDandCorr.standardDeviation
-        pAnalytics.sharpeRatio = 0//TODO
-        //TODO var debtEquity = analytics.calculateDebtEquity(currPortfolio)
+        pAnalytics.sharpeRatio = 0 //TODO
+            //TODO var debtEquity = analytics.calculateDebtEquity(currPortfolio)
         pAnalytics.debtEquity = 0
-        //TODO treynorRatio	
+            //TODO treynorRatio	
         pAnalytics.correlations = SDandCorr.correlations
 
         //others
         portfolio.portfolio.totalReturn = portfolio.portfolio.positions.map(({ stock: { marketValueCurrency: currency }, totalReturn: performance }) => returnValueIfDefined(toEur(performance, currency))).reduce((a, b) => a + b, 0)
         portfolio.portfolio.totalReturnPercent = percent(portfolio.portfolio.totalReturn, overview.value)
-        //TODO nextDividend: Number,//no data, maybe Alpha Vantage
+            //TODO nextDividend: Number,//no data, maybe Alpha Vantage
     }
 }
 
 async function updatePortfolioWhenModified(portfolio) {
     if (portfolio.portfolio.positions.length > 0)
-        // update all stocks
-        await portfolio.portfolio.positions.forEach(async (position) => {
-            await updateStockWhenModifed(position)
-        });
+    // update all stocks
+        await portfolio.portfolio.positions.forEach(async(position) => {
+        await updateStockWhenModifed(position)
+    });
 
     // update other values of portfolio
     await updatePortfolio(portfolio)
@@ -212,23 +235,27 @@ async function updatePortfolioWhenModified(portfolio) {
 
 async function updatePortfolioCronjob(portfolio) {
 
-    if (portfolio.portfolio.overview.virtual) {
-        //TODO import from finAPI, if real
+    if (!portfolio.portfolio.overview.virtual) {
+        updateFromFinApi(portfolio);
     }
 
     if (portfolio.portfolio.positions.length > 0)
-        // update all stocks
-        await portfolio.portfolio.positions.forEach(async (position) => {
-            await updateStockCronjob(position)
-        });
+    // update all stocks
+        await portfolio.portfolio.positions.forEach(async(position) => {
+        await updateStockCronjob(position)
+    });
 
     // update other values of portfolio
     await updatePortfolio(portfolio)
-    //performance
+        //performance
     var newDataPoint = [Date.now(), portfolio.portfolio.overview.value]
     portfolio.portfolio.performance.push(newDataPoint)
 
 
+
+}
+
+async function updateFromFinApi(portfolio) {
 
 }
 

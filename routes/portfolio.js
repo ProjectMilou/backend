@@ -7,7 +7,7 @@ const { ResourceGroups } = require('aws-sdk');
 const cookieParser = require('cookie-parser');
 const portfolioWorkers = require('../workers/portfolio_worker')
 const stockDetailedAnalysisModel = require('../models/stockDetailedAnalysis');
-
+const stockModel = require("../models/stock")
 
 const secret = require('../secret/secret')();
 const dotenv = require('dotenv');
@@ -32,6 +32,8 @@ const handle_database_error = (res, err) => {
 
 //cronjob
 const cron = require("node-cron");
+const { json } = require('express');
+const { rawListeners } = require('../models/portfolio');
 
 // cron.schedule("39 17 * * *", () => {
 //     console.log("it's 21 20")
@@ -86,7 +88,7 @@ const emptyPortfolio = (portfolioId, userId, name) => {
 }
 
 
-const newStock = async (symbol, qty) => {
+const newStock = async(symbol, qty) => {
     var stockArray = await portfolioWorkers.searchStock(symbol);
     var stock = stockArray[0]
     if (!stock) {
@@ -113,10 +115,10 @@ const newStock = async (symbol, qty) => {
             "score": 0
         }
     }
-    var detailedAnalysis = await stockDetailedAnalysisModel.findOne({"symbol": stock.symbol})
+    var detailedAnalysis = await stockDetailedAnalysisModel.findOne({ "symbol": stock.symbol })
     if (!detailedAnalysis) {
         detailedAnalysis = {
-            "averageGoal": 0 
+            "averageGoal": 0
         }
     }
     var result = {
@@ -127,11 +129,11 @@ const newStock = async (symbol, qty) => {
             "name": stock.name,
             "price": stock.price,
             "marketValueCurrency": stock.currency,
-            "quote": stock.price, 
-            "quoteCurrency": stock.currency, 
+            "quote": stock.price,
+            "quoteCurrency": stock.currency,
             "quoteDate": stock.date,
-            "entryQuote": stock.price, 
-            "entryQuoteCurrency": stock.currency, 
+            "entryQuote": stock.price,
+            "entryQuoteCurrency": stock.currency,
             "perf7d": stock.per7d,
             "perf1y": stock.per365d,
             "perf7dPercent": percent(stock.per7d, (stock.price * qty)),
@@ -142,8 +144,8 @@ const newStock = async (symbol, qty) => {
         },
         "qty": qty,
         "quantityNominalType": "UNIT",
-        "totalReturn": 0, 
-        "totalReturnPercent": 0 
+        "totalReturn": 0,
+        "totalReturnPercent": 0
     }
     return result;
 }
@@ -182,7 +184,7 @@ router.get('/details/:id', passport.authenticate('jwt', { session: false }), (re
         res.status(404).json(response);
     } else {
         // find all data of portfolio
-        Portfolio.findOne({ "userId": req.user.id, "id": id }, { "portfolio.performance" : false, "portfolio.overview._id" : false }, (err, portf) => {
+        Portfolio.findOne({ "userId": req.user.id, "id": id }, { "portfolio.performance": false, "portfolio.overview._id": false }, (err, portf) => {
             if (err) {
                 handle_database_error(res, err)
             } else if (!portf) { //portfolio doesn't exist
@@ -243,7 +245,7 @@ router.post('/create', passport.authenticate('jwt', { session: false }), (req, r
                 res.status(400).json(response);
             } else {
                 var portfolio = new Portfolio(emptyPortfolio(portfolioId, req.user.id, name))
-                // save new portfolio in database
+                    // save new portfolio in database
                 portfolio.save(
                     function(err, portfolio) {
                         if (err) {
@@ -355,11 +357,11 @@ const query = (userId, positionId) => {
  * Otherwise, the position in the specified portfolio is updated to match the specified quantity.
  * The position which is changed is the one which has isin, wkn, symbol or name equal to positionId
  */
-const modifyPortfolio = async (portfolio, positionId, qty) => {
+const modifyPortfolio = async(portfolio, positionId, qty) => {
     var validPosition = true
-    // modify portfolio
+        // modify portfolio
     var positions = portfolio.portfolio.positions
-    // find the right position, if already present in portfolio
+        // find the right position, if already present in portfolio
     var pos = positions.find((position) => {
         return idBelongsToThisPosition(positionId, position)
     })
@@ -392,7 +394,7 @@ const modifyPortfolio = async (portfolio, positionId, qty) => {
 
 
 // if one of the modifications causes an error, nothing gets modified in the database
-router.put('/modify/:id', passport.authenticate('jwt', { session: false }), async (req, res) => {
+router.put('/modify/:id', passport.authenticate('jwt', { session: false }), async(req, res) => {
     // request: {"modifications": 
     //                  [{"isin": "string", -> could also be symbol, wkn or name
     //                  "qty": 0}]}
@@ -404,7 +406,7 @@ router.put('/modify/:id', passport.authenticate('jwt', { session: false }), asyn
         res.json(response)
     } else {
         // find Portfolio
-        await Portfolio.findOne({ "id": id, "userId": req.user.id }, async (err, portfolio) => {
+        await Portfolio.findOne({ "id": id, "userId": req.user.id }, async(err, portfolio) => {
             if (err) {
                 handle_database_error(res, err)
             } else if (!portfolio) {
@@ -435,7 +437,7 @@ router.put('/modify/:id', passport.authenticate('jwt', { session: false }), asyn
                 }
                 if (success) { // all modifications done
                     portfolio.save(
-                        function (err, portfolio) {
+                        function(err, portfolio) {
                             if (err) handle_database_error(res, err)
                             else
                                 res.json(response) // success
@@ -519,14 +521,14 @@ router.get('/stock/:isin', passport.authenticate('jwt', { session: false }), (re
 
     var response = {};
     //? = %3F
-    Portfolio.find({ "userId": req.user.id }, 'id portfolio.overview.name portfolio.overview.virtual portfolio.positions', function (err, portf) {
+    Portfolio.find({ "userId": req.user.id }, 'id portfolio.overview.name portfolio.overview.virtual portfolio.positions', function(err, portf) {
         if (err) {
             handle_database_error(res, err)
         } else {
             response.portfolios = portf.map(({ id: pfId, portfolio: { overview: { name: pfName, virtual: pfVirtual }, positions: arrayStocks } }) => {
                 var positionsWithCurrentISIN = arrayStocks.filter((position) => {
-                    return idBelongsToThisPosition(isin, position)
-                }) // the resulting array should have length 1
+                        return idBelongsToThisPosition(isin, position)
+                    }) // the resulting array should have length 1
                 var qty;
                 if (positionsWithCurrentISIN.length == 0) {
                     qty = 0
@@ -573,7 +575,7 @@ router.put('/stock/:isin', passport.authenticate('jwt', { session: false }), (re
                 res.status(404).json(response)
         } else {
             // find Portfolio
-            Portfolio.findOne({ "id": id, "userId": req.user.id }, async (err, portfolio) => {
+            Portfolio.findOne({ "id": id, "userId": req.user.id }, async(err, portfolio) => {
                 var currentIndex = j;
                 if (err) {
                     handle_database_error(res, err)
@@ -604,9 +606,9 @@ router.put('/stock/:isin', passport.authenticate('jwt', { session: false }), (re
                         }
                     }
                 }
-                if (success) { 
+                if (success) {
                     portfolio.save(
-                        function (err, portfolio) {
+                        function(err, portfolio) {
                             if (err) handle_database_error(res, err)
                             else if (!res.headersSent)
                                 res.json(response) // success
@@ -635,8 +637,8 @@ router.get('/token/:person', passport.authenticate('jwt', { session: false }), a
 
     // credentials taken from db 
     if (person == 'user') {
-        body.append("username", "milouTest");
-        body.append("password", "MilouRostlab");
+        body.append("username", req.user.finUserId);
+        body.append("password", req.user.finUserPassword);
         body.set("grant_type", "password");
     }
 
@@ -715,15 +717,33 @@ router.get('/deleteUser', passport.authenticate('jwt', { session: false }), asyn
 router.post('/searchBanks', passport.authenticate('jwt', { session: false }), async(req, res) => {
     let params = new URLSearchParams({
         'search': req.body.search, // main field, others if needed
-        'ids': req.body.ids, // integer array
-        'location': req.body.location, // Comma-separated list of two-letter country codes
-        'order': req.body.order // string array,e.g. order by 'id', 'name', 'blz', 'bic' or 'popularity'
+        'page': req.body.page,
+        'perPage': req.body.perPage
+            // 'isSupported': req.body.isSupported
     });
 
     if (params.get('ids') == "undefined") params.delete('ids');
-    if (params.get('location') == "undefined") params.delete('location');
-    if (params.get('order') == "undefined") params.delete('order');
-
+    if (params.get('perPage') == "undefined") params.delete('perPage');
+    if (params.get('page') == "undefined") params.delete('page');
+    // if (params.get('isSupported') == "undefined") params.delete('isSupported');
+    if (req.body.order !== undefined) {
+        var orderParams = new URLSearchParams({});
+        for (let order of req.body.order) {
+            orderParams.append("order[]", order);
+        }
+    }
+    if (req.body.location !== undefined) {
+        var locations = new URLSearchParams({});
+        for (let location of req.body.location) {
+            locations.append("location[]", location);
+        }
+    }
+    if (req.body.ids !== undefined) {
+        var ids = new URLSearchParams({});
+        for (let id of req.body.ids) {
+            ids.append("ids[]", id);
+        }
+    }
     const api_url = `https://sandbox.finapi.io/api/v1/banks?${params}`;
 
     try {
@@ -773,6 +793,33 @@ router.get('/importConnection/:bankId', passport.authenticate('jwt', { session: 
         res.send(err.message);
     }
 
+});
+
+router.get('/updateConnection', passport.authenticate('jwt', { session: false }), async(req, res) => {
+    let body = {
+        bankConnectionId: req.body.bankConnectionId,
+        storeSecrets: true
+    };
+
+    const api_url = `https://sandbox.finapi.io/api/v1/bankConnections/update`;
+
+    try {
+        const api_response = await fetch(api_url, {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': req.signedCookies.finapi_token
+            }
+        });
+
+        const json_response = await api_response;
+
+        res.json(json_response);
+
+    } catch (err) {
+        res.send(err.message);
+    }
 });
 
 router.post('/bankConnections/', passport.authenticate('jwt', { session: false }), async(req, res) => {
@@ -853,15 +900,27 @@ router.post('/securities', passport.authenticate('jwt', { session: false }), asy
     // if no body, all securities given
     let params = new URLSearchParams({
         'search': req.body.search, // isin, name, wkn contain
-        'order': req.body.order // string array,e.g. order by 'id', 'name', 'blz', 'bic' or 'popularity'
+        'accountIds': req.body.accountIds // integer array
     });
     if (params.get('search') == "undefined") params.delete('search');
-    if (params.get('order') == "undefined") params.delete('order');
+    if (params.get('accountIds') == "undefined") params.delete('accountIds');
 
     if (req.body.ids !== undefined) {
         var ids = new URLSearchParams({});
         for (let id of req.body.ids) {
             ids.append("ids[]", id);
+        }
+    }
+    if (req.body.order !== undefined) {
+        var orderParams = new URLSearchParams({});
+        for (let order of req.body.order) {
+            orderParams.append("order[]", order);
+        }
+    }
+    if (req.body.accountIds !== undefined) { // needed for separating accounts, otherwise gives ALL securities
+        var accountIds = new URLSearchParams({});
+        for (let accountId of req.body.accountIds) {
+            accountIds.append("accountIds[]", accountId);
         }
     }
 
@@ -887,157 +946,187 @@ router.post('/securities', passport.authenticate('jwt', { session: false }), asy
 });
 
 router.post('/saveAllSecurities', passport.authenticate('jwt', { session: false }), async(req, res) => {
-    var name = req.body.name;
-    var response = {};
+    const api_url = `https://sandbox.finapi.io/api/v1/securities`;
 
-    if (!name) {
-        response.error = "PORTFOLIO_NAME_INVALID";
-        res.status(400).json(response);
-    } else {
-        var portfolioId = new mongoose.Types.ObjectId();
-        Portfolio.findOne({ "userId": req.user.id, "portfolio.overview.name": name }).exec(async(err, result) => {
-            if (err) {
-                handle_database_error(res, err);
-            } else {
-                const api_url = `https://sandbox.finapi.io/api/v1/securities`;
+    try {
+        const api_response = await fetch(api_url, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': req.signedCookies.finapi_token
+            }
+        });
 
-                try {
-                    const api_response = await fetch(api_url, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': req.signedCookies.finapi_token
-                        }
-                    });
+        if (!api_response.ok) res.status = api_response.status;
 
-                    if (!api_response.ok) res.status = api_response.status;
+        const json_response = await api_response.json();
+        let securities = json_response.securities;
 
-                    const json_response = await api_response.json();
-
-                    var positions = [];
-                    var totalCount = 0;
-                    if (json_response.securities !== undefined) {
-                        positions = convertSecurities(json_response.securities);
-                        totalCount = json_response.paging.totalCount;
-                    }
-
-                    if (!result) {
-                        var portfolio = new Portfolio({
-                            "id": portfolioId,
-                            "userId": req.user.id,
-                            "portfolio": {
-                                "overview": {
-                                    "id": portfolioId,
-                                    "name": name,
-                                    "virtual": false,
-                                    "positionCount": totalCount,
-                                    "value": 0,
-                                    "score": 0,
-                                    "perf7d": 0,
-                                    "perf1y": 0,
-                                    "modified": 1617710040
-                                },
-                                "positions": positions,
-                                "risk": {
-                                    "countries": {
-                                        "count": 0,
-                                        "score": 0,
-                                        "warnings": []
-                                    },
-                                    "segments": {
-                                        "count": 0,
-                                        "score": 0,
-                                        "warnings": []
-                                    },
-                                    "currency": {
-                                        "count": 0,
-                                        "score": 0,
-                                        "warnings": []
-                                    }
-                                },
-                                "keyFigures": [{
-                                    "year": 0,
-                                    "pte": 0,
-                                    "ptb": 0,
-                                    "ptg": 0,
-                                    "eps": 0,
-                                    "div": 0,
-                                    "dividendPayoutRatio": 0
-                                }],
-                                "nextDividend": 0,
-                                "dividendPayoutRatio": 0,
-                                "totalReturn": 0,
-                                "totalReturnPercent": 0
-                            }
-                        });
-
-                        portfolio.save(
-                            function(error, portfolioRes) {
-                                if (error) handle_database_error(res, error)
-                                else {
-                                    res.json(portfolioRes);
-                                    console.log('saved successfully');
-                                }
-                            }
-                        );
-                    } else {
-                        Portfolio.findOneAndUpdate({ "portfolio.overview.name": name, "userId": req.user.id }, { "portfolio.positions": positions }, (error, portfolioRes) => {
-                            if (error) {
-                                handle_database_error(res, error2)
-                            } else {
-                                res.json(portfolioRes);
-                                console.log('updated successfully');
-                            }
-                        })
-                    }
-
-                } catch (error) {
-                    console.log(error.message);
-                }
+        if (securities.length > 0) {
+            for (var k in securities) {
+                await updateOrSave(req.user.id, securities[k], res);
             }
 
-        });
+        } else
+            res.status(404).json({ "error": "NO_SECURITIES_ERROR" });
 
+    } catch (error) {
+        console.log(error.message);
     }
+
 });
 
-// convert definitions of finapi into the mongodb schema, handling an array of securities 
-function convertSecurities(securities) {
-    var positions = [];
-    securities.forEach((item, i) => {
-        positions.push({
-            "stock": {
-                "isin": securities[i].isin,
-                "wkn": securities[i].wkn,
-                "symbol": "",
-                //  searchSymbol(securities[i].isin),
-                "name": securities[i].name,
-                "price": securities[i].marketValue,
-                "marketValueCurrency": securities[i].marketValueCurrency,
-                "quote": securities[i].quote,
-                "quoteCurrency": securities[i].quoteCurrency,
-                "quoteDate": securities[i].quoteDate,
-                "entryQuote": securities[i].entryQuote,
-                "entryQuoteCurrency": securities[i].entryQuoteCurrency,
-                "perf7d": 0,
-                "perf1y": 0,
-                "country": "USA",
-                "industry": "industry",
-                "score": 0
-            },
-            "qty": securities[i].quantityNominal,
-            "quantityNominalType": securities[i].quantityNominalType,
-            "totalReturn": 1,
-            "totalReturnPercent": 0
-        });
+async function updateOrSave(userId, security, res) {
+    Portfolio.findOne({ "userId": userId, "bankAccountId": security.accountId }).exec(async(err, result) => {
+        if (err) {
+            handle_database_error(res, err);
+        } else {
+            if (!result) {
+                var portfolioId = new mongoose.Types.ObjectId();
+
+                var portfolio = new Portfolio(await newPortfolio(portfolioId, userId, security));
+                portfolioWorkers.updatePortfolioWhenModified(portfolio);
+                portfolio.save(
+                    function(error, portfolioRes) {
+                        if (error) handle_database_error(res, error)
+                        else {
+                            res.json(portfolioRes);
+                            console.log('saved successfully');
+                        }
+                    }
+                );
+            } else {
+                let positions = await convertSecurity(security);
+
+                let stock = result.portfolio.positions.find((position) => {
+                    return security.isin == position.stock.isin
+                });
+
+                if (stock) {
+                    stock = positions;
+                    console.log("modified");
+                } else {
+                    result.portfolio.positions.push(positions)
+                    console.log("added");
+                }
+
+                portfolioWorkers.updatePortfolioWhenModified(result);
+                result.portfolio.overview.modified = Math.floor(Date.now() / 1000);
+
+                result.save(
+                    function(error, portfolioRes) {
+                        if (error) console.log(error)
+                        else {
+                            res.json(portfolioRes);
+                            console.log('updated successfully');
+                        }
+                    });
+            }
+
+
+        }
     });
-    return positions;
 }
 
-router.get('/searchSymbol/:isin', async(req, res) => {
+const newPortfolio = async(portfolioId, userId, security) => {
+    return {
+        "id": portfolioId,
+        "userId": userId,
+        "bankAccountId": security.accountId,
+        "portfolio": {
+            "overview": {
+                "id": portfolioId,
+                "name": "name",
+                "virtual": false,
+                "positionCount": 1,
+                "value": 0,
+                "score": 0,
+                "perf7d": 0,
+                "perf1y": 0,
+                "perf7dPercent": 0,
+                "perf1yPercent": 0,
+                "modified": Math.floor(Date.now() / 1000)
+            },
+            "positions": await convertSecurity(security),
+            "risk": {
+                "countries": {
+                    "count": 0,
+                    "score": 0,
+                    "warnings": []
+                },
+                "segments": {
+                    "count": 0,
+                    "score": 0,
+                    "warnings": []
+                },
+                "currency": {
+                    "count": 0,
+                    "score": 0,
+                    "warnings": []
+                }
+            },
+            "keyFigures": [{
+                "year": 0,
+                "pte": 0,
+                "ptb": 0,
+                "ptg": 0,
+                "eps": 0,
+                "div": 0,
+                "dividendPayoutRatio": 0
+            }],
+            "nextDividend": 0,
+            "totalReturn": 0,
+            "totalReturnPercent": 0,
+            "analytics": {
+                "volatility": 0,
+                "standardDeviation": 0,
+                "sharpeRatio": 0,
+                "treynorRatio": 0,
+                "debtEquity": 0,
+                "correlations": {}
+            },
+            "performance": [ // cron scheduler time as parameter how often should it work
+                [0]
+            ]
 
-    let isin = req.params.isin;
+        }
+    }
+}
 
-    const api_url = `https://finnhub.io/api/v1/search?${isin}`;
+// convert definitions of finapi into the mongodb schema, handling an array of securities 
+async function convertSecurity(security) {
+    return {
+        "stock": {
+            "isin": security.isin,
+            "wkn": security.wkn,
+            "symbol": await searchSymbol(security.isin, security.wkn),
+            "name": security.name,
+            "price": security.marketValue,
+            "marketValueCurrency": security.marketValueCurrency,
+            "quote": security.quote,
+            "quoteCurrency": security.quoteCurrency,
+            "quoteDate": security.quoteDate,
+            "entryQuote": security.entryQuote,
+            "entryQuoteCurrency": security.entryQuoteCurrency,
+            "perf7d": 0,
+            "perf1y": 0,
+            "perf7dPercent": 0,
+            "perf1yPercent": 0,
+            "volatility": 0,
+            "debtEquity": 0,
+            "country": "DE",
+            "industry": "",
+            "score": 0
+        },
+        "qty": security.quantityNominal,
+        "quantityNominalType": security.quantityNominalType,
+        "totalReturn": 1,
+        "totalReturnPercent": 0
+    }
+}
+
+const searchSymbol = async(isin, wkn) => {
+    const api_url = `https://finnhub.io/api/v1/search?q=${isin}`;
+    let symbol = "";
 
     try {
         const api_response = await fetch(api_url, {
@@ -1047,15 +1136,46 @@ router.get('/searchSymbol/:isin', async(req, res) => {
             }
         });
 
-        if (!api_response.ok) res.status = api_response.status;
+        let json_response = await api_response.json();
 
-        const json_response = await api_response.json();
-        res.json(json_response);
 
-    } catch (err) {
-        console.log(err.message);
-    }
+        if (json_response.count == 1) {
+            symbol = json_response.result[0].symbol;
 
+            stockModel.findOneAndUpdate({ symbol: symbol }, {
+                    $set: {
+                        "isin": isin,
+                        "wkn": wkn
+                    },
+                }, {
+                    // upsert: true,
+                    new: true
+                },
+                function(err, _stockInstance) {
+                    if (err)
+                        console.log(err)
+                });
+        }
+
+    } catch (err) { console.log(err) }
+
+    return symbol;
+}
+
+router.get('/searchSymbol/:isin', async(req, res) => {
+    let isin = req.params.isin;
+    const api_url = `https://finnhub.io/api/v1/search?q=${isin}`;
+
+    const api_response = await fetch(api_url, {
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Finnhub-Token': process.env.finnhub_key
+        }
+    });
+
+    let json_response = await api_response.json();
+    res.json(json_response);
 });
+
 
 module.exports = router;
