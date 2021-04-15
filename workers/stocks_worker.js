@@ -7,6 +7,7 @@ const stockAnalysisModel = require("../models/stockAnalysis");
 const stockDetailedAnalysisModel = require("../models/stockDetailedAnalysis");
 const balanceSheetModel = require("../models/balanceSheet");
 const incomeStatementModel = require("../models/incomeStatement");
+const cashFlowModel = require("../models/cashFlow");
 const db = require('../db/worker_index.js');
 dotenv.config();
 
@@ -24,16 +25,17 @@ module.exports.updateAllStocks = async function () {
 
     const startFetching = async () => {
         for await (const symbol of rl) {
-            console.log(symbol);
+            // console.log(symbol);
             // await getStockOverview(symbol, api_key_alphavantage);
             // await getTimeIntervalPerformance(symbol, api_key_alphavantage);
-            // await getAnalysis(symbol, api_key_finhub)
-            // await updateMcSize(symbol, api_key_alphavantage)
+            // await getAnalysis(symbol, api_key_finhub);
+            // await updateMcSize(symbol, api_key_alphavantage);
             // await getYearlyPerformance(symbol, api_key_alphavantage);
             // await getImage(symbol, api_key_finhub);
             // await getBalanceSheet(symbol, api_key_alphavantage);
-            // await getDetailedAnalysis(symbol, api_key_benzinga)
-            await getIncomeStatement(symbol, api_key_alphavantage)
+            // await getDetailedAnalysis(symbol, api_key_benzinga);
+            // await getIncomeStatement(symbol, api_key_alphavantage);
+            // await getCashFlow(symbol, api_key_alphavantage);
             await sleep(1500);
         }
         rl.close()
@@ -416,6 +418,35 @@ async function getIncomeStatement(symbol, api_key) {
         .then(response => response.json())
         .then(data => {
             let incomeStatement = incomeStatementModel.findOneAndUpdate(
+                { symbol: data['symbol'] },
+                {
+                    $set:
+                        {
+                            "annualReports": data['annualReports'],
+                            "quarterlyReports": data['quarterlyReports'],
+                        },
+                },
+                {
+                    upsert: true,
+                    new: true
+                },
+                function (err, _stockInstance) {
+                    if (err)
+                        console.log(err)
+                });
+        })
+        .catch(err => console.log(err))
+}
+
+async function getCashFlow(symbol, api_key) {
+    let url = 'https://www.alphavantage.co/query?function=CASH_FLOW' +
+        '&symbol=' + symbol +
+        '&apikey=' + api_key;
+
+    await fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            let cashFlow = cashFlowModel.findOneAndUpdate(
                 { symbol: data['symbol'] },
                 {
                     $set:
