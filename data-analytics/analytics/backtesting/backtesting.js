@@ -401,3 +401,4 @@ exports.sharpeRatio = sharpeRatio;
 exports.compoundAnnualGrowthRate = compoundAnnualGrowthRate;
 exports.getDaysAvailableInAll = getDaysAvailableInAll;
 exports.getRiskFreeRateOnDate = getRiskFreeRateOnDate;
+exports.getStocksDateAccordingToYears = getStocksDateAccordingToYears;

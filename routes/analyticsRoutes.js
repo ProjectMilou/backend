@@ -6,8 +6,10 @@ const companyOverviews = require('../data-analytics/dynamic_data/company-overvie
 const stockTimeSeries = require('../data-analytics/dynamic_data/stock-time-series');
 const balanceSheets = require('../data-analytics/dynamic_data/balance-sheets');
 const portfolioGenerator = require('../data-analytics/dynamic_data/portfolio-generator');
+const KeyFigure = require('../models/keyFigure');
 
 const router = express.Router();
+// TODO: Refactor http status codes
 
 router.get('/backtest/:id', async (req, res) => {
     let response = {error: "", success: {}};
@@ -211,6 +213,34 @@ router.get('/risk/:symbol', async (req, res) => {
     result.volatility = analyzedData.volatility[Object.keys(analyzedData.volatility)[0]]
     response.success = result;
     
+    return res.json(response)
+})
+
+router.get('/keyfigures/:symbol', async (req, res) => {
+    let response = {error: "", success: {}};
+    const symbol = req.params.symbol;
+    const currSymbols = [symbol]
+
+    const currStocksData = await stockTimeSeries.getStocksDataForSymbols(currSymbols);
+    if(!currStocksData) {
+        response.error = "No stock time series data for " + symbol
+        return res.status(404).json(response)
+    }
+
+    let data;
+    try {
+        data = await KeyFigure.findOne({'symbol': symbol});
+    } catch (err) {
+        response.error = `Could not find a stock with symbol=${symbol}`
+        return res.status(401).json(response);
+    }
+    const today = new Date()
+    const toDate = new Date().setFullYear(today.getFullYear()-1)
+    const fiveYearsAgo = new Date().setFullYear(today.getFullYear()-6)
+
+    
+    const result = analytics.calculateKeyFigures(currStocksData, data, fiveYearsAgo, toDate)
+    response.success = result;
     return res.json(response)
 })
 
