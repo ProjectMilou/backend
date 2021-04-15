@@ -4,23 +4,24 @@ function getHistoricalPERatios(stocksData, keyFigures, balanceSheet) {
     const symbol = Object.keys(stocksData)[0]
     const years = backtest.getStocksDateAccordingToYears(stocksData)
     const today = new Date()
-    const toDate = new Date().setFullYear(today.getFullYear()-1)
+    const toDate = new Date()
+    toDate.setFullYear(today.getFullYear()-1)
+    toDate.setMonth(11)
+    toDate.setDate(31)
     const fiveYearsAgo = new Date()
     fiveYearsAgo.setFullYear(today.getFullYear()-5)
-
     const results = []
     const keyFiguresArray = keyFigures["keyFigures"].reverse()
     for (const keyFigure of keyFiguresArray) {
+        
         const currDate = new Date(keyFigure.fiscalDateEnding)
         if (currDate >= fiveYearsAgo && currDate <= toDate && 
                 currDate.getMonth() === 11 && currDate.getDate() === 31) {
-            
             const latestDateOfAvailablePrice = years[currDate.getFullYear()][symbol][0]
             const latestPrice = stocksData[symbol][latestDateOfAvailablePrice]["4. close"]
-            
+
             // https://www.investopedia.com/terms/p/price-earningsratio.asp
             const peratio = latestPrice / keyFigure.reportedEPS
-            console.log (`${latestPrice}, ${keyFigure.reportedEPS}, ${currDate}`)
             let epsLastYear = 0
             
             if(currDate.getFullYear() === fiveYearsAgo.getFullYear()){
