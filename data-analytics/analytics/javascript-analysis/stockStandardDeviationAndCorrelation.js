@@ -54,7 +54,7 @@ function standardDeviationAndCorrelation(portfolio, stocksData, namesToSymbols) 
     });
 
     const standardDeviation = backtesting.standardDeviation(portfolio, stocksData, namesToSymbols);
-    const portfolioVolatility = standardDeviation * Math.sqrt(252);
+    const portfolioVolatility = (standardDeviation * Math.sqrt(252)) / 100;
     return AnnualizedVolatilityAndCorrelation = {
         volatility,
         correlations,

@@ -1607,7 +1607,7 @@
  *    '400':
  *      description: Invalid
  *
- * /analytics/backtest/{portfolioId}?{fromDate}&{toDate}:
+ * /analytics/backtest/{portfolioId}?fromDate={fromDate}&toDate={toDate}:
  *  get:
  *   description: Backtests a real or a virtual portfolio for a given period of time
  *   summary: Backtests a real or a virtual portfolio for a given period of time
@@ -1652,7 +1652,7 @@
  *   tags:
  *    - analytics
  *   parameters:
- *     - name: id
+ *     - name: portfolioId
  *       in: path
  *       description: ID of portfolio
  *       required: true
@@ -1672,7 +1672,7 @@
  *   tags:
  *    - analytics
  *   parameters:
- *     - name: id
+ *     - name: portfolioId
  *       in: path
  *       description: ID of portfolio
  *       required: true
@@ -1692,7 +1692,7 @@
  *   tags:
  *    - analytics
  *   parameters:
- *     - name: id
+ *     - name: portfolioId
  *       in: path
  *       description: ID of portfolio
  *       required: true
@@ -1712,7 +1712,7 @@
  *   tags:
  *    - analytics
  *   parameters:
- *     - name: id
+ *     - name: portfolioId
  *       in: path
  *       description: ID of portfolio
  *       required: true
@@ -1732,7 +1732,7 @@
  *   tags:
  *    - analytics
  *   parameters:
- *     - name: id
+ *     - name: portfolioId
  *       in: path
  *       description: ID of portfolio
  *       required: true
@@ -1752,7 +1752,7 @@
  *   tags:
  *    - analytics
  *   parameters:
- *     - name: id
+ *     - name: portfolioId
  *       in: path
  *       description: ID of portfolio
  *       required: true
@@ -1772,7 +1772,7 @@
  *   tags:
  *    - analytics
  *   parameters:
- *     - name: id
+ *     - name: portfolioId
  *       in: path
  *       description: ID of portfolio
  *       required: true
@@ -1782,4 +1782,43 @@
  *          description: Success.
  *      '404':
  *          description: Either portfolio ID is not correct or there is no data for the stocks
+ * /analytics/risk/{symbol}:
+ *  get:
+ *   description: Calculates the volatility of the stock and returns it. Also returns the average market volatility
+ *   summary: Calculates the volatility of the stock and returns it. Also returns the average market volatility
+ *   produces:
+ *      - application/json
+ *   tags:
+ *    - analytics
+ *   parameters:
+ *     - name: symbol
+ *       in: path
+ *       description: Symbol
+ *       required: true
+ *       type: string
+ *   responses:
+ *      '200':
+ *          description: Success.
+ *      '404':
+ *          description: There is no data for the stocks
+ * 
+ * /analytics/keyfigures/{symbol}:
+ *  get:
+ *   description: Calculates the PERatio, PEGRatio, PBRatio and EPS.
+ *   summary: Calculates the PERatio, PEGRatio, PBRatio and EPS.
+ *   produces:
+ *      - application/json
+ *   tags:
+ *    - analytics
+ *   parameters:
+ *     - name: symbol
+ *       in: path
+ *       description: Symbol
+ *       required: true
+ *       type: string
+ *   responses:
+ *      '200':
+ *          description: Success.
+ *      '404':
+ *          description: There is no data for the stocks
 */
