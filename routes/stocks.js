@@ -340,8 +340,6 @@ router.get('/news', async (req, res) => {
 
 router.get('/balanceSheet', async (req, res) => {
     let id = req.query.id;
-    let max = req.query.max;
-    let keyFigures;
     let isExist = false;
 
     let query = {};
@@ -404,6 +402,105 @@ router.get('/charts/key_figures', async (req, res) => {
     } else {
         res.json({ "error": "STOCK_ID_INVALID" })
     }
+});
+
+router.get('/finanzen', async (req, res) => {
+    let id = req.query.id;
+    if (id === 'sp_500')
+        id = 's&p_500';
+    console.log(id);
+
+    let url = "https://www.finanzen.net/index/" + id;
+    let html;
+
+    await fetch(url)
+        .then(res => res.text())
+        .then(text => {
+            html = text;
+        })
+        .catch(err => console.log(err));
+
+    html = html.replace(/\s/g, "");
+
+    let result1 = html.match(/(?<=col-xs-5col-sm-4text-sm-righttext-nowrap\">).*?(?=<\/span>)/gs);
+    if (!result1 || result1.length === 0) {
+        res.json({ "error": "STOCK_ID_INVALID" });
+    }
+    if (!!result1) {
+        for (let i = 0; i < result1.length; i++) {
+            result1[i] = result1[i].replace(/<span>/g, "");
+            result1[i] = result1[i].replace(/PKT/g, "");
+            result1[i] = result1[i].replace(".", "");
+            result1[i] = result1[i].replace(",", ".");
+        }
+    }
+    // console.log('result1');
+    // console.log(result1);
+    ///////////////////////////////////
+    let result2 = html.match(/(?<=col-xs-4col-sm-3text-sm-righttext-nowraptext-centergreen\">).*?(?=<\/span>)/gs);
+    let result22 = html.match(/(?<=col-xs-4col-sm-3text-sm-righttext-nowraptext-centerred\">).*?(?=<\/span>)/gs);
+
+    // console.log(result2);
+    // console.log(result22);
+
+    result2 = result2.concat(result22);
+    // console.log(result2);
+
+    // console.log('result2');
+    // console.log(result2);
+    if (!!result2) {
+        for (let i = 0; i < result2.length; i++) {
+            if (result2[i] !== null) {
+                result2[i] = result2[i].replace(/<span>/g, "");
+                result2[i] = result2[i].replace(/PKT/g, "");
+                result2[i] = result2[i].replace(".", "");
+                result2[i] = result2[i].replace(",", ".");
+            }
+        }
+    }
+
+    result2 = result2.filter(item => item !== null);
+
+    // console.log("result2: " + result2);
+
+    ///////////////////////////////////
+    let result3 = html.match(/(?<=col-xs-3col-sm-3text-righttext-nowrapred\">).*?(?=<\/span>)/gs);
+
+    if (!result3 || result3 === null) {
+        result3 = html.match(/(?<=col-xs-3col-sm-3text-righttext-nowrapgreen\">).*?(?=<\/span>)/gs);
+    }
+    if (!!result3 && result3 !== null) {
+        for (let i = 0; i < result3.length; i++) {
+            result3[i] = result3[i].replace(/<span>/g, "");
+            result3[i] = result3[i].replace(/PKT/g, "");
+            result3[i] = result3[i].replace(/%/g, "");
+            result3[i] = result3[i].replace(".", "");
+            result3[i] = result3[i].replace(",", ".");
+        }
+    }
+
+    ///////////////////////////////////
+    let result4 = html.match(/(?<=col-xs-3col-sm-2text-righttext-nowrapred\">).*?(?=<\/span>)/gs);
+    if (!result4 || result4 === null) {
+        result4 = html.match(/(?<=col-xs-3col-sm-2text-righttext-nowrapgreen\">).*?(?=<\/span>)/gs);
+    }
+    if (!!result4 && result4 !== null) {
+        for (let i = 0; i < result4.length; i++) {
+            result4[i] = result4[i].replace(/<span>/g, "");
+            result4[i] = result4[i].replace(/PKT/g, "");
+            result4[i] = result4[i].replace(/%/g, "");
+            result4[i] = result4[i].replace(".", "");
+            result4[i] = result4[i].replace(",", ".");
+        }
+    }
+
+    let result5 = result3.concat(result4);
+
+    // console.log("result5:");
+    // console.log(result5);
+
+    res.json({"id" : id, "first" : result1, "second" : result2, "third" : result5});
+
 });
 
 module.exports = router
