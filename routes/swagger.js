@@ -415,8 +415,6 @@
  *          $ref: '#/definitions/dataPointtt'
  *
  *
- *
- *
  *  annualReport:
  *    type: object
  *    properties:
@@ -500,7 +498,6 @@
  *        type: array
  *        items:
  *          $ref: '#/definitions/annualReport'
- *
  *
  *  quarterlyReport:
  *    type: object
@@ -586,6 +583,128 @@
  *        items:
  *          $ref: '#/definitions/quarterlyReport'
  *
+ *
+ *  incomeStatementAnnualReport:
+ *    type: object
+ *    properties:
+ *      fiscalDateEnding:
+ *        type: string
+ *      reportedCurrency:
+ *        type: string
+ *      grossProfit:
+ *        type: string
+ *      totalRevenue:
+ *        type: string
+ *      costOfRevenue:
+ *        type: string
+ *      costofGoodsAndServicesSold:
+ *        type: string
+ *      operatingIncome:
+ *        type: string
+ *      sellingGeneralAndAdministrative:
+ *        type: string
+ *      researchAndDevelopment:
+ *        type: string
+ *      operatingExpenses:
+ *        type: string
+ *      investmentIncomeNet:
+ *        type: string
+ *      netInterestIncome:
+ *        type: string
+ *      interestIncome:
+ *        type: string
+ *      interestExpense:
+ *        type: string
+ *      nonInterestIncome:
+ *        type: string
+ *      otherNonOperatingIncome:
+ *        type: string
+ *      depreciation:
+ *        type: string
+ *      depreciationAndAmortization:
+ *        type: string
+ *      incomeBeforeTax:
+ *        type: string
+ *      incomeTaxExpense:
+ *        type: string
+ *      interestAndDebtExpense:
+ *        type: string
+ *      netIncomeFromContinuingOperations:
+ *        type: string
+ *      comprehensiveIncomeNetOfTax:
+ *        type: string
+ *      ebit:
+ *        type: string
+ *      ebitda:
+ *        type: string
+ *      netIncome:
+ *        type: string
+ *
+ *  incomeStatementAnnualReports:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/incomeStatementAnnualReport'
+ *
+ *  incomeStatementQuarterlyReport:
+ *    type: object
+ *    properties:
+ *      fiscalDateEnding:
+ *        type: string
+ *      reportedCurrency:
+ *        type: string
+ *      grossProfit:
+ *        type: string
+ *      totalRevenue:
+ *        type: string
+ *      costOfRevenue:
+ *        type: string
+ *      costofGoodsAndServicesSold:
+ *        type: string
+ *      operatingIncome:
+ *        type: string
+ *      sellingGeneralAndAdministrative:
+ *        type: string
+ *      researchAndDevelopment:
+ *        type: string
+ *      operatingExpenses:
+ *        type: string
+ *      investmentIncomeNet:
+ *        type: string
+ *      netInterestIncome:
+ *        type: string
+ *      interestIncome:
+ *        type: string
+ *      interestExpense:
+ *        type: string
+ *      nonInterestIncome:
+ *        type: string
+ *      otherNonOperatingIncome:
+ *        type: string
+ *      depreciation:
+ *        type: string
+ *      depreciationAndAmortization:
+ *        type: string
+ *      incomeBeforeTax:
+ *        type: string
+ *      incomeTaxExpense:
+ *        type: string
+ *      interestAndDebtExpense:
+ *        type: string
+ *      netIncomeFromContinuingOperations:
+ *        type: string
+ *      comprehensiveIncomeNetOfTax:
+ *        type: string
+ *      ebit:
+ *        type: string
+ *      ebitda:
+ *        type: string
+ *      netIncome:
+ *        type: string
+ *
+ *  incomeStatementQuarterlyReports:
+ *        type: array
+ *        items:
+ *          $ref: '#/definitions/incomeStatementQuarterlyReport'
  *
  *
  *
@@ -1606,6 +1725,37 @@
  *         $ref: '#/definitions/quarterlyReports'
  *    '400':
  *      description: Invalid
+ *
+ * /stocks/incomeStatement?id={id}:
+ *  get:
+ *   summary: Get income statement.
+ *   description: Get income statement.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: symbol of a stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *       type : object
+ *       properties:
+ *        symbol:
+ *         type : string
+ *        annualReports:
+ *         $ref: '#/definitions/incomeStatementAnnualReports'
+ *        quarterlyReports:
+ *         $ref: '#/definitions/incomeStatementQuarterlyReports'
+ *    '400':
+ *      description: Invalid
+ *
+ *
  *
  * /analytics/backtest/{portfolioId}?fromDate={fromDate}&toDate={toDate}:
  *  get:
