@@ -1,13 +1,14 @@
 'use strict';
 const express = require('express');
 const Portfolio = require('../models/portfolio');
+const bankConnection = require('../models/bankConnection');
 //const PortfolioOverview = PortfolioModels.portfolioOverview
 const mongoose = require('mongoose');
 const { ResourceGroups } = require('aws-sdk');
 const cookieParser = require('cookie-parser');
 const portfolioWorkers = require('../workers/portfolio_worker')
 const stockDetailedAnalysisModel = require('../models/stockDetailedAnalysis');
-const stockModel = require("../models/stock")
+const stockModel = require("../models/stock");
 
 const secret = require('../secret/secret')();
 const dotenv = require('dotenv');
@@ -34,6 +35,7 @@ const handle_database_error = (res, err) => {
 const cron = require("node-cron");
 const { json } = require('express');
 const { rawListeners } = require('../models/portfolio');
+const { deleteAllBankConnections } = require('../models/finAPI');
 
 // cron.schedule("39 17 * * *", () => {
 //     console.log("it's 21 20")
@@ -624,21 +626,20 @@ router.put('/stock/:isin', passport.authenticate('jwt', { session: false }), (re
 
 // finapi part
 
+var token;
 // token/user gives user auth, for any other thing - client, e.g. token/client
 router.get('/token/:person', passport.authenticate('jwt', { session: false }), async(req, res) => {
     let person = req.params.person;
 
-    //no merged secret configuration yet, so not specified
     let body = new URLSearchParams({
         'grant_type': "client_credentials",
         'client_id': process.env.finAPI_client_id,
         'client_secret': process.env.finAPI_client_secret,
     });
 
-    // credentials taken from db 
-    if (person == 'user') {
-        body.append("username", req.user.finUserId);
-        body.append("password", req.user.finUserPassword);
+    if (person == 'user') { //  req.user.finUserId req.user.finUserPassword
+        body.append("username", "julien_schmidt");
+        body.append("password", "milou2021");
         body.set("grant_type", "password");
     }
 
@@ -658,6 +659,8 @@ router.get('/token/:person', passport.authenticate('jwt', { session: false }), a
         const json_response = await api_response.json();
 
         // secure: true, add in the end, when no testing needed 
+
+        token = 'Bearer ' + json_response['access_token'];
         res.cookie('finapi_token', 'Bearer ' + json_response['access_token'], { signed: true, httpOnly: true, maxAge: 60 * 60 * 1000 });
         res.json(json_response);
     } catch (err) {
@@ -693,80 +696,123 @@ router.post('/newUser', passport.authenticate('jwt', { session: false }), async(
 });
 
 router.get('/deleteUser', passport.authenticate('jwt', { session: false }), async(req, res) => {
+    deleteFinApiUser(req.user.id)
+});
 
+const deleteFinApiUser = async(userId) => {
     const api_url = `https://sandbox.finapi.io/api/v1/users`;
 
     try {
         const api_response = await fetch(api_url, {
             method: 'DELETE',
             headers: {
-                'Authorization': req.signedCookies.finapi_token
+                'Authorization': token
             }
         });
 
-        if (!api_response.ok) res.status = api_response.status;
-
-        var response = { "success": "DELETION_SUCCESS" };
-        res.json(response);
+        if (api_response.ok) {
+            console.log("finapi user deleted")
+        } else {
+            console.log("error occured")
+        }
 
     } catch (err) {
-        res.send(err.message);
+        console.log(err);
     }
-});
+}
 
 router.post('/searchBanks', passport.authenticate('jwt', { session: false }), async(req, res) => {
+
+
+    // let params = new URLSearchParams({
+    //     'search': req.body.search, // main field, others if needed
+    //     'page': req.body.page,
+    //     'perPage': req.body.perPage
+    //         // 'isSupported': req.body.isSupported
+    // });
+
+    // if (params.get('ids') == "undefined") params.delete('ids');
+    // if (params.get('perPage') == "undefined") params.delete('perPage');
+    // if (params.get('page') == "undefined") params.delete('page');
+    // // if (params.get('isSupported') == "undefined") params.delete('isSupported');
+    // if (req.body.order !== undefined) {
+    //     var orderParams = new URLSearchParams({});
+    //     for (let order of req.body.order) {
+    //         orderParams.append("order[]", order);
+    //     }
+    // }
+    // if (req.body.location !== undefined) {
+    //     var locations = new URLSearchParams({});
+    //     for (let location of req.body.location) {
+    //         locations.append("location[]", location);
+    //     }
+    // }
+    // if (req.body.ids !== undefined) {
+    //     var ids = new URLSearchParams({});
+    //     for (let id of req.body.ids) {
+    //         ids.append("ids[]", id);
+    //     }
+    // }
+    // const api_url = `https://sandbox.finapi.io/api/v1/banks?${params}`;
+
+    // try {
+    //     const api_response = await fetch(api_url, {
+    //         headers: {
+    //             'Content-Type': 'application/x-www-form-urlencoded',
+    //             'Authorization': req.signedCookies.finapi_token
+    //         }
+    //     });
+
+    //     if (!api_response.ok) res.status = api_response.status;
+
+    //     const response = await api_response.json();
+    //     res.json(response);
+    // } catch (err) {
+    //     res.send(err.message);
+    // }
+    searchBanks(req.body.search);
+});
+
+const searchBanks = async(search) => {
     let params = new URLSearchParams({
-        'search': req.body.search, // main field, others if needed
-        'page': req.body.page,
-        'perPage': req.body.perPage
-            // 'isSupported': req.body.isSupported
+        'search': search,
+        // 'page': req.body.page,
+        // 'perPage': req.body.perPage
+        'isSupported': true
     });
 
-    if (params.get('ids') == "undefined") params.delete('ids');
-    if (params.get('perPage') == "undefined") params.delete('perPage');
-    if (params.get('page') == "undefined") params.delete('page');
-    // if (params.get('isSupported') == "undefined") params.delete('isSupported');
-    if (req.body.order !== undefined) {
-        var orderParams = new URLSearchParams({});
-        for (let order of req.body.order) {
-            orderParams.append("order[]", order);
-        }
-    }
-    if (req.body.location !== undefined) {
-        var locations = new URLSearchParams({});
-        for (let location of req.body.location) {
-            locations.append("location[]", location);
-        }
-    }
-    if (req.body.ids !== undefined) {
-        var ids = new URLSearchParams({});
-        for (let id of req.body.ids) {
-            ids.append("ids[]", id);
-        }
-    }
+    // if (req.body.location !== undefined) {
+    //     var locations = new URLSearchParams({});
+    //     for (let location of req.body.location) {
+    //         locations.append("location[]", location);
+    //     }
+    // }
+
     const api_url = `https://sandbox.finapi.io/api/v1/banks?${params}`;
 
     try {
         const api_response = await fetch(api_url, {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': req.signedCookies.finapi_token
+                'Authorization': token
             }
         });
 
-        if (!api_response.ok) res.status = api_response.status;
-
         const response = await api_response.json();
-        res.json(response);
-    } catch (err) {
-        res.send(err.message);
-    }
 
-});
+        return response;
+    } catch (err) {
+        console.log(err);
+    }
+}
 
 router.get('/importConnection/:bankId', passport.authenticate('jwt', { session: false }), async(req, res) => {
+    importConnections(req.params.bankId);
+});
+
+const importConnections = async(bankId) => {
     let body = { //e.g. 26628 - stadtsparkasse
-        bankId: req.params.bankId
+        "bankId": bankId
     };
 
     const api_url = `https://sandbox.finapi.io/api/v1/bankConnections/import`;
@@ -777,7 +823,7 @@ router.get('/importConnection/:bankId', passport.authenticate('jwt', { session: 
             body: JSON.stringify(body),
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': req.signedCookies.finapi_token
+                'Authorization': token
             }
         });
 
@@ -787,18 +833,21 @@ router.get('/importConnection/:bankId', passport.authenticate('jwt', { session: 
             "link": json_response.headers.get('Location')
         }
 
-        res.json(response);
+        console.log(json_response.headers.get('Location'));
+        return response;
 
     } catch (err) {
-        res.send(err.message);
+        console.log(err);
     }
-
-});
+}
 
 router.get('/updateConnection', passport.authenticate('jwt', { session: false }), async(req, res) => {
+    updateFinApiConnection(req.user.id, req.body.bankConnectionId);
+});
+
+const updateFinApiConnection = async(userId, bankConnectionId) => {
     let body = {
-        bankConnectionId: req.body.bankConnectionId,
-        storeSecrets: true
+        "bankConnectionId": bankConnectionId
     };
 
     const api_url = `https://sandbox.finapi.io/api/v1/bankConnections/update`;
@@ -809,176 +858,241 @@ router.get('/updateConnection', passport.authenticate('jwt', { session: false })
             body: JSON.stringify(body),
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': req.signedCookies.finapi_token
+                'Authorization': token
             }
         });
 
         const json_response = await api_response;
 
-        res.json(json_response);
+        let response = {};
 
-    } catch (err) {
-        res.send(err.message);
-    }
-});
-
-router.post('/bankConnections/', passport.authenticate('jwt', { session: false }), async(req, res) => {
-    if (req.body.ids !== undefined) {
-        var ids = new URLSearchParams({});
-        for (let id of req.body.ids) {
-            ids.append("ids[]", id);
+        if (!api_response.ok) {
+            response.result = json_response.headers.get('Location'); // redirecting 
+            console.log("REDIRECT_REQUIRED/ERROR_OCCURED");
+        } else {
+            await refreshBankConnections(userId);
+            await refreshPortfolios(userId);
+            response.result = "BANK_CONNECTIONS_UPDATED";
+            console.log("BANK_CONNECTIONS_UPDATED");
         }
-    }
+        console.log(response);
 
-    const api_url = `https://sandbox.finapi.io/api/v1/bankConnections?${ids}`;
+        return response;
 
-    try {
-        const api_response = await fetch(api_url, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': req.signedCookies.finapi_token
-            }
-        });
-
-        if (!api_response.ok) res.status = api_response.status;
-
-        const json_response = await api_response.json();
-        res.json(json_response);
     } catch (err) {
-        res.send(err.message);
+        console.log(err);
     }
+}
 
+router.get('/bankConnectionsList/', passport.authenticate('jwt', { session: false }), async(req, res) => {
+    await bankConnectionsList(req.user.id);
 });
 
-router.get('/deleteConnection/:id', passport.authenticate('jwt', { session: false }), async(req, res) => {
-    var id = req.params.id;
+const bankConnectionsList = async(userId) => {
+    let result = bankConnection.find({ "userId": userId }).toArray();
+    console.log(result);
+    return result;
+}
 
-    const api_url = `https://sandbox.finapi.io/api/v1/bankConnections/${id}`;
-
-    try {
-        const api_response = await fetch(api_url, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': req.signedCookies.finapi_token
-            }
-        });
-        if (!api_response.ok) res.status = api_response.status;
-
-        var response = { "id": id };
-        res.json(response);
-
-        console.log("successfully deleted a bank connection " + id)
-    } catch (err) {
-        res.send(err.message);
-    }
+router.post('/refreshBankConnections/', passport.authenticate('jwt', { session: false }), async(req, res) => {
+    await refreshBankConnections(req.user.id);
 });
 
-router.get('/deleteAllConnections', passport.authenticate('jwt', { session: false }), async(req, res) => {
 
+const refreshBankConnections = async(userId) => {
     const api_url = `https://sandbox.finapi.io/api/v1/bankConnections`;
 
     try {
         const api_response = await fetch(api_url, {
-            method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': req.signedCookies.finapi_token
+                'Authorization': token
             }
         });
 
-        if (!api_response.ok) res.status = api_response.status;
-
         const json_response = await api_response.json();
-        res.json(json_response);
-    } catch (err) {
-        res.send(err.message);
-    }
 
+        let connections = json_response.connections;
+
+        bankConnection.deleteMany({ "userId": userId }, function(err, resp) {
+            if (err) console.log(err);
+            else console.log("deleted connections");
+        });
+
+        if (connections.length > 0) {
+            for (var k in connections) {
+                await updateOrSaveConnections(userId, connections[k]);
+            }
+        } else
+            console.log("error: NO_CONNECTIONS_ERROR");
+    } catch (err) {
+        console.log(err)
+    }
+}
+
+async function updateOrSaveConnections(userId, connection) {
+    bankConnection.find({ "userId": userId }).exec(async(err, result) => {
+        if (err) {
+            console.log(err);
+        } else {
+            if (!result) {
+                var bConnection = new bankConnection(newConnection(userId, connection));
+
+                bConnection.markModified('bankConnections');
+                bConnection.save(
+                    function(error, conn) {
+                        if (error) console.log(error);
+                        else {
+                            console.log('saved successfully');
+                        }
+                    }
+                );
+            } else {
+                let accounts = connection.accountIds;
+
+                for (var i in accounts) {
+                    let account = result.bankConnections.accountIds.find((accountId) => {
+                        return accounts[i] == accountId;
+                    });
+                    if (!account) {
+                        result.bankConnections.accountIds.push(accounts[i]);
+                        result.bankConnections.modified = Math.floor(Date.now() / 1000);
+                        console.log("added a connection");
+                    }
+                }
+
+                result.save(
+                    function(error, connectionRes) {
+                        if (error) console.log(error)
+                        else {
+                            console.log('updated connection successfully');
+                        }
+                    });
+            }
+        }
+    });
+}
+
+router.get('/deleteConnection/:id', passport.authenticate('jwt', { session: false }), async(req, res) => {
+    deleteConnection(req.user.id, req.params.id)
 });
 
-router.post('/securities', passport.authenticate('jwt', { session: false }), async(req, res) => {
-    // if no body, all securities given
-    let params = new URLSearchParams({
-        'search': req.body.search, // isin, name, wkn contain
-        'accountIds': req.body.accountIds // integer array
-    });
-    if (params.get('search') == "undefined") params.delete('search');
-    if (params.get('accountIds') == "undefined") params.delete('accountIds');
+const deleteConnection = async(userId, idToRemove) => {
 
-    if (req.body.ids !== undefined) {
-        var ids = new URLSearchParams({});
-        for (let id of req.body.ids) {
-            ids.append("ids[]", id);
-        }
-    }
-    if (req.body.order !== undefined) {
-        var orderParams = new URLSearchParams({});
-        for (let order of req.body.order) {
-            orderParams.append("order[]", order);
-        }
-    }
-    if (req.body.accountIds !== undefined) { // needed for separating accounts, otherwise gives ALL securities
-        var accountIds = new URLSearchParams({});
-        for (let accountId of req.body.accountIds) {
-            accountIds.append("accountIds[]", accountId);
-        }
-    }
-
-    const api_url = `https://sandbox.finapi.io/api/v1/securities?${params}`;
+    const api_url = `https://sandbox.finapi.io/api/v1/bankConnections/${idToRemove}`;
 
     try {
-        const api_response = await fetch(api_url, {
+        await fetch(api_url, {
+            method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': req.signedCookies.finapi_token
+                'Authorization': token
             }
         });
 
-        if (!api_response.ok) res.status = api_response.status;
+        bankConnection.find({ "userId": userId }).exec(async(err, result) => {
+            if (err) {
+                console.log(err);
+            } else {
+                if (result) {
+                    let found = result.bankConnections.find((connection) => {
+                        return connection.bankConnectionId == idToRemove
+                    });
+                    if (found) {
+                        result.bankConnections.pull(found);
 
-        const json_response = await api_response.json();
-        res.json(json_response);
+                        result.save(
+                            function(error, connectionRes) {
+                                if (error) console.log(error)
+                                else {
+                                    console.log('updated connection successfully');
+                                }
+                            });
+
+                        await refreshPortfolios(userId);
+                    }
+                }
+            }
+        });
+
+        console.log("successfully deleted a bank connection " + idToRemove)
+    } catch (err) {
+        console.log(err.message);
+    }
+}
+
+router.get('/deleteAllConnections', passport.authenticate('jwt', { session: false }), async(req, res) => {
+    deleteAllConnections(req.user.id);
+});
+
+const deleteAllConnections = async(userId) => {
+    const api_url = `https://sandbox.finapi.io/api/v1/bankConnections`;
+
+    try {
+        await fetch(api_url, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': token
+            }
+        });
+
+        bankConnection.deleteMany({ "userId": userId }).exec(async(err, result) => {
+            if (err) {
+                console.log(err);
+            } else {
+
+                console.log("successfully deleted all bank connections ")
+            }
+        });
+
+        await refreshBankConnections(userId);
+        await refreshPortfolios(userId);
 
     } catch (err) {
         console.log(err.message);
     }
-
-});
+}
 
 router.post('/saveAllSecurities', passport.authenticate('jwt', { session: false }), async(req, res) => {
+    await refreshPortfolios(req.user.id);
+});
+
+const refreshPortfolios = async(userId) => {
+
     const api_url = `https://sandbox.finapi.io/api/v1/securities`;
 
     try {
         const api_response = await fetch(api_url, {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': req.signedCookies.finapi_token
+                'Authorization': token
             }
         });
-
-        if (!api_response.ok) res.status = api_response.status;
 
         const json_response = await api_response.json();
         let securities = json_response.securities;
 
         if (securities.length > 0) {
-            for (var k in securities) {
-                await updateOrSave(req.user.id, securities[k], res);
-            }
+            Portfolio.deleteMany({ "userId": userId, "portfolio.overview.virtual": false }, function(err, resp) {
+                if (err) console.log(err);
+                else console.log("deleted real\n" + JSON.stringify(resp));
+            });
 
+            for (var k in securities) {
+                await updateOrSavePortfolios(userId, securities[k]);
+            }
         } else
-            res.status(404).json({ "error": "NO_SECURITIES_ERROR" });
+            console.log("error: NO_SECURITIES_ERROR");
 
     } catch (error) {
         console.log(error.message);
     }
 
-});
+}
 
-async function updateOrSave(userId, security, res) {
+async function updateOrSavePortfolios(userId, security) {
     Portfolio.findOne({ "userId": userId, "bankAccountId": security.accountId }).exec(async(err, result) => {
         if (err) {
-            handle_database_error(res, err);
+            console.log(err);
         } else {
             if (!result) {
                 var portfolioId = new mongoose.Types.ObjectId();
@@ -987,9 +1101,8 @@ async function updateOrSave(userId, security, res) {
                 portfolioWorkers.updatePortfolioWhenModified(portfolio);
                 portfolio.save(
                     function(error, portfolioRes) {
-                        if (error) handle_database_error(res, error)
+                        if (error) console.log(error);
                         else {
-                            res.json(portfolioRes);
                             console.log('saved successfully');
                         }
                     }
@@ -1016,7 +1129,6 @@ async function updateOrSave(userId, security, res) {
                     function(error, portfolioRes) {
                         if (error) console.log(error)
                         else {
-                            res.json(portfolioRes);
                             console.log('updated successfully');
                         }
                     });
@@ -1025,6 +1137,19 @@ async function updateOrSave(userId, security, res) {
 
         }
     });
+}
+
+const newConnection = (userId, connection) => {
+    console.log(connection.accountIds);
+    return {
+        "userId": userId,
+        "bankConnections": [{
+            "bankConnectionId": connection.id,
+            "accountIds": connection.accountIds,
+            "modified": Math.floor(Date.now() / 1000)
+        }]
+
+    }
 }
 
 const newPortfolio = async(portfolioId, userId, security) => {
@@ -1177,5 +1302,13 @@ router.get('/searchSymbol/:isin', async(req, res) => {
     res.json(json_response);
 });
 
-
+module.exports.refreshPortfolios = refreshPortfolios;
+module.exports.deleteFinApiUser = deleteFinApiUser
+module.exports.searchBanks = searchBanks
+module.exports.importConnections = importConnections
+module.exports.refreshBankConnections = refreshBankConnections
+module.exports.updateFinApiConnection = updateFinApiConnection
+module.exports.deleteConnection = deleteConnection
+module.exports.deleteAllConnections = deleteAllConnections
+module.exports.refreshPortfolios = refreshPortfolios
 module.exports = router;

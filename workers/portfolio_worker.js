@@ -4,6 +4,7 @@ const companyOverviews = require('../data-analytics/dynamic_data/company-overvie
 const portfolioFetcher = require('../data-analytics/dynamic_data/portfolio-fetcher');
 const analytics = require('../data-analytics/analytics/analytics');
 const stockTimeSeries = require('../data-analytics/dynamic_data/stock-time-series');
+const finApi = require('../routes/portfolio');
 const stockModel = require("../models/stock");
 const stockDetailedAnalysisModel = require('../models/stockDetailedAnalysis');
 const fetch = require('node-fetch');
@@ -258,7 +259,6 @@ async function updatePortfolioCronjob(portfolio) {
 async function updateFromFinApi(portfolio) {
 
 }
-
 
 module.exports.updatePortfolioWhenModified = updatePortfolioWhenModified
 module.exports.updatePortfolioCronjob = updatePortfolioCronjob

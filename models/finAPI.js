@@ -5,7 +5,7 @@ const fetch = require('node-fetch');
 // get an accessToken, gets only called
 // by getClientAccessToken or
 // by getUserAccessToken
-const getAccessToken = async(body) =>  {
+const getAccessToken = async(body) => {
     let api_url = 'https://sandbox.finapi.io/oauth/token';
 
     // login as client, get access token
@@ -20,7 +20,7 @@ const getAccessToken = async(body) =>  {
     return 'Bearer ' + json_response['access_token']
 }
 
-const getClientAccessToken = async () => {
+const getClientAccessToken = async() => {
     const body = new URLSearchParams({
         'grant_type': "client_credentials",
         'client_id': process.env.finAPI_client_id,
@@ -29,7 +29,7 @@ const getClientAccessToken = async () => {
     return await getAccessToken(body);
 }
 
-const getUserAccessToken = async (user) => {
+const getUserAccessToken = async(user) => {
     const body = new URLSearchParams({
         'grant_type': "password",
         'client_id': process.env.finAPI_client_id,
@@ -42,23 +42,13 @@ const getUserAccessToken = async (user) => {
 }
 
 // create a user in finAPI and return credentials
-const createFinAPIUser = async () => {
+const createFinAPIUser = async() => {
     const access_token = await getClientAccessToken();
-
-    // prepare body for user-creation
-    const body = {
-        id: undefined,
-        password: undefined,
-        email: undefined,
-        phone: undefined,
-        isAutoUpdateEnabled: true
-    };
 
     // adjust url for user-creation
     const api_url = `https://sandbox.finapi.io/api/v1/users`;
     const api_response = await fetch(api_url, {
         method: 'POST',
-        body: JSON.stringify(body),
         headers: {
             'Content-Type': 'application/json',
             'Authorization': access_token
@@ -68,12 +58,12 @@ const createFinAPIUser = async () => {
     const json_response = await api_response.json();
 
     return {
-        finUserId : json_response.id,
-        finUserPassword : json_response.password
+        finUserId: json_response.id,
+        finUserPassword: json_response.password
     };
 }
 
-const deleteFinAPIUser = async (user) => {
+const deleteFinAPIUser = async(user) => {
     const access_token = await getUserAccessToken(user);
     const api_url = `https://sandbox.finapi.io/api/v1/users`;
 
@@ -85,7 +75,7 @@ const deleteFinAPIUser = async (user) => {
     });
 }
 
-const searchBanks = async (searchString) => {
+const searchBanks = async(searchString) => {
     const access_token = await getClientAccessToken();
 
     // todo filter, so that only 'isValid = true' banks are shown
@@ -106,7 +96,7 @@ const searchBanks = async (searchString) => {
     return await api_response.json();
 }
 
-const importBankConnection = async (user,bankId) => {
+const importBankConnection = async(user, bankId) => {
     const access_token = await getUserAccessToken(user);
 
     let body = { //e.g. 26628 - stadtsparkasse
@@ -129,7 +119,7 @@ const importBankConnection = async (user,bankId) => {
     }
 }
 
-const getAllBankConnections = async (user) => {
+const getAllBankConnections = async(user) => {
     const access_token = await getUserAccessToken(user);
     var ids = new URLSearchParams({});
 
@@ -144,7 +134,7 @@ const getAllBankConnections = async (user) => {
     return await api_response.json();
 }
 
-const deleteOneBankConnection = async (user,id) => {
+const deleteOneBankConnection = async(user, id) => {
     const access_token = await getUserAccessToken(user);
 
     const api_url = `https://sandbox.finapi.io/api/v1/bankConnections/${id}`;
@@ -156,7 +146,7 @@ const deleteOneBankConnection = async (user,id) => {
     });
 }
 
-const deleteAllBankConnections = async (user) => {
+const deleteAllBankConnections = async(user) => {
     const access_token = await getUserAccessToken(user);
 
     const api_url = `https://sandbox.finapi.io/api/v1/bankConnections`;
@@ -168,7 +158,7 @@ const deleteAllBankConnections = async (user) => {
     });
 }
 
-const getSecurities = async (user) => {
+const getSecurities = async(user) => {
     const access_token = await getUserAccessToken(user);
 
     const api_url = `https://sandbox.finapi.io/api/v1/securities`;
