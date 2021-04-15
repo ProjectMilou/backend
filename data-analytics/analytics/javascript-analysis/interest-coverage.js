@@ -1,7 +1,6 @@
 function getInterestCoverageForPastFiveYears(incomeStatement) {
     const annualReports = incomeStatement.annualReports;
     const result = []
-    console.log(annualReports)
     for (var i = 0; i < 5; i++) {
         // Interest Coverage = ebit / interest expenses
         const iCoverage = annualReports[i].ebit / annualReports[i].interestExpense;
