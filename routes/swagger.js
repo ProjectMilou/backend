@@ -2168,4 +2168,42 @@
  *          description: Success.
  *      '404':
  *          description: There is no data for the stocks
+ * /analytics/treynorRatio/{portfolioId}:
+ *  get:
+ *   description: Calculates the treynor ratio of a portfolio
+ *   summary: Calculates the treynor ratio of a portfolioo
+ *   produces:
+ *      - application/json
+ *   tags:
+ *    - analytics
+ *   parameters:
+ *     - name: portfolioId
+ *       in: path
+ *       description: ID of portfolio
+ *       required: true
+ *       type: string
+ *   responses:
+ *      '200':
+ *          description: Success.
+ *      '404':
+ *          description: Either portfolio ID is not correct or there is no data for the stocks
+ * /analytics/interestCoverage/{symbol}:
+ *  get:
+ *   description: Calculates the interest coverage of symbol
+ *   summary: Calculates the interest coverage of symbol
+ *   produces:
+ *      - application/json
+ *   tags:
+ *    - analytics
+ *   parameters:
+ *     - name: symbol
+ *       in: path
+ *       description: Symbol
+ *       required: true
+ *       type: string
+ *   responses:
+ *      '200':
+ *          description: Success.
+ *      '404':
+ *          description: There is no data for the stocks
 */

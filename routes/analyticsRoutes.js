@@ -7,6 +7,7 @@ const stockTimeSeries = require('../data-analytics/dynamic_data/stock-time-serie
 const balanceSheets = require('../data-analytics/dynamic_data/balance-sheets');
 const portfolioGenerator = require('../data-analytics/dynamic_data/portfolio-generator');
 const KeyFigure = require('../models/keyFigure');
+const IncomeStatement = require('../models/incomeStatement');
 
 const router = express.Router();
 // TODO: Refactor http status codes
@@ -179,7 +180,6 @@ router.get('/backtest/:id', async (req, res) => {
         response.error="Portfolio with ID: " + id + " was not found!"
         return res.status(404).json(response)
     }
-    console.log(currPortfolio)
 
     const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
     const currBalanceSheetPerSymbol = await balanceSheets.getBalanceSheetForSymbols(currSymbols);
@@ -224,13 +224,13 @@ router.get('/keyfigures/:symbol', async (req, res) => {
     const currStocksData = await stockTimeSeries.getStocksDataForSymbols(currSymbols);
     if(!currStocksData) {
         response.error = "No stock time series data for " + symbol
-        return res.status(401).json(response)
+        return res.status(400).json(response)
     }
 
     const currBalanceSheetPerSymbol = await balanceSheets.getBalanceSheetForSymbols(currSymbols);
     if(!currBalanceSheetPerSymbol) {
         response.error = "No balance sheet data for some of the stocks"
-        return res.status(401).json(response)
+        return res.status(400).json(response)
     }
 
     let keyFigureData;
@@ -238,7 +238,7 @@ router.get('/keyfigures/:symbol', async (req, res) => {
         keyFigureData = await KeyFigure.findOne({'symbol': symbol});
     } catch (err) {
         response.error = `Could not find a stock with symbol=${symbol}`
-        return res.status(401).json(response);
+        return res.status(400).json(response);
     }
     const today = new Date()
     const toDate = new Date().setFullYear(today.getFullYear()-1)
@@ -248,6 +248,36 @@ router.get('/keyfigures/:symbol', async (req, res) => {
     const result = analytics.calculateKeyFigures(currStocksData, keyFigureData,
         currBalanceSheetPerSymbol[symbol], fiveYearsAgo, toDate)
     response.success = result;
+    return res.json(response)
+})
+
+router.get('/treynorRatio/:id', async (req, res) => {
+    let response = {error: "", success: {}};
+    const id = req.params.id;
+    const currPortfolio = await portfolioFetcher.findPortfolioByID(id)
+    if (!currPortfolio) {
+        response.error="Portfolio with ID: " + id + " was not found!"
+        return res.status(400).json(response)
+    }
+
+    return res.json(response)
+})
+
+router.get('/interestCoverage/:symbol', async (req, res) => {
+    let response = {error: "", success: {}};
+    const symbol = req.params.symbol;
+    
+    let incomeStatementData;
+    try {
+        incomeStatementData = await IncomeStatement.findOne({'symbol': symbol});
+    } catch (err) {
+        response.error = `Could not find a stock with symbol=${symbol}`
+        return res.status(400).json(response);
+    }
+
+    const analyzedData = analytics.calculateInterestCoverage(incomeStatementData)
+    response.success = analyzedData
+    
     return res.json(response)
 })
 

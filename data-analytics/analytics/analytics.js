@@ -9,6 +9,7 @@ const stockStandardDeviationAndCorrelation = require("./javascript-analysis/stoc
 const GL = require("./javascript-analysis/gainLoss")
 const DE = require("./javascript-analysis/debt-equity")
 const keyfigures = require('./javascript-analysis/key-figures');
+const interestCoverage = require('./javascript-analysis/interest-coverage');
 
 /**
  * Calculates the Maximum Drawdown, Best and Worst year, Final Portfolio Balance,
@@ -82,6 +83,11 @@ function calculateKeyFigures(stocksData, keyFigures, balanceSheet, fromDate, toD
     return peratios;
 }
 
+function calculateInterestCoverage(incomeStatementData) {
+    const results = interestCoverage.getInterestCoverageForPastFiveYears(incomeStatementData)
+    return results;
+}
+
 function extractNamesToSymbolsMapping(portfolio) {
     const namesToSymbols = {}
     portfolio.securities.forEach(security => {
@@ -113,3 +119,4 @@ exports.calculateGainAndLoss = calculateGainAndLoss;
 exports.calculateSDAndCorrelationAndVolatility = calculateSDAndCorrelationAndVolatility;
 exports.calculateSharpeRatio = calculateSharpeRatio;
 exports.calculateKeyFigures = calculateKeyFigures;
+exports.calculateInterestCoverage = calculateInterestCoverage;
