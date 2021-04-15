@@ -467,7 +467,7 @@ router.get('/charts/key_figures', async (req, res) => {
 
 router.get('/finanzen', async (req, res) => {
     let id = req.query.id;
-    if (id === 'sp_500')
+    if (id === 'sp_500' || id === 'sp500')
         id = 's&p_500';
     console.log(id);
 
@@ -495,20 +495,11 @@ router.get('/finanzen', async (req, res) => {
             result1[i] = result1[i].replace(",", ".");
         }
     }
-    // console.log('result1');
-    // console.log(result1);
-    ///////////////////////////////////
     let result2 = html.match(/(?<=col-xs-4col-sm-3text-sm-righttext-nowraptext-centergreen\">).*?(?=<\/span>)/gs);
     let result22 = html.match(/(?<=col-xs-4col-sm-3text-sm-righttext-nowraptext-centerred\">).*?(?=<\/span>)/gs);
 
-    // console.log(result2);
-    // console.log(result22);
-
     result2 = result2.concat(result22);
-    // console.log(result2);
 
-    // console.log('result2');
-    // console.log(result2);
     if (!!result2) {
         for (let i = 0; i < result2.length; i++) {
             if (result2[i] !== null) {
@@ -522,9 +513,6 @@ router.get('/finanzen', async (req, res) => {
 
     result2 = result2.filter(item => item !== null);
 
-    // console.log("result2: " + result2);
-
-    ///////////////////////////////////
     let result3 = html.match(/(?<=col-xs-3col-sm-3text-righttext-nowrapred\">).*?(?=<\/span>)/gs);
 
     if (!result3 || result3 === null) {
@@ -540,7 +528,6 @@ router.get('/finanzen', async (req, res) => {
         }
     }
 
-    ///////////////////////////////////
     let result4 = html.match(/(?<=col-xs-3col-sm-2text-righttext-nowrapred\">).*?(?=<\/span>)/gs);
     if (!result4 || result4 === null) {
         result4 = html.match(/(?<=col-xs-3col-sm-2text-righttext-nowrapgreen\">).*?(?=<\/span>)/gs);
@@ -556,9 +543,6 @@ router.get('/finanzen', async (req, res) => {
     }
 
     let result5 = result3.concat(result4);
-
-    // console.log("result5:");
-    // console.log(result5);
 
     res.json({"id" : id, "first" : result1, "second" : result2, "third" : result5});
 
