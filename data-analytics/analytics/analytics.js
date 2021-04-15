@@ -8,6 +8,7 @@ const dividendYield = require("./javascript-analysis/Dividendyield");
 const stockStandardDeviationAndCorrelation = require("./javascript-analysis/stockStandardDeviationAndCorrelation");
 const GL = require("./javascript-analysis/gainLoss")
 const DE = require("./javascript-analysis/debt-equity")
+const keyfigures = require('./javascript-analysis/key-figures');
 
 /**
  * Calculates the Maximum Drawdown, Best and Worst year, Final Portfolio Balance,
@@ -75,6 +76,12 @@ function calculateDebtEquity(portfolio, balanceSheetPerSymbol) {
     return DE.debtEquity(portfolio, balanceSheetPerSymbol, namesToSymbols);
 }
 
+function calculateKeyFigures(stocksData, keyFigures, balanceSheet, fromDate, toDate) {
+    const filteredStocksData = filterStocksDataForBackTesting(stocksData, fromDate, toDate)
+    const peratios = keyfigures.getHistoricalPERatios(filteredStocksData, keyFigures, balanceSheet)
+    return peratios;
+}
+
 function extractNamesToSymbolsMapping(portfolio) {
     const namesToSymbols = {}
     portfolio.securities.forEach(security => {
@@ -105,3 +112,4 @@ exports.calculatePERatios = calculatePERatios;
 exports.calculateGainAndLoss = calculateGainAndLoss;
 exports.calculateSDAndCorrelationAndVolatility = calculateSDAndCorrelationAndVolatility;
 exports.calculateSharpeRatio = calculateSharpeRatio;
+exports.calculateKeyFigures = calculateKeyFigures;

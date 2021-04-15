@@ -189,6 +189,21 @@ const getBalanceSheetForSymbol = async (symbol) => {
     }
 }
 
+const getEarningsForSymbol = async (symbol) => {
+    const EARNINGS_QUERY = querystring.stringify({
+        apikey: apikey,
+        symbol: symbol,
+        function: "EARNINGS"
+    });
+
+    try {
+        const res = await api.get(`query?${EARNINGS_QUERY}`);
+        return res.data;
+    } catch (err) {
+        throw new Error(err);
+    }
+}
+
 exports.getTimeSeriesIntraday = getTimeSeriesIntraday;
 exports.getTimeSeriesDaily = getTimeSeriesDaily;
 exports.getTimeSeriesWeekly = getTimeSeriesWeekly;
@@ -196,3 +211,4 @@ exports.getTimeSeriesMonthly = getTimeSeriesMonthly;
 exports.getCompanyOverview = getCompanyOverview;
 exports.getSymbolForKeyword = getSymbolForKeyword;
 exports.getBalanceSheetForSymbol = getBalanceSheetForSymbol;
+exports.getEarningsForSymbol = getEarningsForSymbol;

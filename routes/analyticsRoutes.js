@@ -5,8 +5,11 @@ const portfolioFetcher = require('../data-analytics/dynamic_data/portfolio-fetch
 const companyOverviews = require('../data-analytics/dynamic_data/company-overviews');
 const stockTimeSeries = require('../data-analytics/dynamic_data/stock-time-series');
 const balanceSheets = require('../data-analytics/dynamic_data/balance-sheets');
+const portfolioGenerator = require('../data-analytics/dynamic_data/portfolio-generator');
+const KeyFigure = require('../models/keyFigure');
 
 const router = express.Router();
+// TODO: Refactor http status codes
 
 router.get('/backtest/:id', async (req, res) => {
     let response = {error: "", success: {}};
@@ -176,6 +179,7 @@ router.get('/backtest/:id', async (req, res) => {
         response.error="Portfolio with ID: " + id + " was not found!"
         return res.status(404).json(response)
     }
+    console.log(currPortfolio)
 
     const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
     const currBalanceSheetPerSymbol = await balanceSheets.getBalanceSheetForSymbols(currSymbols);
@@ -185,6 +189,65 @@ router.get('/backtest/:id', async (req, res) => {
     }
     const analyzedData = analytics.calculateDebtEquity(currPortfolio, currBalanceSheetPerSymbol);
     response.success= analyzedData;
+    return res.json(response)
+})
+
+router.get('/risk/:symbol', async (req, res) => {
+    let response = {error: "", success: {}};
+    const symbol = req.params.symbol;
+    const currSymbols = [symbol]
+
+    const currStocksData = await stockTimeSeries.getStocksDataForSymbols(currSymbols);
+    if(!currStocksData) {
+        response.error = "No stock time series data for " + symbol
+        return res.status(404).json(response)
+    }
+
+    const currPortfolio = await portfolioGenerator.generatePortfolioForSymbol(symbol);
+
+    const analyzedData = analytics.calculateSDAndCorrelationAndVolatility(currPortfolio, currStocksData)
+    const result = {
+        volatility: 0,
+        averageMarketVolatility: 0.15
+    }
+    result.volatility = analyzedData.volatility[Object.keys(analyzedData.volatility)[0]]
+    response.success = result;
+    
+    return res.json(response)
+})
+
+router.get('/keyfigures/:symbol', async (req, res) => {
+    let response = {error: "", success: {}};
+    const symbol = req.params.symbol;
+    const currSymbols = [symbol]
+
+    const currStocksData = await stockTimeSeries.getStocksDataForSymbols(currSymbols);
+    if(!currStocksData) {
+        response.error = "No stock time series data for " + symbol
+        return res.status(401).json(response)
+    }
+
+    const currBalanceSheetPerSymbol = await balanceSheets.getBalanceSheetForSymbols(currSymbols);
+    if(!currBalanceSheetPerSymbol) {
+        response.error = "No balance sheet data for some of the stocks"
+        return res.status(401).json(response)
+    }
+
+    let keyFigureData;
+    try {
+        keyFigureData = await KeyFigure.findOne({'symbol': symbol});
+    } catch (err) {
+        response.error = `Could not find a stock with symbol=${symbol}`
+        return res.status(401).json(response);
+    }
+    const today = new Date()
+    const toDate = new Date().setFullYear(today.getFullYear()-1)
+    const fiveYearsAgo = new Date().setFullYear(today.getFullYear()-5)
+
+
+    const result = analytics.calculateKeyFigures(currStocksData, keyFigureData,
+        currBalanceSheetPerSymbol[symbol], fiveYearsAgo, toDate)
+    response.success = result;
     return res.json(response)
 })
 

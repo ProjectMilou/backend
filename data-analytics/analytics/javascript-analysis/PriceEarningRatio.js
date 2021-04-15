@@ -1,3 +1,5 @@
+const weight = require('./weighting')
+
 /**
  * Returns the price-earning and average  ratio from the company overview
  * regarding the quantity of stocks bought
@@ -11,19 +13,8 @@
 function getPriceEarningRatio(portfolio, symbolCompanyOverview, namesToSymbols) {
     let peRatios = {};
     let totalPEratio = 0;
-    let symbolsToQuantity = {};
-
-    let totalQuantity = 0;
-    portfolio.securities.forEach((element) => {
-        symbolsToQuantity[namesToSymbols[element.name]] =
-            element.quantityNominal;
-        totalQuantity += element.quantityNominal;
-    });
-
-    let lambda = 1 / totalQuantity;
-    Object.keys(symbolsToQuantity).forEach((symbol) => {
-        symbolsToQuantity[symbol] *= lambda
-    });
+    let symbolsToQuantity = weight.getWeightingForPortfolio(portfolio, namesToSymbols)
+    
     Object.keys(symbolCompanyOverview).forEach((symbol) => {
 
         peRatios[symbol] = symbolCompanyOverview[symbol].PERatio;

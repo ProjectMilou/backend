@@ -50,11 +50,11 @@ function standardDeviationAndCorrelation(portfolio, stocksData, namesToSymbols) 
 
     let volatility = {};
     portfolio.securities.forEach((stock) => {
-        volatility[stock.name] = stats.stdev(valuesOfStock[stock.name]) * Math.sqrt(252);
+        volatility[stock.symbol] = stats.stdev(valuesOfStock[stock.name]) * Math.sqrt(252);
     });
 
     const standardDeviation = backtesting.standardDeviation(portfolio, stocksData, namesToSymbols);
-    const portfolioVolatility = standardDeviation * Math.sqrt(252);
+    const portfolioVolatility = (standardDeviation * Math.sqrt(252)) / 100;
     return AnnualizedVolatilityAndCorrelation = {
         volatility,
         correlations,
@@ -96,8 +96,8 @@ function returnAnnual(portfolio, stocksData, namesToSymbols) {
 }
 
 function getCorrelationKey(stock1, stock2) {
-    if (stock1.isin < stock2.isin) return stock1.isin + ";" + stock2.isin;
-    else return stock2.isin + ";" + stock1.isin;
+    if (stock1.symbol < stock2.symbol) return stock1.symbol + ";" + stock2.symbol;
+    else return stock2.symbol + ";" + stock1.symbol;
 }
 
 exports.standardDeviationAndCorrelation = standardDeviationAndCorrelation;
