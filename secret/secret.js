@@ -62,7 +62,7 @@ module.exports = async () => {
                 process.env.finAPI_client_id = secrets.finAPI_client_id;
                 process.env.finAPI_client_secret = secrets.finAPI_client_secret;
                 process.env.auth_jwt_secret = secrets.auth_jwt_secret;
-                process.env.alpha_ventage_key = secrets.alpha_ventage_key;
+                process.env.alpha_vantage_key = secrets.alpha_vantage_key;
                 process.env.finnhub_key = secrets.finnhub_key;
                 process.env.aws_access_id = secrets.aws_access_id;
                 process.env.news_api_key = secrets.news_api_key;

@@ -66,6 +66,7 @@ async function updateStock(position) {
         position.stock.perf1yPercent = percent(stock.per365d, (stock.price * position.qty))
         //volatility and debt equity is done in updatePortfolio()
         //TODO score
+        position.stock.score = 0
     } else {
         position.stock.price = 0
         position.stock.quote = 0
@@ -74,6 +75,7 @@ async function updateStock(position) {
         position.stock.perf1y = 0
         position.stock.perf7dPercent = 0
         position.stock.perf1yPercent = 0
+        position.stock.score = 0
     }
 }
 
@@ -87,6 +89,7 @@ async function updateStockCronjob(position) {
     var oldPerf7d = position.stock.perf7d
     await updateStock(position)
     // TODO check if this makes sense
+    //TODO don't do this for real portfolios
     if (!position.totalReturn) {
         position.totalReturn = 0
         position.totalReturnPercent = 0
@@ -107,8 +110,8 @@ async function updatePortfolio(portfolio) {
         overview.perf1y = 0
         overview.perf7dPercent = 0
         overview.perf1yPercent = 0
+        overview.score = 0
     } else {
-        //what if NaN is the result=
         overview.perf7d = portfolio.portfolio.positions.map(({ stock: { perf7d: performance } }) => {
             return returnValueIfDefined(performance)
         }).reduce((a, b) => a + b, 0)
@@ -117,8 +120,8 @@ async function updatePortfolio(portfolio) {
         overview.perf7dPercent = percent(overview.perf7d, overview.value)
         overview.perf1yPercent = percent(overview.perf1y, overview.value)
         //TODO score
-        //TODO value
-        overview.value = portfolio.portfolio.positions.map(({ stock: { price: price }, qty: qty }) => { return returnValueIfDefined(price*qty) }).reduce((a, b) => a + b, 0)
+        overview.score = 0
+        overview.value = portfolio.portfolio.positions.map(({ stock: { price: price }, qty: qty }) => { return returnValueIfDefined(price * qty) }).reduce((a, b) => a + b, 0)
         //risk
         var currPortfolio = tofinAPIPortfolio(portfolio)
         var currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
@@ -159,9 +162,9 @@ async function updatePortfolio(portfolio) {
                 position.stock.volatility = SDandCorr.volatility[position.stock.name]
             });
         pAnalytics.standardDeviation = SDandCorr.standardDeviation
-        pAnalytics.sharpeRatio//TODO
+        pAnalytics.sharpeRatio = 0//TODO
         //TODO var debtEquity = analytics.calculateDebtEquity(currPortfolio)
-        pAnalytics.debtEquity
+        pAnalytics.debtEquity = 0
         //TODO treynorRatio	
         pAnalytics.correlations = SDandCorr.correlations
 

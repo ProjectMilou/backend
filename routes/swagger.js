@@ -3,10 +3,10 @@
  * definitions:
  *  positionQty:
  *    type: object
- *    properties: 
+ *    properties:
  *      symbol:
  *        type: string
- *      qty: 
+ *      qty:
  *        type: number
  *  error:
  *    type: object
@@ -18,7 +18,7 @@
  *        - PORTFOLIO_NAME_INVALID
  *        - PORTFOLIO_NAME_DUPLICATE
  *        - TIMESTAMP_INVALID
- *        - SYMBOL_INVALID  
+ *        - SYMBOL_INVALID
  *        - QTY_INVALID
  *        - REAL_PORTFOLIO_MODIFICATION
  *  error2:
@@ -30,7 +30,7 @@
  *        - DATABASE_ERROR
  *      message:
  *          type: string
- *  range: 
+ *  range:
  *    type: string
  *    enum:
  *      - "7D"
@@ -40,9 +40,9 @@
  *      - "1J"
  *      - "5J"
  *      - "MAX"
- *  stock: 
+ *  stock:
  *    type: object
- *    properties: 
+ *    properties:
  *      isin:
  *        type: string
  *      wkn:
@@ -57,7 +57,7 @@
  *          type: string
  *      perf7d:
  *        type: number
- *      perf1y: 
+ *      perf1y:
  *        type: number
  *      perf7dPercent:
  *          type: number
@@ -71,11 +71,11 @@
  *        type: string
  *      industry:
  *        type: string
- *      score: 
+ *      score:
  *        type: number
  *  stockk:
  *    type: object
- *    properties: 
+ *    properties:
  *      symbol:
  *        type: string
  *      analystTargetPrice:
@@ -102,7 +102,7 @@
  *        type: string
  *      per365d:
  *        type: string
- *      div: 
+ *      div:
  *        type: string
  *      growth:
  *        type: string
@@ -212,9 +212,9 @@
  *        type: string
  *      mcSize:
  *        type: string
- *  stockks: 
+ *  stockks:
  *        type: array
- *        items: 
+ *        items:
  *          $ref: '#/definitions/stockk'
  *
  *  stockDetails:
@@ -633,7 +633,7 @@
  *        type: boolean
  *      positionCount:
  *        type: integer
- *      value: 
+ *      value:
  *        type: number
  *      score:
  *        type: number
@@ -645,7 +645,7 @@
  *          type: number
  *      perf1yPercent:
  *          type: number
- *      modified: 
+ *      modified:
  *        type: number
  *        format: UNIX timestamp
  *  position:
@@ -675,6 +675,8 @@
  *              type: string
  *          name:
  *              type: string
+ *          virtual:
+ *              type: boolean
  *          qty:
  *              type: number
  *  risk:
@@ -693,20 +695,20 @@
  *        $ref: '#/definitions/risk'
  *      segments:
  *        $ref: '#/definitions/risk'
- *      currency: 
+ *      currency:
  *        $ref: '#/definitions/risk'
  *  keyFigures:
  *    type: object
  *    properties:
  *      year:
  *        type: integer
- *      pte: 
+ *      pte:
  *        type: number
  *      ptb:
  *        type: number
  *      ptg:
  *        type: number
- *      eps: 
+ *      eps:
  *        type: number
  *      div:
  *        type: number
@@ -727,15 +729,15 @@
  *              type: number
  *          correlations:
  *              type: object
- * 
+ *
  *  portfolioDetails:
  *    type: object
  *    properties:
  *      overview:
  *        $ref: '#/definitions/portfolioOverview'
- *      positions: 
+ *      positions:
  *        type: array
- *        items: 
+ *        items:
  *          $ref: '#/definitions/position'
  *      risk:
  *        $ref: '#/definitions/riskAnalysis'
@@ -807,7 +809,7 @@
  *    - portfolio
  *    summary: Get all portfolios of the current user
  *    description: Gets all portfolios of the current user with basic information to display in the portfolio dashboard.
- *              
+ *
  *                  (The value of "id" is the real one, "_id" can be ignored)
  *    operationId: getPortfolios
  *    produces:
@@ -829,9 +831,9 @@
  *        schema:
  *            type: string
  *            example: Unauthorized
- * 
+ *
  *    security:
- *    - api_key: [] 
+ *    - api_key: []
  *
  * /portfolio/details/{portfolioId}:
  *   get:
@@ -885,7 +887,7 @@
  *         required: true
  *         type: string
  *     responses:
- *       200: 
+ *       200:
  *         description: successful operation
  *         schema:
  *           type: object
@@ -912,9 +914,9 @@
  *            type: string
  *            example: Unauthorized
 
- * 
+ *
  * /portfolio/create:
- *   post: 
+ *   post:
  *     tags:
  *     - portfolio
  *     summary: Create new portfolio
@@ -934,9 +936,9 @@
  *             name:
  *               type: string
  *     responses:
- *       200: 
+ *       200:
  *         description: successful operation
- *         schema: 
+ *         schema:
  *           type: object
  *           properties:
  *             id:
@@ -971,7 +973,7 @@
  *       required: true
  *       type: string
  *     responses:
- *       200: 
+ *       200:
  *         description: successful operation
  *       404:
  *         description: PORTFOLIO_NOT_EXISTS
@@ -1013,7 +1015,7 @@
  *       required: true
  *       type: string
  *     responses:
- *       200: 
+ *       200:
  *         description: successful operation
  *       404:
  *         description: PORTFOLIO_ID_INVALID
@@ -1039,13 +1041,13 @@
  *     - portfolio
  *     summary: Modify positions of a portfolio
  *     description: Modifies the positions of a portfolio and saves the timestamp of the modification in the portfolio's history.
- *     
+ *
  *       If the specified quantity for a portfolio is 0, the position in the specified portfolio is deleted if it exists.
  *       If there is no position in the specified portfolio, a new position with the specified quantity is created.
  *       Otherwise, the position in the specified portfolio is updated to match the specified quantity.
  *
  *       Positions not included in the request remain unchanged.
- *       The position which is changed is the one which has isin, wkn, symbol or name equal to the parameter symbol 
+ *       The position which is changed is the one which has isin, wkn, symbol or name equal to the parameter symbol
  *       (which you can call either isin, wkn, name or symbol)
  *       It is safest to search with the symbol as parameter, because in our API we can search stocks by symbol
  *       (Right now we haen't implemented the stock search yet, so it just creates a lot of question marks as fields for added positions)
@@ -1073,7 +1075,7 @@
  *       required: true
  *       type: string
  *     responses:
- *       200: 
+ *       200:
  *         description: successful operation
  *       404:
  *         description: PORTFOLIO_ID_INVALID
@@ -1119,9 +1121,9 @@
  *       required: true
  *       type: string
  *     responses:
- *       200: 
+ *       200:
  *         description: successful operation
- *         schema: 
+ *         schema:
  *           type: object
  *           properties:
  *             id:
@@ -1147,7 +1149,7 @@
  *   get:
  *     tags:
  *     - portfolio
- *     summary: Gets the portfolio name and quantity of a specified stock for all portfolios of the current user. 
+ *     summary: Gets the portfolio name and quantity of a specified stock for all portfolios of the current user.
  *     description: This information is displayed to the user when adding a stock to his portfolios.
  *          The parameter "symbol" may be the symbol, the isin, the wkn or the name of a certain stock. The preferred parameter is symbol.
  *     operationId: portfolioStock
@@ -1166,7 +1168,7 @@
  *              symbol:
  *                type: string
  *     responses:
- *       200: 
+ *       200:
  *         description: successful operation
  *         schema:
  *              type: array
@@ -1188,13 +1190,13 @@
  *   put:
  *     tags:
  *     - portfolio
- *     summary: Modify stock quantity 
+ *     summary: Modify stock quantity
  *     description: Modifies a stock's quantity within multiple portfolios simultaneously.
- *     
+ *
  *      If the specified quantity for a portfolio is 0, the position in the specified portfolio is deleted if it exists.
  *      If there is no position in the specified portfolio, a new position with the specified quantity is created.
  *      Otherwise, the position in the specified portfolio is updated to match the specified quantity.
- * 
+ *
  *      Positions not included in the request remain unchanged.
  *     operationId: modifyStocks
  *     produces:
@@ -1222,7 +1224,7 @@
  *             items:
  *               $ref: '#/definitions/portfolioQty'
  *     responses:
- *       200: 
+ *       200:
  *         description: successful operation
  *       404:
  *         description: PORTFOLIO_ID_INVALID
@@ -1452,10 +1454,10 @@
  *    '400':
  *      description: Invalid
  *
- * /stocks/charts/analysts?id={id}:
+ * /stocks/charts/detailed-analysts?id={id}:
  *  get:
- *   summary: Get the analysts recommendation.
- *   description: Get the analysts recommendation.
+ *   summary: Get the analysts recommendation from Benzinga.
+ *   description: Get the analysts recommendation from Benzinga.
  *   produces:
  *     - application/json
  *   parameters:
@@ -1472,9 +1474,46 @@
  *      schema:
  *          type: object
  *          properties:
- *              ratings:
+ *              rating:
  *                  $ref: '#/definitions/ratings'
  *              averageGoal:
+ *                  type: string
+ *    '400':
+ *      description: Invalid
+ *
+ * /stocks/charts/analysts?id={id}:
+ *  get:
+ *   summary: Get the analysts recommendation from Finapi.
+ *   description: Get the analysts recommendation from Finapi.
+ *   produces:
+ *     - application/json
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       description: symbol of a stock
+ *       required: true
+ *       type: string
+ *   tags:
+ *    - stocks
+ *   responses:
+ *    '200':
+ *      description: Successful operation
+ *      schema:
+ *          type: object
+ *          properties:
+ *              symbol:
+ *                  type: string
+ *              buy:
+ *                  type: string
+ *              date:
+ *                  type: string
+ *              hold:
+ *                  type: string
+ *              sell:
+ *                  type: string
+ *              source:
+ *                  type: string
+ *              strategy:
  *                  type: string
  *    '400':
  *      description: Invalid

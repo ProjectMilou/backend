@@ -7,7 +7,7 @@ const api = axios.create({
 });
 
 // Gets the apikey which is in the .env file and is now in the process environment variables
-const apikey = process.env.alpha_ventage_key || undefined;
+const apikey = process.env.alpha_vantage_key || undefined;
 
 if (!apikey) {
     console.log("API KEY MISSING");

@@ -23,16 +23,15 @@ module.exports.updateAllStocks = async function () {
 
     const startFetching = async () => {
         for await (const symbol of rl) {
-            console.log(symbol)
             // await getStockOverview(symbol, api_key_alphavantage);
-            // await getTimeIntervalPerformance(symbol, api_key_alphavantage);
+            await getTimeIntervalPerformance(symbol, api_key_alphavantage);
             // await getAnalysis(symbol, api_key_finhub)
             // await updateMcSize(symbol, api_key_alphavantage)
             // await getYearlyPerformance(symbol, api_key_alphavantage);
             // await getImage(symbol, api_key_finhub);
             // await getBalanceSheet(symbol, api_key_alphavantage);
             // await getDetailedAnalysis(symbol, api_key_benzinga)
-            await sleep(200)
+            await sleep(1500)
         }
         rl.close()
         return
@@ -361,6 +360,7 @@ async function getTimeIntervalPerformance(symbol, api_key) {
                         "per1d": per1d,
                         "per7d": per7d,
                         "per30d": per30d,
+                        "date": new Date(),
                     },
                 },
                 {

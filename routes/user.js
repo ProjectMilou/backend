@@ -471,18 +471,19 @@ router.post('/reset/forgot', async (req, res) => {
  */
 router.get('/reset/confirm/:id/:token', async (req, res) => {
 
-    const reqUserId = req.params.id;
-    const reqToken = req.params.token;
+    const id = req.params.id;
+    const token = req.params.token;
 
-    const resetResponse = await confirmation.resetConfirm(reqUserId, reqToken);
+    const resetResponse = await confirmation.resetConfirm(id, token);
 
     if(!resetResponse){
         res.status(404).json({message: "token invalid or expired or user not found."});
     }
     else {
+        // now that user is confirmed -> redirect to frontend-webform
         const newToken = resetResponse.token
-        // todo redirect to frontend with changed token
-        res.redirect("https://www.google.de/search?q=please+insert+link+to+password+reset+webform");
+        const url = "https://milou.io/passwordreset/" + id + "/" + newToken;
+        res.redirect(url);
     }
 });
 
