@@ -127,13 +127,27 @@ router.get('/search', async (req, res) => {
 router.get('/overview', async (req, res) => {
     let symbol = req.query.id;
     const stock = await stockModel.find({ "symbol": symbol }, {
-        _id: false,
-        founded: false,
-        intro: false,
-        employees: false,
-        website: false,
-        assembly: false,
-        address: false,
+        isin: true,	
+        wkn: true,
+        symbol: true,
+        name: true,	
+        price: true,
+        per1d: true,
+        per7d: true,
+        per30d: true,
+        per365d: true,
+        marketCapitalization: true,
+        analystTargetPrice: true,
+        valuation: true,
+        growth: true,
+        div: true,
+        mc: true,
+        currency: true,	
+        country: true,	
+        industry: true,	
+        picture: true,
+        date: true,
+        mcSize: true,
     });
     res.json({ "stocks": stock });
 });
@@ -199,54 +213,6 @@ router.get('/charts/historic', async (req, res) => {
     } else {
         res.json({ "error": "STOCK_ID_INVALID" })
     }
-
-});
-
-
-const rating1 = { "date": "2021-01-19", "goal": "345770", "strategy": "buy", "source": "investing.com" }
-const rating2 = { "date": "2021-01-20", "goal": "345727", "strategy": "hold", "source": "investing.com" }
-const rating3 = { "date": "2021-01-21", "goal": "346718", "strategy": "sell", "source": "investing.com" }
-const rating4 = { "date": "2021-01-22", "goal": "346766", "strategy": "sell", "source": "investing.com" }
-const rating5 = { "date": "2021-01-23", "goal": "346793", "strategy": "sell", "source": "investing.com" }
-const rating6 = { "date": "2021-01-24", "goal": "344768", "strategy": "sell", "source": "investing.com" }
-const rating7 = { "date": "2021-01-25", "goal": "344812", "strategy": "hold", "source": "investing.com" }
-const rating8 = { "date": "2021-01-26", "goal": "345849", "strategy": "buy", "source": "investing.com" }
-const rating9 = { "date": "2021-01-27", "goal": "345932", "strategy": "hold", "source": "investing.com" }
-const rating10 = { "date": "2021-01-28", "goal": "345904", "strategy": "hold", "source": "investing.com" }
-const rating11 = { "date": "2021-01-29", "goal": "345912", "strategy": "sell", "source": "investing.com" }
-const rating12 = { "date": "2021-01-30", "goal": "345770", "strategy": "sell", "source": "investing.com" }
-const rating13 = { "date": "2021-01-31", "goal": "345727", "strategy": "sell", "source": "investing.com" }
-const rating14 = { "date": "2021-02-01", "goal": "346718", "strategy": "sell", "source": "investing.com" }
-const rating15 = { "date": "2021-02-02", "goal": "347766", "strategy": "sell", "source": "investing.com" }
-const rating16 = { "date": "2021-02-03", "goal": "346793", "strategy": "hold", "source": "investing.com" }
-const rating17 = { "date": "2021-02-04", "goal": "345768", "strategy": "hold", "source": "investing.com" }
-const rating18 = { "date": "2021-02-05", "goal": "343812", "strategy": "hold", "source": "investing.com" }
-const rating19 = { "date": "2021-02-06", "goal": "345849", "strategy": "buy", "source": "investing.com" }
-const rating20 = { "date": "2021-02-07", "goal": "345932", "strategy": "sell", "source": "investing.com" }
-
-const ratings = [rating1, rating2, rating3, rating4, rating5, rating6, rating7, rating8, rating9, rating10, rating11,
-    rating12, rating13, rating14, rating15, rating16, rating17, rating18, rating19, rating20];
-
-router.get('/charts/analysts', (req, res) => {
-    let isError = false;
-    let id = req.query.id;
-    let response;
-
-    if (id === "IBM") {
-        response = { "ratings": ratings, "averageGoal": "345961" };
-    } else if (id === "AAPL") {
-        response = { "ratings": ratings, "averageGoal": "345961" };
-    } else if (id === "MSFT") {
-        response = { "ratings": ratings, "averageGoal": "345961" };
-    } else if (id === "MS") {
-        response = { "ratings": ratings, "averageGoal": "345961" };
-    } else {
-        isError = true;
-        response = { "error": "STOCK_ID_INVALID" }
-    }
-
-    !isError && res.json(response);
-    isError && res.status(404).json(response);
 
 });
 
