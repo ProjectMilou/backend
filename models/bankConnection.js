@@ -4,11 +4,11 @@ const bankConnectionSchema = new mongoose.Schema({
     id: mongoose.ObjectId,
     userId: mongoose.ObjectId,
     bankConnections: [{
-        bankConnectionId: {
-            type: String,
-        },
+        bankConnectionId: String,
+        name: String,
         accountIds: Array,
-        modified: Number
+        modified: String,
+        created: String
     }]
 });
 

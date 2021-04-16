@@ -4,7 +4,6 @@ const companyOverviews = require('../data-analytics/dynamic_data/company-overvie
 const portfolioFetcher = require('../data-analytics/dynamic_data/portfolio-fetcher');
 const analytics = require('../data-analytics/analytics/analytics');
 const stockTimeSeries = require('../data-analytics/dynamic_data/stock-time-series');
-const finApi = require('../routes/portfolio');
 const stockModel = require("../models/stock");
 const stockDetailedAnalysisModel = require('../models/stockDetailedAnalysis');
 const fetch = require('node-fetch');
@@ -235,11 +234,6 @@ async function updatePortfolioWhenModified(portfolio) {
 }
 
 async function updatePortfolioCronjob(portfolio) {
-
-    if (!portfolio.portfolio.overview.virtual) {
-        updateFromFinApi(portfolio);
-    }
-
     if (portfolio.portfolio.positions.length > 0)
     // update all stocks
         await portfolio.portfolio.positions.forEach(async(position) => {
@@ -252,13 +246,8 @@ async function updatePortfolioCronjob(portfolio) {
     var newDataPoint = [Date.now(), portfolio.portfolio.overview.value]
     portfolio.portfolio.performance.push(newDataPoint)
 
-
-
 }
 
-async function updateFromFinApi(portfolio) {
-
-}
 
 module.exports.updatePortfolioWhenModified = updatePortfolioWhenModified
 module.exports.updatePortfolioCronjob = updatePortfolioCronjob

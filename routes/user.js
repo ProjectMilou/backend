@@ -3,10 +3,10 @@ const express = require('express');
 const passport = require('passport');
 const genToken = require('../auth/auth');
 const UserModel = require("../models/user");
-const UserTokenModel = require ("../models/userToken")
-const {hash, encrypt, decrypt} = require("../encryption/encryption");
+const UserTokenModel = require("../models/userToken")
+const { hash, encrypt, decrypt } = require("../encryption/encryption");
 const finAPI = require('../models/finAPI');
-const confirmation = require ('../auth/confirmation');
+const confirmation = require('../auth/confirmation');
 
 const router = express.Router();
 
@@ -57,13 +57,13 @@ const router = express.Router();
  *                      type: string
  *              example:
  *                  message: Signup failed - mail has got an account already
-*/
+ */
 router.post(
     '/register',
     passport.authenticate('register', { session: false }),
-    async (req, res) => {
+    async(req, res) => {
 
-        if(req.user.statusCode === 409){
+        if (req.user.statusCode === 409) {
             res.status(409).json({
                 message: "Signup failed - mail has got an account already"
             })
@@ -94,10 +94,10 @@ router.post(
  */
 router.post(
     '/confirm/resent',
-    passport.authenticate('jwt', {session: false}),
-    async (req, res) => {
+    passport.authenticate('jwt', { session: false }),
+    async(req, res) => {
         await confirmation.startConfirmationProcess(req.user);
-        res.status(201).json({message: "Resent confirmation email."});
+        res.status(201).json({ message: "Resent confirmation email." });
     }
 );
 
@@ -136,17 +136,17 @@ router.post(
  *              example:
  *                  message: Failed
  */
-router.get('/confirm/:id/:token', async (req, res) => {
+router.get('/confirm/:id/:token', async(req, res) => {
     const token = req.params.token;
     const id = req.params.id;
 
-    const confirmed = await confirmation.endConfirmationProcess(id,token);
+    const confirmed = await confirmation.endConfirmationProcess(id, token);
 
     // todo: frontend needs to add some "wow great, you are confirmed" banner
-    if(confirmed)
+    if (confirmed)
         res.redirect("https://milou.io/profile");
     else
-        res.status(404).json({message: "User not found or Token not found or Token invalid."});
+        res.status(404).json({ message: "User not found or Token not found or Token invalid." });
 });
 
 /**
@@ -210,13 +210,13 @@ router.get('/confirm/:id/:token', async (req, res) => {
  *                  type: string
  *          example:
  *              message: Wrong Password
-*/
+ */
 router.post(
     '/login',
-    async (req, res, next) => {
+    async(req, res, next) => {
         passport.authenticate(
             'login',
-            async (err, user, info) => {
+            async(err, user, info) => {
                 try {
                     if (err || !user) {
                         return res.status(400).json({
@@ -226,12 +226,11 @@ router.post(
                     }
 
                     req.login(
-                        user,
-                        { session: false },
-                        async (error) => {
+                        user, { session: false },
+                        async(error) => {
                             if (error) return next(error);
 
-                            const body = {id: user._id};
+                            const body = { id: user._id };
                             const token = genToken(body); //jwt.sign({ user: body }, 'TOP_SECRET');
 
                             return res.json({
@@ -289,17 +288,17 @@ router.post(
  *              example: Unauthorized
  */
 // profile
-router.get('/profile', passport.authenticate('jwt',{session: false}), async (req, res) => {
+router.get('/profile', passport.authenticate('jwt', { session: false }), async(req, res) => {
     // http://www.passportjs.org/docs/username-password/
     // request just contains an JWT token in its header, that will be checked by passport automaticaly. If unathorized, 401 will be sent back.
-    try{
+    try {
         res.json({
-                email: req.user.email,
-                lastName: req.user.lastName,
-                firstName: req.user.firstName,
-                confirmed: req.user.confirmed
+            email: req.user.email,
+            lastName: req.user.lastName,
+            firstName: req.user.firstName,
+            confirmed: req.user.confirmed
         });
-    } catch(err){
+    } catch (err) {
         console.log(err);
         res.json("error occured");
     }
@@ -354,27 +353,29 @@ router.get('/profile', passport.authenticate('jwt',{session: false}), async (req
  *              type: string
  *              example: Unauthorized
  */
-router.put('/edit', passport.authenticate('jwt', {session: false}), async (req, res) => {
+router.put('/edit', passport.authenticate('jwt', { session: false }), async(req, res) => {
     // implement the following authorization: http://www.passportjs.org/docs/username-password/
 
     let changes = {};
-    if(req.body.firstName !== undefined){
+    if (req.body.firstName !== undefined) {
         changes.firstName = req.body.firstName;
     }
-    if(req.body.lastName !== undefined){
+    if (req.body.lastName !== undefined) {
         changes.lastName = req.body.lastName;
     }
 
-    try{
-        await UserModel.updateOne({_id: req.user.id},changes,null);
-        const user = await UserModel.findOne({_id: req.user.id});
-        res.json({user: {
+    try {
+        await UserModel.updateOne({ _id: req.user.id }, changes, null);
+        const user = await UserModel.findOne({ _id: req.user.id });
+        res.json({
+            user: {
                 email: user.email,
                 lastName: user.lastName,
                 firstName: user.firstName,
                 confirmed: user.confirmed
-            }});
-    } catch(err){
+            }
+        });
+    } catch (err) {
         console.log(err);
         res.json("error occured");
     }
@@ -422,17 +423,17 @@ router.put('/edit', passport.authenticate('jwt', {session: false}), async (req, 
  *                      example:
  *                          message: Specified email not found.
  */
-router.post('/reset/forgot', async (req, res) => {
+router.post('/reset/forgot', async(req, res) => {
 
     // if user exists: send token to mail and store it at userTokens
     const resetWorked = await confirmation.startResetProcess(req.body.email);
-    if(resetWorked){
-        res.status(201).json({message: "Reset Process started, check your mail"});
+    if (resetWorked) {
+        res.status(201).json({ message: "Reset Process started, check your mail" });
     }
 
     // if user does not exist: 404
-    else{
-        res.status(404).json({message: "Specified email not found."});
+    else {
+        res.status(404).json({ message: "Specified email not found." });
     }
 });
 
@@ -469,19 +470,18 @@ router.post('/reset/forgot', async (req, res) => {
  *                      example:
  *                          message: Invalid user, token, or token was used already
  */
-router.get('/reset/confirm/:id/:token', async (req, res) => {
+router.get('/reset/confirm/:id/:token', async(req, res) => {
 
     const reqUserId = req.params.id;
     const reqToken = req.params.token;
 
     const resetResponse = await confirmation.resetConfirm(reqUserId, reqToken);
 
-    if(!resetResponse){
-        res.status(404).json({message: "token invalid or expired or user not found."});
-    }
-    else {
+    if (!resetResponse) {
+        res.status(404).json({ message: "token invalid or expired or user not found." });
+    } else {
         const newToken = resetResponse.token
-        // todo redirect to frontend with changed token
+            // todo redirect to frontend with changed token
         res.redirect("https://www.google.de/search?q=please+insert+link+to+password+reset+webform");
     }
 });
@@ -537,7 +537,7 @@ router.get('/reset/confirm/:id/:token', async (req, res) => {
  *                      example:
  *                          message: Unauthorized
  */
-router.put('/reset/change/:id/:token', async (req, res) => {
+router.put('/reset/change/:id/:token', async(req, res) => {
 
     const reqUserId = req.params.id;
     const reqToken = req.params.token;
@@ -545,12 +545,12 @@ router.put('/reset/change/:id/:token', async (req, res) => {
 
     const userConfirmed = await confirmation.endResetProcess(reqUserId, reqToken);
 
-    if(!userConfirmed){
-        res.status(401).json({message: "Unauthorized, confirmation failed."});
+    if (!userConfirmed) {
+        res.status(401).json({ message: "Unauthorized, confirmation failed." });
     } else {
-        await UserModel.updateOne({_id: reqUserId},{password: newHashedPassword},null);
+        await UserModel.updateOne({ _id: reqUserId }, { password: newHashedPassword }, null);
         console.log("bong");
-        res.status(201).json({message: "Password was successfully changed"});
+        res.status(201).json({ message: "Password was successfully changed" });
     }
 });
 
@@ -578,9 +578,11 @@ router.put('/reset/change/:id/:token', async (req, res) => {
  */
 // todo filter!
 // todo add schema, add example for 200 response!
-router.get('/bank/search/:searchString',async (req, res) => {
-    const searchString = req.params.searchString;
-    const banks = await finAPI.searchBanks(searchString);
+router.get('/bank/search/:searchString', async(req, res) => {
+    const searchString = req.body.searchString;
+    const location = req.body.location;
+
+    const banks = await finAPI.searchBanks(searchString, location);
     res.status(200).send(banks);
 });
 
@@ -615,7 +617,7 @@ router.get('/bank/search/:searchString',async (req, res) => {
  *                          webform: "some link"
  *
  */
-router.post('/bank/connections/add/:bankId',passport.authenticate('jwt', {session: false}), async (req, res) => {
+router.post('/bank/connections/add/:bankId', passport.authenticate('jwt', { session: false }), async(req, res) => {
     // todo should be redirected?
 
     const bankId = req.params.bankId;
@@ -642,9 +644,13 @@ router.post('/bank/connections/add/:bankId',passport.authenticate('jwt', {sessio
  *
  */
 // get bankconnections
-router.get('/bank/connections',passport.authenticate('jwt', {session: false}), async (req, res) => {
-    const user = req.user;
-    const finResponse = await finAPI.getAllBankConnections(user)
+router.get('/bank/connections', passport.authenticate('jwt', { session: false }), async(req, res) => {
+    const userId = req.user.id;
+
+    // await finAPI.updateFinApiConnection(userId); 
+    await finAPI.refreshBankConnections(userId);
+
+    const finResponse = await finAPI.getAllBankConnections(userId)
     res.send(finResponse);
 });
 
@@ -667,10 +673,15 @@ router.get('/bank/connections',passport.authenticate('jwt', {session: false}), a
  *            - bearerAuth: []
  */
 // getSecurities todo (?) what used for (?)
-router.get('/securities',passport.authenticate('jwt', {session: false}), async (req, res) => {
-    const user = req.user;
-    const finResponse = await finAPI.getSecurities(user)
-    res.send(finResponse);
+router.get('/refresh', passport.authenticate('jwt', { session: false }), async(req, res) => {
+    const userId = req.user._id;
+
+    // await finAPI.updateFinApiConnection(id); 
+    await finAPI.refreshBankConnections(userId);
+    await finAPI.updateFinApiConnection(userId);
+
+    res.status(200).json("User-related bank information successfully updated.")
+
 });
 
 /**
@@ -691,11 +702,12 @@ router.get('/securities',passport.authenticate('jwt', {session: false}), async (
  */
 // delete bankConnection by id
 // todo delete all connected portfolios from our database as well
-router.delete('/bank/connections/:id',passport.authenticate('jwt', {session: false}), async (req, res) => {
+router.delete('/bank/connections/:id', passport.authenticate('jwt', { session: false }), async(req, res) => {
     const user = req.user;
     const bankConnectionId = params.id;
+
     await finAPI.deleteOneBankConnection(user, bankConnectionId);
-    res.status(200).json({"message": "deleted bank connection " + bankConnectionId})
+    res.status(200).json({ "message": "deleted bank connection " + bankConnectionId })
 });
 
 /**
@@ -719,10 +731,10 @@ router.delete('/bank/connections/:id',passport.authenticate('jwt', {session: fal
  */
 // delete all bankConnections
 // todo delete all connected portfolios from our database as well
-router.delete('/bank/connections',passport.authenticate('jwt', {session: false}), async (req, res) => {
-    const user = req.user;
-    await finAPI.deleteAllBankConnections(user)
-    res.status(200).json({"message": "deleted all bank connection"});
+router.delete('/bank/connections', passport.authenticate('jwt', { session: false }), async(req, res) => {
+    const userId = req.user.id;
+    await finAPI.deleteAllBankConnections(userId);
+    res.status(200).json({ "message": "deleted all bank connection" });
 });
 
 /**
@@ -749,22 +761,23 @@ router.delete('/bank/connections',passport.authenticate('jwt', {session: false})
  *              example: Unauthorized
  */
 // delete profile
-router.delete('/profile', passport.authenticate('jwt', {session: false}),  async (req, res) => {
+router.delete('/profile', passport.authenticate('jwt', { session: false }), async(req, res) => {
     // implement the following authorization: http://www.passportjs.org/docs/username-password/
     // JWT token in header as bearer token
 
     // todo: delete portfolios
 
-    try{
-        const user = await UserModel.findOne({_id: req.user.id});
-        await UserModel.deleteOne({_id: req.user.id});
-        await UserTokenModel.deleteMany({email: user.email});
+    try {
+        const user = await UserModel.findOne({ _id: req.user.id });
+        await UserModel.deleteOne({ _id: req.user.id });
+        await UserTokenModel.deleteMany({ email: user.email });
 
         // todo uncomment when last testing has begun
-        // await finAPI.deleteFinAPIUser(user);
+        await finAPI.deleteFinAPIUser(user);
+        // todo delete virtual portfolios!
 
         res.json("successfully deleted user").status(200);
-    } catch(err){
+    } catch (err) {
         console.log(err);
         res.json("error occured");
     }
