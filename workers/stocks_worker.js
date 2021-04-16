@@ -36,7 +36,8 @@ module.exports.updateAllStocks = async function () {
             // await getDetailedAnalysis(symbol, api_key_benzinga);
             // await getIncomeStatement(symbol, api_key_alphavantage);
             // await getCashFlow(symbol, api_key_alphavantage);
-            await sleep(1500);
+            let numberOfCalls = 1;
+            await sleep(numberOfCalls * 1500);
         }
         rl.close()
         return

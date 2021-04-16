@@ -12,8 +12,8 @@ module.exports.updateAllCharts = async function () {
     let api_key_alphavantage;
     let api_key_finhub;
     if (process.env.NODE_ENV == 'development') {
-        api_key_alphavantage = process.env.alphavantage_api_key;
-        api_key_finhub = process.env.finnhub_api_key;
+        api_key_alphavantage = process.env.alpha_vantage_key;
+        api_key_finhub = process.env.finnhub_key;
     } else {
         // TODO: Add api_keys to AWS Secret Manager
     }
@@ -28,14 +28,15 @@ module.exports.updateAllCharts = async function () {
 
     const startFetching = async () => {
         for await (const symbol of rl) {
-            console.log(symbol)
+            // console.log(symbol);
             // await getDataPoints(symbol, api_key_alphavantage);
             // await getTimeIntervalPerformance(symbol, api_key_alphavantage);
             // await getYearlyPerformance(symbol, api_key_alphavantage);
             // await getImage(symbol, api_key_finhub);
-            // await getDividends(symbol, api_key_alphavantage);
+            // await getDividends(symbol, api_key_alphavantage);    // there are 2 calls
             // await getKeyFigures(symbol, api_key_alphavantage);
-            await sleep(1500)
+            let numberOfCalls = 1;
+            await sleep(numberOfCalls * 1500);
         }
         rl.close()
         return
