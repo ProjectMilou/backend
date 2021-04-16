@@ -1004,7 +1004,70 @@
  *          type: number
  *      analytics:
  *          $ref: '#/definitions/analytics'
- *
+ *  finapiToken:
+ *    type: object
+ *    required: 
+ *    - grant_type
+ *    - client_id
+ *    - client_secret
+ *    properties:
+ *      grant_type:
+ *       type: string
+ *       description: client_credentials for authorizing a client, password - user. Automatically set depending on a {person}
+ *       enum: 
+ *       - client_credentials
+ *       - password
+ *       - refresh_token
+ *      client_id: 
+ *       type: string
+ *       description: Key retrieved from Secrets Manager. Automatically set.
+ *      client_secret: 
+ *       type: string
+ *       description: Key retrieved from Secrets Manager. Automatically set.
+ *      username: 
+ *       type: string
+ *       description: username needed for a finAPI authorization, automatically set with milou user authentication. 
+ *      password:
+ *       type: string
+ *       description: password needed for a finAPI authorization, automatically set with milou user authentication. 
+ *  newFinApiUser:
+ *    type: object
+ *    properties:
+ *      id:
+ *       type: string
+ *       description: user's identifier, finAPI username
+ *      password: 
+ *       type: string
+ *       description: user's password
+ *      email: 
+ *       type: string
+ *       description: user's email address
+ *      phone: 
+ *       type: string
+ *       description: user's phone number
+ *      isAutoUpdateEnabled:
+ *       type: boolean
+ *       description: Whether the user's bank connections will get updated in the course of finAPI's automatic batch update.
+ *  finApiBankFilters:
+ *    type: object
+ *    properties:
+ *      ids:
+ *       type: array
+ *       items:
+ *         type: integer
+ *       description: user's identifier, finAPI username
+ *      search: 
+ *       type: string
+ *       description: If specified, then only those banks will be contained in the result whose 'name', 'blz', 'bic' or 'city' contains the given search string (the matching works case-insensitive). 
+ *      location: 
+ *       type: string
+ *       description: user's email address
+ *      phone: 
+ *       type: string
+ *       description: user's phone number
+ *      isAutoUpdateEnabled:
+ *       type: boolean
+ *       description: Whether the user's bank connections will get updated in the course of finAPI's automatic batch update.
  *  bestYear:
  *      properties:
  *          changeBest:
@@ -1091,6 +1154,9 @@
  *     - portfolio
  *     summary: Get details of portfolio
  *     description: Gets portfolio details including key figures, scores and positions.
+ *                      
+ *                      The currency of the price of the single stocks is the currency specified inside of the "stock" parameter.
+ *                      The currency of the portfolio fields "totalReturn", "value" and "perf7d/perf1y" are always in EUR.
  *     operationId: getPortfolio
  *     produces:
  *     - application/json
@@ -1493,7 +1559,152 @@
  *        schema:
  *            type: string
  *            example: Unauthorized
- * /stocks/list?country={country}&currency={currency}&industry={industry}&mc={mc}:
+ *  
+ * /portfolio/token/{person}:
+ *   get: 
+ *     tags:
+ *     - portfolio
+ *     summary: Returns an access token for a finapi client/user
+ *     description: An access token authorization is needed for all finapi requests 
+ *     operationId: token
+ *     produces:
+ *     - application/json
+ *     consumes:
+ *     - application/json
+ *     parameters:
+ *     - in: body
+ *       name: auth_credentials
+ *       description: autorization credentials of a user/client
+ *       required: true
+ *       schema:
+ *         $ref: '#/definitions/finapiToken'
+ *     responses:
+ *       200: 
+ *         description: requested token
+ *       400:
+ *         description: Bad user credentials, or invalid refresh_token, or unsupported grant_type
+ *       401:
+ *        description: Bad client credentials
+ *       403:
+ *         description: Incorrect authorization role or you are not allowed to call this service for other reasons (see error message).
+ *       423:
+ *        description: User is locked
+ *       500:
+ *        description: An unexpected error occurred 
+ * 
+ * /portfolio/newUser:
+ *   post: 
+ *     tags:
+ *     - portfolio
+ *     summary: Creates a new finAPI user
+ *     description: Creates a new finAPI user, 1-1 MilouUser - finAPI communication. If no body given, finAPI creates randomly generated id and password. 
+ *     operationId: newFinApiUser
+ *     produces:
+ *     - application/json
+ *     consumes:
+ *     - application/json
+ *     parameters:
+ *     - in: body
+ *       name: username credentials
+ *       description: new username credentials
+ *       schema:
+ *         $ref: '#/definitions/newFinApiUser'
+ *     responses:
+ *       200: 
+ *         description: created user's data
+ *         schema:
+ *              type: array
+ *              items:
+ *                  $ref: '#/definitions/newFinApiUser'
+ *       400:
+ *         description: Bad request (for instance if the given password is too short/long)
+ *       401:
+ *        description: Not authenticated or invalid access_token
+ *       403:
+ *         description: Incorrect authorization role or you are not allowed to call this service for other reasons (see error message).
+ *       422:
+ *        description: ENTITY_EXISTS if the given userId already exists; ILLEGAL_ENTITY_STATE if you passed 'isAutoUpdateEnabled' = true, but the automatic update can't be enabled for this user (as it is disabled for the client).
+ *       500:
+ *        description: An unexpected error occurred
+ * 
+ * /portfolio/deleteUser:
+ *   get: 
+ *     tags:
+ *     - portfolio
+ *     summary: deletes a finAPI user
+ *     description: a user can delete its account while being authorized
+ *     operationId: deleteFinApiUser
+ *     produces:
+ *     - application/json
+ *     responses:
+ *       200: 
+ *         description: User deleted (empty response body)
+ *       401:
+ *        description: Not authenticated or invalid access_token
+ *       403:
+ *         description: Incorrect authorization role or you are not allowed to call this service for other reasons (see error message).
+ *       423:
+ *        description: User cannot get deleted at the moment as at least one of his bank connections is currently being imported or updated (either by the user or by finAPI's automatic batch update), or because the categorization of transactions is performed.
+ *       500:
+ *        description: An unexpected error occurred   
+ * 
+ * /portfolio/searchBanks:
+ *   post: 
+ *     tags:
+ *     - portfolio
+ *     summary: gives back a list of filtered banks
+ *     description: 
+ *     operationId: seacrhBanks
+ *     produces:
+ *     - application/json
+ *     consumes:
+ *     - application/json
+ *     parameters:
+ *     - in: body
+ *       name: bank filters
+ *       description: filters banks, depending on a request body
+ *       schema:
+ *         $ref: '#/definitions/finApiBankFilters'
+ *     responses:
+ *       200: 
+ *         description: List of requested banks
+ *       400:
+ *         description: List of requested banks
+ *       401:
+ *        description: Not authenticated or invalid access_token
+ *       403:
+ *         description: Incorrect authorization role or you are not allowed to call this service for other reasons (see error message).
+ *       500:
+ *        description: An unexpected error occurred  
+ * /portfolio/bankConnections:
+ *   post: 
+ *     tags:
+ *     - portfolio
+ *     summary: gives back a list of filtered banks
+ *     description: 
+ *     operationId: seacrhBanks
+ *     produces:
+ *     - application/json
+ *     consumes:
+ *     - application/json
+ *     parameters:
+ *     - in: body
+ *       name: bank filters
+ *       description: filters banks, depending on a request body
+ *       schema:
+ *         $ref: '#/definitions/finApiBankFilters'
+ *     responses:
+ *       200: 
+ *         description: List of requested banks
+ *       400:
+ *         description: List of requested banks
+ *       401:
+ *        description: Not authenticated or invalid access_token
+ *       403:
+ *         description: Incorrect authorization role or you are not allowed to call this service for other reasons (see error message).
+ *       500:
+ *        description: An unexpected error occurred 
+ * /stocks/list?{country}&{currency}&{industry}&{mc}:
  *  get:
  *   summary: Returns a stock list according to filter.
  *   description: Returns a stock list according to filter.
