@@ -78,7 +78,9 @@ const deleteFinAPIUser = async(user) => {
         }
     });
 
-    //TODO
+    await deleteAllBankConnections(user);
+    await refreshPortfolios(user);
+    //TODO TEST 
 }
 
 const searchBanks = async(searchString, location) => {
@@ -221,6 +223,8 @@ const refreshBankConnections = async(user) => {
     const access_token = await getUserAccessToken(user);
     const userId = user.id;
 
+    console.log(userId);
+
     const api_url = `https://sandbox.finapi.io/api/v1/bankConnections`;
 
     try {
@@ -232,6 +236,8 @@ const refreshBankConnections = async(user) => {
         });
 
         const json_response = await api_response.json();
+
+        console.log(json_response);
 
         let connections = json_response.connections;
 

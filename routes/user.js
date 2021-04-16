@@ -5,15 +5,10 @@ const genToken = require('../auth/auth');
 const UserModel = require("../models/user");
 const UserTokenModel = require("../models/userToken")
 const { hash, encrypt, decrypt } = require("../encryption/encryption");
-const finAPI = require('../models/finAPI'); <<
-<< << < HEAD
-const confirmation = require('../auth/confirmation'); ===
-=== =
+const finAPI = require('../models/finAPI');
 const confirmation = require('../auth/confirmation');
 const { refreshPortfolios } = require("./portfolio");
-const { refreshBankConnections } = require("./portfolio"); >>>
->>> > cf4795f6587efb85519bec53d84d23c1123a0393
-
+const { refreshBankConnections } = require("./portfolio");
 const router = express.Router();
 
 // logout not required, frontend will delete token for logout.
@@ -585,7 +580,7 @@ router.put('/reset/change/:id/:token', async(req, res) => {
 // todo filter!
 // todo add schema, add example for 200 response!
 router.get('/bank/search/:searchString', async(req, res) => {
-    const searchString = req.body.searchString;
+    const searchString = req.params.searchString;
     const location = req.body.location;
 
     const banks = await finAPI.searchBanks(searchString, location);
@@ -652,12 +647,12 @@ router.post('/bank/connections/add/:bankId', passport.authenticate('jwt', { sess
 
 // get bankconnections
 router.get('/bank/connections', passport.authenticate('jwt', { session: false }), async(req, res) => {
-    const userId = req.user.id;
+    const user = req.user;
 
     // await finAPI.updateFinApiConnection(userId); 
-    await finAPI.refreshBankConnections(userId);
+    await finAPI.refreshBankConnections(user);
 
-    const finResponse = await finAPI.getAllBankConnections(userId)
+    const finResponse = await finAPI.getAllBankConnections(user)
     res.send(finResponse);
 });
 
@@ -681,21 +676,15 @@ router.get('/bank/connections', passport.authenticate('jwt', { session: false })
  */
 // getSecurities todo (?) what used for (?)
 router.get('/refresh', passport.authenticate('jwt', { session: false }), async(req, res) => {
-    const userId = req.user._id;
+    const user = req.user;
 
     // await finAPI.updateFinApiConnection(id); 
-    await finAPI.refreshBankConnections(userId);
-    await finAPI.updateFinApiConnection(userId);
+    await finAPI.refreshBankConnections(user);
+    await finAPI.refreshPortfolios(user);
 
     res.status(200).json("User-related bank information successfully updated.")
 
 });
-
-// todo: /user/bank_connections/refresh
-
-// todo: /user/portfolio/refresh
-
-
 
 
 /**
@@ -718,7 +707,7 @@ router.get('/refresh', passport.authenticate('jwt', { session: false }), async(r
 // todo delete all connected portfolios from our database as well
 router.delete('/bank/connections/:id', passport.authenticate('jwt', { session: false }), async(req, res) => {
     const user = req.user;
-    const bankConnectionId = params.id;
+    const bankConnectionId = req.params.id;
 
     await finAPI.deleteOneBankConnection(user, bankConnectionId);
     res.status(200).json({ "message": "deleted bank connection " + bankConnectionId })
@@ -746,8 +735,8 @@ router.delete('/bank/connections/:id', passport.authenticate('jwt', { session: f
 // delete all bankConnections
 // todo delete all connected portfolios from our database as well
 router.delete('/bank/connections', passport.authenticate('jwt', { session: false }), async(req, res) => {
-    const userId = req.user.id;
-    await finAPI.deleteAllBankConnections(userId);
+    const user = req.user;
+    await finAPI.deleteAllBankConnections(user);
     res.status(200).json({ "message": "deleted all bank connection" });
 });
 
