@@ -259,6 +259,22 @@ router.get('/treynorRatio/:id', async (req, res) => {
         response.error="Portfolio with ID: " + id + " was not found!"
         return res.status(400).json(response)
     }
+    
+    const currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
+    const currStocksData = await stockTimeSeries.getStocksDataForSymbols(currSymbols);
+    if(!currStocksData) {
+        response.error = "No stock time series data for some of the stocks"
+        return res.status(400).json(response)
+    }
+
+    const currCompanyOverviews = await companyOverviews.getCompanyOverviewsBySymbolsWithoutReformatting(currSymbols)
+    if(!currCompanyOverviews) {
+        response.error = "No company overview data for some of the stocks"
+        return res.status(400).json(response)
+    }
+
+    const analyzedData = analytics.calculateTreynorRatio(currPortfolio, currStocksData, currCompanyOverviews)
+    response.success = analyzedData;
 
     return res.json(response)
 })

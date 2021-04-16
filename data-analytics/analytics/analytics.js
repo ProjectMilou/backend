@@ -10,6 +10,7 @@ const GL = require("./javascript-analysis/gainLoss")
 const DE = require("./javascript-analysis/debt-equity")
 const keyfigures = require('./javascript-analysis/key-figures');
 const interestCoverage = require('./javascript-analysis/interest-coverage');
+const treynorRatioModule = require('./javascript-analysis/treynorRatio');
 
 /**
  * Calculates the Maximum Drawdown, Best and Worst year, Final Portfolio Balance,
@@ -88,6 +89,13 @@ function calculateInterestCoverage(incomeStatementData) {
     return results;
 }
 
+function calculateTreynorRatio(portfolio, stocksData, companyOverviews) {
+    const namesToSymbols = extractNamesToSymbolsMapping(portfolio)
+    const symbolsToBeta = extractBetaFromCOverview(companyOverviews);
+    const treynorRatio = treynorRatioModule.treynorRatio(portfolio, stocksData, symbolsToBeta, namesToSymbols);
+    return {treynorRatio}
+}
+
 function extractNamesToSymbolsMapping(portfolio) {
     const namesToSymbols = {}
     portfolio.securities.forEach(security => {
@@ -110,6 +118,14 @@ function filterStocksDataForBackTesting(stocksData, fromDate, toDate) {
     return filteredData;
 }
 
+function extractBetaFromCOverview(companyOverviews) {
+    const symbolsToBeta = {}
+    Object.keys(companyOverviews).forEach(symbol => {
+        symbolsToBeta[companyOverviews[symbol].symbol] = companyOverviews[symbol].beta
+    })
+    return symbolsToBeta;
+}
+
 exports.backtest = backtest;
 exports.calculateDebtEquity = calculateDebtEquity;
 exports.calculateDiversification = calculateDiversification;
@@ -120,3 +136,4 @@ exports.calculateSDAndCorrelationAndVolatility = calculateSDAndCorrelationAndVol
 exports.calculateSharpeRatio = calculateSharpeRatio;
 exports.calculateKeyFigures = calculateKeyFigures;
 exports.calculateInterestCoverage = calculateInterestCoverage;
+exports.calculateTreynorRatio = calculateTreynorRatio;
