@@ -1746,8 +1746,8 @@
  *
  * /stocks/search?id={id}:
  *  get:
- *   summary: Returns a stock with given id.
- *   description: Returns a stock with given id.
+ *   summary: Returns stock list with search parameter.
+ *   description: Returns stock list with search parameter.
  *   produces:
  *     - application/json
  *   parameters:

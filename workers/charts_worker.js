@@ -29,7 +29,7 @@ module.exports.updateAllCharts = async function () {
     const startFetching = async () => {
         for await (const symbol of rl) {
             // console.log(symbol);
-            // await getDataPoints(symbol, api_key_alphavantage);
+            await getDataPoints(symbol, api_key_alphavantage);
             // await getTimeIntervalPerformance(symbol, api_key_alphavantage);
             // await getYearlyPerformance(symbol, api_key_alphavantage);
             // await getImage(symbol, api_key_finhub);
