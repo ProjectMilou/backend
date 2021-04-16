@@ -29,15 +29,15 @@ module.exports.updateAllStocks = async function () {
             // await getStockOverview(symbol, api_key_alphavantage);
             // await updateIsinAndWknWithMockData(symbol);
             await getTimeIntervalPerformance(symbol, api_key_alphavantage);
-            // await getAnalysis(symbol, api_key_finhub)
-            // await updateMcSize(symbol, api_key_alphavantage)
+            await getAnalysis(symbol, api_key_finhub);
+            // await updateMcSize(symbol, api_key_alphavantage);
             // await getYearlyPerformance(symbol, api_key_alphavantage);
             // await getImage(symbol, api_key_finhub);
             // await getBalanceSheet(symbol, api_key_alphavantage);
             // await getDetailedAnalysis(symbol, api_key_benzinga);
             // await getIncomeStatement(symbol, api_key_alphavantage);
             // await getCashFlow(symbol, api_key_alphavantage);
-            let numberOfCalls = 1;
+            let numberOfCalls = 2;
             await sleep(numberOfCalls * 1500);
         }
         rl.close()
@@ -163,10 +163,11 @@ async function getStockOverview(symbol, api_key) {
 }
 
 async function updateIsinAndWknWithMockData(symbol) {
-    const isinMin = 10000000000;
-    const isinMax = 1000000000;
+    const isinMax = 10000000000;
+    const isinMin = 1000000000;
+    const wknMax = 1000000;
     const wknMin = 100000;
-    const wknMax = 1000000; 
+
     let isin = Math.floor(Math.random() * (isinMax - isinMin + 1)) + isinMin;
     isin = "US" + isin;
     const wkn = Math.floor(Math.random() * (wknMax - wknMin + 1)) + wknMin;
@@ -182,7 +183,6 @@ async function updateIsinAndWknWithMockData(symbol) {
         function (err, _stockInstance) {
             if (err)
                 console.log(err)
-
         }
     );
 }

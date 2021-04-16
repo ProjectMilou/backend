@@ -433,7 +433,7 @@ router.get('/charts/key_figures', async (req, res) => {
 
 router.get('/finanzen', async (req, res) => {
     let id = req.query.id;
-    if (id === 'sp_500' || id === 'sp500')
+    if (id.toLowerCase() === 'sp_500' || id.toLowerCase() === 'sp500')
         id = 's&p_500';
     console.log(id);
 
