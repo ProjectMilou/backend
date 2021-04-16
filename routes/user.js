@@ -5,8 +5,14 @@ const genToken = require('../auth/auth');
 const UserModel = require("../models/user");
 const UserTokenModel = require("../models/userToken")
 const { hash, encrypt, decrypt } = require("../encryption/encryption");
-const finAPI = require('../models/finAPI');
+const finAPI = require('../models/finAPI'); <<
+<< << < HEAD
+const confirmation = require('../auth/confirmation'); ===
+=== =
 const confirmation = require('../auth/confirmation');
+const { refreshPortfolios } = require("./portfolio");
+const { refreshBankConnections } = require("./portfolio"); >>>
+>>> > cf4795f6587efb85519bec53d84d23c1123a0393
 
 const router = express.Router();
 
@@ -643,6 +649,7 @@ router.post('/bank/connections/add/:bankId', passport.authenticate('jwt', { sess
  *            - bearerAuth: []
  *
  */
+
 // get bankconnections
 router.get('/bank/connections', passport.authenticate('jwt', { session: false }), async(req, res) => {
     const userId = req.user.id;
@@ -683,6 +690,13 @@ router.get('/refresh', passport.authenticate('jwt', { session: false }), async(r
     res.status(200).json("User-related bank information successfully updated.")
 
 });
+
+// todo: /user/bank_connections/refresh
+
+// todo: /user/portfolio/refresh
+
+
+
 
 /**
  * @swagger
