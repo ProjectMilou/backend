@@ -485,7 +485,7 @@ router.get('/reset/confirm/:id/:token', async(req, res) => {
     else {
         // now that user is confirmed -> redirect to frontend-webform
         const newToken = resetResponse.token
-        const url = "https://milou.io/passwordreset/" + id + "/" + newToken;
+        const url = "https://milou.io/reset/" + id + "/" + newToken;
         res.redirect(url);
 
     }
