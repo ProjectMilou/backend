@@ -1495,7 +1495,7 @@
  *        schema:
  *            type: string
  *            example: Unauthorized
- * /stocks/list?{country}&{currency}&{industry}&{mc}:
+ * /stocks/list?country={country}&currency={currency}&industry={industry}&mc={mc}:
  *  get:
  *   summary: Returns a stock list according to filter.
  *   description: Returns a stock list according to filter.
@@ -1537,8 +1537,8 @@
  *
  * /stocks/search?id={id}:
  *  get:
- *   summary: Returns a stock with given id.
- *   description: Returns a stock with given id.
+ *   summary: Returns stock list with search parameter.
+ *   description: Returns stock list with search parameter.
  *   produces:
  *     - application/json
  *   parameters:
@@ -1792,41 +1792,6 @@
  *       properties:
  *        news:
  *         $ref: '#/definitions/newsss'
- *    '400':
- *      description: Invalid
- *
- * /stocks/risk?id={id}:
- *  get:
- *   summary: Returns risk analysis.
- *   description: Returns risk analysis.
- *   produces:
- *     - application/json
- *   parameters:
- *     - name: id
- *       in: path
- *       description: symbol of stock
- *       required: true
- *       type: string
- *   tags:
- *    - stocks
- *   responses:
- *    '200':
- *      description: Successful operation
- *      schema:
- *       type: object
- *       properties:
- *        rewards:
- *         type: array
- *         items:
- *          type: string
- *        risks:
- *         type: array
- *         items:
- *          type: string
- *        risk_checks:
- *         type: array
- *         items:
- *          type: string
  *    '400':
  *      description: Invalid
  *

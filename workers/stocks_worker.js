@@ -27,8 +27,9 @@ module.exports.updateAllStocks = async function () {
         for await (const symbol of rl) {
             // console.log(symbol);
             // await getStockOverview(symbol, api_key_alphavantage);
-            // await getTimeIntervalPerformance(symbol, api_key_alphavantage);
-            // await getAnalysis(symbol, api_key_finhub);
+            // await updateIsinAndWknWithMockData(symbol);
+            await getTimeIntervalPerformance(symbol, api_key_alphavantage);
+            await getAnalysis(symbol, api_key_finhub);
             // await updateMcSize(symbol, api_key_alphavantage);
             // await getYearlyPerformance(symbol, api_key_alphavantage);
             // await getImage(symbol, api_key_finhub);
@@ -36,7 +37,7 @@ module.exports.updateAllStocks = async function () {
             // await getDetailedAnalysis(symbol, api_key_benzinga);
             // await getIncomeStatement(symbol, api_key_alphavantage);
             // await getCashFlow(symbol, api_key_alphavantage);
-            let numberOfCalls = 1;
+            let numberOfCalls = 2;
             await sleep(numberOfCalls * 1500);
         }
         rl.close()
@@ -159,6 +160,31 @@ async function getStockOverview(symbol, api_key) {
                 });
         })
         .catch(err => console.log(err))
+}
+
+async function updateIsinAndWknWithMockData(symbol) {
+    const isinMax = 10000000000;
+    const isinMin = 1000000000;
+    const wknMax = 1000000;
+    const wknMin = 100000;
+
+    let isin = Math.floor(Math.random() * (isinMax - isinMin + 1)) + isinMin;
+    isin = "US" + isin;
+    const wkn = Math.floor(Math.random() * (wknMax - wknMin + 1)) + wknMin;
+    let stock = stockModel.findOneAndUpdate(
+        { symbol: symbol },
+        {
+            $set:
+            {
+                "isin": isin,
+                "wkn": wkn,
+            },
+        },
+        function (err, _stockInstance) {
+            if (err)
+                console.log(err)
+        }
+    );
 }
 
 async function getImage(symbol, api_key) {
