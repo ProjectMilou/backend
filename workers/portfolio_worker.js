@@ -13,7 +13,7 @@ const fetch = require('node-fetch');
 const { variance } = require('stats-lite');
 
 
-const getExchangeRate = async (from_currency, to_currency) => { //from currency would be "base" I guess
+const getExchangeRate = async (from_currency, to_currency) => {
     let rate = 1;
     if (from_currency != to_currency && from_currency !== undefined) {
         var params = new URLSearchParams({
@@ -41,10 +41,14 @@ const getExchangeRate = async (from_currency, to_currency) => { //from currency 
     return rate;
 }
 
-const toEur = (money, currency) => {
-    var exchangeRate = getExchangeRate(currency, "EUR")
-    console.log(currency + ": "+ exchangeRate)
-    return money * exchangeRate
+const toEur = async (money, currency) => {
+    if (money) {
+        var exchangeRate = await getExchangeRate(currency, "EUR")
+        return money * exchangeRate
+    }
+    else {
+        return 0
+    }
 }
 
 const percent = (nr1, nr2) => {
@@ -139,6 +143,21 @@ async function updateStockCronjob(position) {
     await updateStock(position)
 }
 
+async function calculateStockPricesInEur(portfolio) {
+    var result = []
+    var positions = portfolio.portfolio.positions
+    for (var i = 0; i < positions.length; i++) {
+        var newStock = { "stock": {} }
+        newStock.stock.price = await toEur(positions[i].stock.price, positions[i].stock.marketValueCurrency)
+        newStock.qty = positions[i].qty
+        newStock.stock.score = positions[i].stock.score
+        newStock.stock.perf7d = positions[i].stock.perf7d
+        newStock.stock.perf1y = positions[i].stock.perf1y
+        newStock.totalReturn = positions[i].totalReturn
+        result.push(newStock)
+    }
+    return result
+}
 
 async function updatePortfolio(portfolio) {
     //overview
@@ -167,14 +186,16 @@ async function updatePortfolio(portfolio) {
             "correlations": {}
         }
     } else {
-        overview.value = portfolio.portfolio.positions.map(({ stock: { price: price, marketValueCurrency: currency }, qty: qty }) => returnValueIfDefined(toEur(price, currency) * qty)).reduce((a, b) => a + b, 0)
+        var stockArrayWithPriceInEur = await calculateStockPricesInEur(portfolio)
+        overview.value = stockArrayWithPriceInEur.map(({ stock: { price: price }, qty: qty }) => returnValueIfDefined(price * qty)).reduce((a, b) => a + b, 0)
+
         if (overview.value) {
-            overview.score = portfolio.portfolio.positions.map(({ stock: { price: price, score: score, marketValueCurrency: currency }, qty: qty }) => returnValueIfDefined(toEur(price, currency) * qty * score)).reduce((a, b) => a + b, 0) / (overview.value)
+            overview.score = stockArrayWithPriceInEur.map(({ stock: { price: price, score: score }, qty: qty }) => returnValueIfDefined(price * qty * score)).reduce((a, b) => a + b, 0) / (overview.value)
         } else {
             overview.score = 0
         }
-        overview.perf7d = portfolio.portfolio.positions.map(({ stock: { perf7d: performance, marketValueCurrency: currency } }) => returnValueIfDefined(toEur(performance, currency))).reduce((a, b) => a + b, 0)
-        overview.perf1y = portfolio.portfolio.positions.map(({ stock: { perf1y: performance, marketValueCurrency: currency } }) => returnValueIfDefined(toEur(performance, currency))).reduce((a, b) => a + b, 0)
+        overview.perf7d = stockArrayWithPriceInEur.map(({ stock: { perf7d: performance } }) => returnValueIfDefined(performance)).reduce((a, b) => a + b, 0)
+        overview.perf1y = stockArrayWithPriceInEur.map(({ stock: { perf1y: performance } }) => returnValueIfDefined(performance)).reduce((a, b) => a + b, 0)
         overview.perf7dPercent = percent(overview.perf7d, overview.value)
         overview.perf1yPercent = percent(overview.perf1y, overview.value)
         //risk
@@ -223,8 +244,12 @@ async function updatePortfolio(portfolio) {
         //sharpeRatio
         var analyzedData
         if (currStocksData) {
-            analyzedData = analytics.calculateSharpeRatio(currPortfolio, currStocksData);
-            pAnalytics.sharpeRatio = analyzedData.portfolioSharpeRatio
+            try {
+                analyzedData = analytics.calculateSharpeRatio(currPortfolio, currStocksData);
+                pAnalytics.sharpeRatio = analyzedData.portfolioSharpeRatio
+            } catch (err) {
+                pAnalytics.sharpeRatio = 0
+            }
         } else {
             pAnalytics.sharpeRatio = 0
         }
@@ -253,14 +278,18 @@ async function updatePortfolio(portfolio) {
         if (currSymbols)
             currCompanyOverviews2 = await companyOverviews.getCompanyOverviewsBySymbolsWithoutReformatting(currSymbols)
         if (currStocksData && currCompanyOverviews2) {
-            const analyzedData = analytics.calculateTreynorRatio(currPortfolio, currStocksData, currCompanyOverviews2)
-            pAnalytics.treynorRatio = analyzedData.treynorRatio
+            try {
+                const analyzedData = analytics.calculateTreynorRatio(currPortfolio, currStocksData, currCompanyOverviews2)
+                pAnalytics.treynorRatio = analyzedData.treynorRatio
+            } catch (err) {
+                pAnalytics.treynorRatio = 0
+            }
         } else {
             pAnalytics.treynorRatio = 0
         }
 
         //others
-        portfolio.portfolio.totalReturn = portfolio.portfolio.positions.map(({ stock: { marketValueCurrency: currency }, totalReturn: performance }) => returnValueIfDefined(toEur(performance, currency))).reduce((a, b) => a + b, 0)
+        portfolio.portfolio.totalReturn = stockArrayWithPriceInEur.map(({ totalReturn: performance }) => returnValueIfDefined(performance)).reduce((a, b) => a + b, 0)
         portfolio.portfolio.totalReturnPercent = percent(portfolio.portfolio.totalReturn, overview.value)
         //TODO nextDividend: Number,//no data, maybe Alpha Vantage
     }

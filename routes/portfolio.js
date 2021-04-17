@@ -29,25 +29,24 @@ const { rawListeners } = require('../models/portfolio');
 const { deleteAllBankConnections } = require('../models/finAPI');
 const { finalPortfolioBalance } = require('../data-analytics/analytics/backtesting/backtesting');
 
-// cron.schedule("33 18 * * *", async() => {
-//     console.log("it's 21 20")
-//     await finAPI.refreshCronjob();
-//     Portfolio.find({}, async function (err, portf) {
-//         if (err) {
-//             //do nothing
-//         } else {
-//             for (var j = 0; j < portf.length; j++) {
-//                 try {
-//                     await portfolioWorkers.updatePortfolioCronjob(portf[j])
-//                     portf[j].save()
-//                 } catch (e) {
-//                     //? doesn't work
-//                 }
+cron.schedule("0 2 * * *", async() => {
+    await finAPI.refreshCronjob();
+    Portfolio.find({}, async function (err, portf) {
+        if (err) {
+            console.log(err)
+        } else {
+            for (var j = 0; j < portf.length; j++) {
+                try {
+                    await portfolioWorkers.updatePortfolioCronjob(portf[j])
+                    portf[j].save()
+                } catch (err) {
+                    console.log(err)
+                }
 
-//             }
-//         }
-//     })
-// });
+            }
+        }
+    })
+});
 
 
 // what percent nr1 is in realtion to nr2
