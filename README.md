@@ -110,7 +110,7 @@ Endpoint | Parameters | Description | Example response
 /stocks/balanceSheet | id (symbol of a stock) | Get balance sheet. | [Click](https://api.milou.io/stocks/balanceSheet?id=MSFT)
 /stocks/incomeStatement | id (symbol of a stock) | Get income statement. | [Click](https://api.milou.io/stocks/incomeStatement?id=IBM)
 /stocks/cashFlow | id (symbol of a stock) | Get cash flow. | [Click](https://api.milou.io/stocks/cashFlow?id=MSFT)
-/stocks/finanzen | id (symbol e.g. dax, sp500) | Get finanzen data. | [Click](https://api.milou.io/stocks/finanzen?id=dax)
+/stocks/finanzen | id (symbol e.g. dax, sp500) | Get [finanzen](https://www.finanzen.net/index/dax) data. | [Click](https://api.milou.io/stocks/finanzen?id=dax)
 
 <sup>1</sup> Since ISIN and WKN are licensed and are not provided by any of free APIs, we mocked ISIN and WKN fields of stocks with random data in a proper format.<br/>
 <sup>2</sup> [Benzinga](https://www.benzinga.com/) is on free student trial currently and valid until 19.04.2021. After this date, detailed-analysts endpoint will not be updated.
