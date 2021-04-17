@@ -2,6 +2,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const mongoose = require('mongoose');//https://mongoosejs.com/docs/index.html
 mongoose.set('useFindAndModify', false);
+mongoose.set('useCreateIndex', true);
 
 module.exports = function (app) {
 
