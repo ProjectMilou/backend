@@ -41,7 +41,7 @@ const getExchangeRate = async (from_currency, to_currency) => {
     return rate;
 }
 
- const toEur = async(money, currency) => {
+const toEur = async (money, currency) => {
     if (money) {
         var exchangeRate = await getExchangeRate(currency, "EUR")
         return money * exchangeRate
@@ -188,7 +188,7 @@ async function updatePortfolio(portfolio) {
     } else {
         var stockArrayWithPriceInEur = await calculateStockPricesInEur(portfolio)
         overview.value = stockArrayWithPriceInEur.map(({ stock: { price: price }, qty: qty }) => returnValueIfDefined(price * qty)).reduce((a, b) => a + b, 0)
-        
+
         if (overview.value) {
             overview.score = stockArrayWithPriceInEur.map(({ stock: { price: price, score: score }, qty: qty }) => returnValueIfDefined(price * qty * score)).reduce((a, b) => a + b, 0) / (overview.value)
         } else {
@@ -244,8 +244,12 @@ async function updatePortfolio(portfolio) {
         //sharpeRatio
         var analyzedData
         if (currStocksData) {
-            analyzedData = analytics.calculateSharpeRatio(currPortfolio, currStocksData);
-            pAnalytics.sharpeRatio = analyzedData.portfolioSharpeRatio
+            try {
+                analyzedData = analytics.calculateSharpeRatio(currPortfolio, currStocksData);
+                pAnalytics.sharpeRatio = analyzedData.portfolioSharpeRatio
+            } catch (err) {
+                pAnalytics.sharpeRatio = 0
+            }
         } else {
             pAnalytics.sharpeRatio = 0
         }
@@ -274,8 +278,12 @@ async function updatePortfolio(portfolio) {
         if (currSymbols)
             currCompanyOverviews2 = await companyOverviews.getCompanyOverviewsBySymbolsWithoutReformatting(currSymbols)
         if (currStocksData && currCompanyOverviews2) {
-            const analyzedData = analytics.calculateTreynorRatio(currPortfolio, currStocksData, currCompanyOverviews2)
-            pAnalytics.treynorRatio = analyzedData.treynorRatio
+            try {
+                const analyzedData = analytics.calculateTreynorRatio(currPortfolio, currStocksData, currCompanyOverviews2)
+                pAnalytics.treynorRatio = analyzedData.treynorRatio
+            } catch (err) {
+                pAnalytics.treynorRatio = 0
+            }
         } else {
             pAnalytics.treynorRatio = 0
         }
