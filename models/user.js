@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const {encrypt, decrypt, hash} = require('../encryption/encryption');
-const {createFinAPIUser} = require('./finAPI');
+const { encrypt, decrypt, hash } = require('../encryption/encryption');
+const { createFinAPIUser } = require('./finAPI');
 // adapted from https://www.digitalocean.com/community/tutorials/api-authentication-with-json-web-tokensjwt-and-passport
 
 /**

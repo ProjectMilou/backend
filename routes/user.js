@@ -479,10 +479,9 @@ router.get('/reset/confirm/:id/:token', async(req, res) => {
     const resetResponse = await confirmation.resetConfirm(id, token);
 
 
-    if(!resetResponse){
-        res.status(404).json({message: "token invalid or expired or user not found."});
-    }
-    else {
+    if (!resetResponse) {
+        res.status(404).json({ message: "token invalid or expired or user not found." });
+    } else {
         // now that user is confirmed -> redirect to frontend-webform
         const newToken = resetResponse.token
         const url = "https://milou.io/reset/" + id + "/" + newToken;
@@ -567,7 +566,7 @@ router.put('/reset/change/:id/:token', async(req, res) => {
  *              Search for a bank in finAPI
  *          description:
  *              Return all banks, that match the search-string while also being supported by finAPI.<br>
- *              Only Banks shown, that are available at finAPI
+ *              Only Banks shown, that are available at finAPI. A location can be optionally specified to filter banks, array of two-letter country codes (ISO 3166 ALPHA-2), for example DE, AT.
  *          tags:
  *            - user
  *          produces:
@@ -576,6 +575,11 @@ router.put('/reset/change/:id/:token', async(req, res) => {
  *            - in: path
  *              name: searchString
  *              type: string
+ *            - in: body 
+ *              name: location
+ *              type: array
+ *              items:
+ *               type: string
  *          responses:
  *              200:
  *                  description:
@@ -662,7 +666,7 @@ router.get('/bank/connections', passport.authenticate('jwt', { session: false })
 
 /**
  * @swagger
- *  /user/bank/refresh (not working as specified) :
+ *  /user/bank/refresh:
  *      get:
  *          summary:
  *              Refresh all bank-connections of a user, importing his securities into our database
@@ -693,7 +697,7 @@ router.get('/refresh', passport.authenticate('jwt', { session: false }), async(r
 
 /**
  * @swagger
- *  /user/bank/connections/:id (not working as specified):
+ *  /user/bank/connections/:id:
  *      delete:
  *          summary:
  *              Get all bank-connections of a user
@@ -719,7 +723,7 @@ router.delete('/bank/connections/:id', passport.authenticate('jwt', { session: f
 
 /**
  * @swagger
- *  /user/bank/connections (not working as specified):
+ *  /user/bank/connections:
  *      delete:
  *          summary:
  *              Delete all of a users bank-connections.
@@ -746,7 +750,7 @@ router.delete('/bank/connections', passport.authenticate('jwt', { session: false
 
 /**
  * @swagger
- * /user/delete (not working as specified (bank not removed properly)):
+ * /user/delete:
  *  delete:
  *   description:
  *      Delete a user account and if exists portfolio details as well as user information on finAPI. JWT needs to be passed as Bearer-Token in header.
