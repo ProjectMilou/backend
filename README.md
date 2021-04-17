@@ -89,7 +89,7 @@ Other fields/endpoints do not require daily update and hence information is stat
 
 The Authentication of users can be viewed at `auth/auth.js`. It uses a generator as well as a secret to generate
 a [JSON web token (JWT)](https://jwt.io/), which has to be passed as a bearer token in the header of requests, that should
-only work for signed-in users.
+only work for signed-in users. This JWT token is valid for 24 hours, afterwards it has to be renewed.
 
 ## Endpoints
 
