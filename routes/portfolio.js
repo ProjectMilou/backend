@@ -29,9 +29,9 @@ const { rawListeners } = require('../models/portfolio');
 const { deleteAllBankConnections } = require('../models/finAPI');
 const { finalPortfolioBalance } = require('../data-analytics/analytics/backtesting/backtesting');
 
-// cron.schedule("55 02 * * *", () => {
+// cron.schedule("33 18 * * *", async() => {
 //     console.log("it's 21 20")
-//     finAPI.refreshCronjob();
+//     await finAPI.refreshCronjob();
 //     Portfolio.find({}, async function (err, portf) {
 //         if (err) {
 //             //do nothing

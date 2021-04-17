@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const bankConnection = require('../models/bankConnection');
 const stockModel = require("../models/stock");
-const UserModel = require("../models/user").User;
+const UserModel = require("../models/user");
 const Portfolio = require('../models/portfolio');
 
 // all functions, that work on finAPI are here
@@ -276,31 +276,34 @@ async function updateOrSaveConnections(userId, connection) {
                     }
                 );
             } else {
-                let accounts = connection.accountIds;
+                if (result.bankConnections) {
+                    let accounts = connection.accountIds;
 
-                for (var i in accounts) {
-                    let account = result.bankConnections.accountIds.find((accountId) => {
-                        return accounts[i] == accountId;
-                    });
-                    if (!account) {
-                        var today = new Date();
-                        var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-                        var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-                        var dateTime = date + ' ' + time;
+                    for (var i in accounts) {
+                        let account = result.bankConnections.accountIds.find((accountId) => {
+                            return accounts[i] == accountId;
+                        });
+                        if (!account) {
+                            var today = new Date();
+                            var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+                            var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                            var dateTime = date + ' ' + time;
 
-                        result.bankConnections.accountIds.push(accounts[i]);
-                        result.bankConnections.modified = dateTime;
-                        console.log("added a connection");
+                            result.bankConnections.accountIds.push(accounts[i]);
+                            result.bankConnections.modified = dateTime;
+                            console.log("added a connection");
+                        }
                     }
+
+                    result.save(
+                        function(error, connectionRes) {
+                            if (error) console.log(error)
+                            else {
+                                console.log('updated connection successfully');
+                            }
+                        });
                 }
 
-                result.save(
-                    function(error, connectionRes) {
-                        if (error) console.log(error)
-                        else {
-                            console.log('updated connection successfully');
-                        }
-                    });
             }
         }
     });
@@ -399,7 +402,7 @@ const refreshPortfolios = async(user) => {
         const json_response = await api_response.json();
         let securities = json_response.securities;
 
-        if (securities.length > 0) {
+        if (securities !== undefined && securities.length > 0) {
             Portfolio.deleteMany({ "userId": userId, "portfolio.overview.virtual": false }, function(err, resp) {
                 if (err) console.log(err);
                 else console.log("deleted real\n" + JSON.stringify(resp));
@@ -620,17 +623,18 @@ const searchSymbol = async(isin, wkn) => {
 }
 
 const refreshCronjob = async() => {
-    /*   UserModel.find({}, async(err, users) => {
-              if (!err) {
-                  for (var i = 0; i < users.length; i++) {
-                      // await updateFinApiConnection(id);
-                      await refreshBankConnections(users[i]);
-                      await refreshPortfolios(users[i]);
-                  }
-              }
-          }
+    // await UserModel.find({}, async(err, users) => {
+    //         console.log("before");
+    //         if (!err) {
+    //             for (var i = 0; i < users.length; i++) {
+    //                 // await updateFinApiConnection(id);
+    //                 await refreshBankConnections(users[i]);
+    //                 await refreshPortfolios(users[i]);
+    //             }
+    //         }
+    //     }
 
-      ); */
+    // );
 }
 
 module.exports = {
