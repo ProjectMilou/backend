@@ -13,6 +13,7 @@ const init = async () => {
     const getPortfolioRoute = require('./routes/portfolio');
     const getStocksRoute = require('./routes/stocks');
     const stockWorkers = require('./workers/stocks_worker')
+    const chartWorkers = require('./workers/charts_worker')
     const swaggerJsDoc = require('swagger-jsdoc');
     const swaggerUi = require('swagger-ui-express');
     const cron = require("node-cron");
@@ -23,8 +24,9 @@ const init = async () => {
     const HOST = '0.0.0.0';
     const app = express();
 
-    cron.schedule("50 1 * * *", () => {
-        stockWorkers.updateAllStocks()
+    cron.schedule("0 4 * * *", () => {
+        stockWorkers.updateAllStocks();
+        chartWorkers.updateAllCharts();
     }, {
         timezone: "Europe/Berlin"
     });

@@ -4,20 +4,14 @@ const Portfolio = require('../models/portfolio');
 //const PortfolioOverview = PortfolioModels.portfolioOverview
 const mongoose = require('mongoose');
 const { ResourceGroups } = require('aws-sdk');
-const cookieParser = require('cookie-parser');
 const portfolioWorkers = require('../workers/portfolio_worker')
-
-const secret = require('../secret/secret')();
-const dotenv = require('dotenv');
-dotenv.config();
+const stockDetailedAnalysisModel = require('../models/stockDetailedAnalysis');
+const finAPI = require('../models/finAPI');
 
 const router = express.Router();
 router.use(express.json()); // for parsing application/json
 router.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
-router.use(cookieParser(process.env.auth_jwt_secret));
-
-const fetch = require('node-fetch');
 const passport = require('passport');
 
 const handle_database_error = (res, err) => {
@@ -30,80 +24,30 @@ const handle_database_error = (res, err) => {
 
 //cronjob
 const cron = require("node-cron");
+const { json } = require('express');
+const { rawListeners } = require('../models/portfolio');
+const { deleteAllBankConnections } = require('../models/finAPI');
+const { finalPortfolioBalance } = require('../data-analytics/analytics/backtesting/backtesting');
 
-// cron.schedule("39 17 * * *", () => {
-//     console.log("it's 21 20")
-//     Portfolio.find({}, async function (err, portf) {
-//         if (err) {
-//             //do nothing
-//         } else {
-//             for (var j = 0; j < portf.length; j++) {
-//                 try {
-//                     await portfolioWorkers.updatePortfolioCronjob(portf[j])
-//                     portf[j].save()
-//                 } catch (e) {
-//                     //? doesn't work
-//                 }
+cron.schedule("0 2 * * *", async() => {
+    await finAPI.refreshCronjob();
+    Portfolio.find({}, async function (err, portf) {
+        if (err) {
+            console.log(err)
+        } else {
+            for (var j = 0; j < portf.length; j++) {
+                try {
+                    await portfolioWorkers.updatePortfolioCronjob(portf[j])
+                    portf[j].save()
+                } catch (err) {
+                    console.log(err)
+                }
 
-//             }
-//         }
-//     })
-// });
+            }
+        }
+    })
+});
 
-
-const stockMock1 = {
-    stock: {
-        //id: Number?
-        //accountId?
-        isin: "DE000A1PG979",
-        wkn: "A1PG97",
-        symbol: "AEE",
-        name: "Ameren Corporation",
-        price: 83.84, //=marketValue?
-        marketValueCurrency: "USD",
-        quote: 81.13,
-        quoteCurrency: "USD",
-        quoteDate: "Mon Apr 05 2021 17:55:14 GMT+0300 (GMT+03:00)",
-        entryQuote: 66.98,
-        entryQuoteCurrency: "USD",
-        perf7d: 0.993, //?
-        perf1y: 1.032, //?
-        country: "USA",
-        industry: "Utilities-Regulated Electric",
-        score: 0 //? -> finnHub reccomendation trends, for 10 biggest position, average of score multiplied with value, sum divided with total amount of reccomendations
-    },
-    qty: 2, // = quantityNominal?
-    quantityNominalType: "UNIT",
-    totalReturn: 10, //=profitOrLoss?
-    totalReturnPercent: 5 //=?
-}
-
-const stockMock2 = {
-    stock: {
-        //id: Number?
-        //accountId?
-        isin: "?",
-        wkn: "?",
-        symbol: "CCI",
-        name: "Crown Castle International Corp. (REIT)",
-        price: 175.26, //=marketValue?
-        marketValueCurrency: "EUR",
-        quote: 176.69,
-        quoteCurrency: "EUR",
-        quoteDate: "Mon Apr 05 2021 17:57:32 GMT+0300 (GMT+03:00)",
-        entryQuote: 74.2383,
-        entryQuoteCurrency: "EUR",
-        perf7d: 1.042, //?
-        perf1y: 1.081, //?
-        country: "USA",
-        industry: "REIT-Specialty",
-        score: 0 //? -> finnHub reccomendation trends, for 10 biggest position, average of score multiplied with value, sum divided with total amount of reccomendations
-    },
-    qty: 20, // = quantityNominal?
-    quantityNominalType: "UNIT",
-    totalReturn: 5, //=profitOrLoss?
-    totalReturnPercent: 1 //=?
-}
 
 // what percent nr1 is in realtion to nr2
 const percent = (nr1, nr2) => {
@@ -138,13 +82,11 @@ const emptyPortfolio = (portfolioId, userId, name) => {
 }
 
 
-const newStock = async (symbol, qty) => {
+const newStock = async(symbol, qty) => {
     var stockArray = await portfolioWorkers.searchStock(symbol);
     var stock = stockArray[0]
     if (!stock) {
         stock = {
-            //id: Number?
-            //accountId?
             "isin": "?",
             "wkn": "?",
             "symbol": symbol,
@@ -167,33 +109,37 @@ const newStock = async (symbol, qty) => {
             "score": 0
         }
     }
+    var detailedAnalysis = await stockDetailedAnalysisModel.findOne({ "symbol": stock.symbol })
+    if (!detailedAnalysis) {
+        detailedAnalysis = {
+            "averageGoal": 0
+        }
+    }
     var result = {
         "stock": {
-            //id: Number?
-            //accountId?
             "isin": stock.isin,
             "wkn": stock.wkn,
             "symbol": stock.symbol,
             "name": stock.name,
             "price": stock.price,
             "marketValueCurrency": stock.currency,
-            "quote": stock.price, //TODO
-            "quoteCurrency": stock.currency, //TODO
-            "quoteDate": stock.date, //TODO
-            "entryQuote": stock.price, //TODO (=quote)
-            "entryQuoteCurrency": stock.currency, //TODO
+            "quote": stock.price,
+            "quoteCurrency": stock.currency,
+            "quoteDate": stock.date,
+            "entryQuote": stock.price,
+            "entryQuoteCurrency": stock.currency,
             "perf7d": stock.per7d,
             "perf1y": stock.per365d,
             "perf7dPercent": percent(stock.per7d, (stock.price * qty)),
             "perf1yPercent": percent(stock.per365d, (stock.price * qty)),
             "country": stock.country,
             "industry": stock.industry,
-            "score": 0 //TODO-> finnHub reccomendation trends, for 10 biggest position, average of score multiplied with value, sum divided with total amount of reccomendations
+            "score": detailedAnalysis.averageGoal
         },
-        "qty": qty, // = quantityNominal?
+        "qty": qty,
         "quantityNominalType": "UNIT",
-        "totalReturn": 0, //=profitOrLoss?
-        "totalReturnPercent": 0 //=?
+        "totalReturn": 0,
+        "totalReturnPercent": 0
     }
     return result;
 }
@@ -232,7 +178,7 @@ router.get('/details/:id', passport.authenticate('jwt', { session: false }), (re
         res.status(404).json(response);
     } else {
         // find all data of portfolio
-        Portfolio.findOne({ "userId": req.user.id, "id": id }, { "portfolio.performance" : false, "portfolio.overview._id" : false }, (err, portf) => {
+        Portfolio.findOne({ "userId": req.user.id, "id": id }, { "portfolio.performance": false, "portfolio.overview._id": false }, (err, portf) => {
             if (err) {
                 handle_database_error(res, err)
             } else if (!portf) { //portfolio doesn't exist
@@ -247,7 +193,7 @@ router.get('/details/:id', passport.authenticate('jwt', { session: false }), (re
 });
 
 
-// TODO: implement something which calculates the performance every day
+
 router.get('/performance/:id', passport.authenticate('jwt', { session: false }), function(req, res) {
     var id = req.params.id;
     var response = {};
@@ -293,7 +239,7 @@ router.post('/create', passport.authenticate('jwt', { session: false }), (req, r
                 res.status(400).json(response);
             } else {
                 var portfolio = new Portfolio(emptyPortfolio(portfolioId, req.user.id, name))
-                // save new portfolio in database
+                    // save new portfolio in database
                 portfolio.save(
                     function(err, portfolio) {
                         if (err) {
@@ -405,17 +351,15 @@ const query = (userId, positionId) => {
  * Otherwise, the position in the specified portfolio is updated to match the specified quantity.
  * The position which is changed is the one which has isin, wkn, symbol or name equal to positionId
  */
-const modifyPortfolio = async (portfolio, positionId, qty) => {
+const modifyPortfolio = async(portfolio, positionId, qty) => {
     var validPosition = true
-    // modify portfolio
+        // modify portfolio
     var positions = portfolio.portfolio.positions
-    // find the right position, if already present in portfolio
+        // find the right position, if already present in portfolio
     var pos = positions.find((position) => {
         return idBelongsToThisPosition(positionId, position)
     })
     if (pos) { // if present
-        var oldstockvalue = pos.stock.price * pos.qty
-        portfolio.portfolio.overview.value -= oldstockvalue
         if (qty == 0) {
             // delete position from portfolio
             for (var i = 0; i < positions.length; i++) {
@@ -425,8 +369,6 @@ const modifyPortfolio = async (portfolio, positionId, qty) => {
             }
         } else {
             // update position of portfolio
-            var newstockvalue = pos.stock.price * qty
-            portfolio.portfolio.overview.value += newstockvalue
             pos.qty = qty
         }
     } else if (qty != 0) {
@@ -434,7 +376,6 @@ const modifyPortfolio = async (portfolio, positionId, qty) => {
         var stock = await newStock(positionId, qty)
         if (stock.stock.country != "?") {
             positions.push(stock)
-            portfolio.portfolio.overview.value += stock.stock.price * stock.qty
         } else {
             validPosition = false
         }
@@ -447,7 +388,7 @@ const modifyPortfolio = async (portfolio, positionId, qty) => {
 
 
 // if one of the modifications causes an error, nothing gets modified in the database
-router.put('/modify/:id', passport.authenticate('jwt', { session: false }), async (req, res) => {
+router.put('/modify/:id', passport.authenticate('jwt', { session: false }), async(req, res) => {
     // request: {"modifications": 
     //                  [{"isin": "string", -> could also be symbol, wkn or name
     //                  "qty": 0}]}
@@ -459,7 +400,7 @@ router.put('/modify/:id', passport.authenticate('jwt', { session: false }), asyn
         res.json(response)
     } else {
         // find Portfolio
-        await Portfolio.findOne({ "id": id, "userId": req.user.id }, async (err, portfolio) => {
+        await Portfolio.findOne({ "id": id, "userId": req.user.id }, async(err, portfolio) => {
             if (err) {
                 handle_database_error(res, err)
             } else if (!portfolio) {
@@ -490,7 +431,7 @@ router.put('/modify/:id', passport.authenticate('jwt', { session: false }), asyn
                 }
                 if (success) { // all modifications done
                     portfolio.save(
-                        function (err, portfolio) {
+                        function(err, portfolio) {
                             if (err) handle_database_error(res, err)
                             else
                                 res.json(response) // success
@@ -574,14 +515,14 @@ router.get('/stock/:isin', passport.authenticate('jwt', { session: false }), (re
 
     var response = {};
     //? = %3F
-    Portfolio.find({ "userId": req.user.id }, 'id portfolio.overview.name portfolio.overview.virtual portfolio.positions', function (err, portf) {
+    Portfolio.find({ "userId": req.user.id }, 'id portfolio.overview.name portfolio.overview.virtual portfolio.positions', function(err, portf) {
         if (err) {
             handle_database_error(res, err)
         } else {
             response.portfolios = portf.map(({ id: pfId, portfolio: { overview: { name: pfName, virtual: pfVirtual }, positions: arrayStocks } }) => {
                 var positionsWithCurrentISIN = arrayStocks.filter((position) => {
-                    return idBelongsToThisPosition(isin, position)
-                }) // the resulting array should have length 1
+                        return idBelongsToThisPosition(isin, position)
+                    }) // the resulting array should have length 1
                 var qty;
                 if (positionsWithCurrentISIN.length == 0) {
                     qty = 0
@@ -628,7 +569,7 @@ router.put('/stock/:isin', passport.authenticate('jwt', { session: false }), (re
                 res.status(404).json(response)
         } else {
             // find Portfolio
-            Portfolio.findOne({ "id": id, "userId": req.user.id }, async (err, portfolio) => {
+            Portfolio.findOne({ "id": id, "userId": req.user.id }, async(err, portfolio) => {
                 var currentIndex = j;
                 if (err) {
                     handle_database_error(res, err)
@@ -659,9 +600,9 @@ router.put('/stock/:isin', passport.authenticate('jwt', { session: false }), (re
                         }
                     }
                 }
-                if (success) { 
+                if (success) {
                     portfolio.save(
-                        function (err, portfolio) {
+                        function(err, portfolio) {
                             if (err) handle_database_error(res, err)
                             else if (!res.headersSent)
                                 res.json(response) // success
@@ -674,443 +615,5 @@ router.put('/stock/:isin', passport.authenticate('jwt', { session: false }), (re
     }
 });
 
-
-// finapi part
-
-// token/user gives user auth, for any other thing - client, e.g. token/client
-router.get('/token/:person', passport.authenticate('jwt', { session: false }), async(req, res) => {
-    let person = req.params.person;
-
-    //no merged secret configuration yet, so not specified
-    let body = new URLSearchParams({
-        'grant_type': "client_credentials",
-        'client_id': process.env.finAPI_client_id,
-        'client_secret': process.env.finAPI_client_secret,
-    });
-
-    // credentials taken from db 
-    if (person == 'user') {
-        body.append("username", "milouTest");
-        body.append("password", "MilouRostlab");
-        body.set("grant_type", "password");
-    }
-
-    console.log(body);
-
-    const api_url = `https://sandbox.finapi.io/oauth/token`;
-
-    try {
-        const api_response = await fetch(api_url, {
-            method: 'POST',
-            body: body,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        });
-
-        if (!api_response.ok) res.status = api_response.status;
-
-        const json_response = await api_response.json();
-
-        // secure: true, add in the end, when no testing needed 
-        res.cookie('finapi_token', 'Bearer ' + json_response['access_token'], { signed: true, httpOnly: true, maxAge: 60 * 60 * 1000 });
-        res.json(json_response);
-    } catch (err) {
-        res.send(err.message);
-    }
-});
-
-router.post('/newUser', passport.authenticate('jwt', { session: false }), async(req, res) => {
-    let body = {
-        id: req.body.id, // read: username
-        password: req.body.password,
-        email: req.body.email,
-        phone: req.body.phone,
-        isAutoUpdateEnabled: true
-    };
-
-    const api_url = `https://sandbox.finapi.io/api/v1/users`;
-
-    const api_response = await fetch(api_url, {
-        method: 'POST',
-        body: JSON.stringify(body),
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': req.signedCookies.finapi_token
-        }
-    });
-
-    if (!api_response.ok) res.status = api_response.status;
-
-    const json_response = await api_response.json();
-    res.json(json_response);
-
-});
-
-router.get('/deleteUser', passport.authenticate('jwt', { session: false }), async(req, res) => {
-
-    const api_url = `https://sandbox.finapi.io/api/v1/users`;
-
-    try {
-        const api_response = await fetch(api_url, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': req.signedCookies.finapi_token
-            }
-        });
-
-        if (!api_response.ok) res.status = api_response.status;
-
-        var response = { "success": "DELETION_SUCCESS" };
-        res.json(response);
-
-    } catch (err) {
-        res.send(err.message);
-    }
-});
-
-router.post('/searchBanks', passport.authenticate('jwt', { session: false }), async(req, res) => {
-    let params = new URLSearchParams({
-        'search': req.body.search, // main field, others if needed
-        'ids': req.body.ids, // integer array
-        'location': req.body.location, // Comma-separated list of two-letter country codes
-        'order': req.body.order // string array,e.g. order by 'id', 'name', 'blz', 'bic' or 'popularity'
-    });
-
-    if (params.get('ids') == "undefined") params.delete('ids');
-    if (params.get('location') == "undefined") params.delete('location');
-    if (params.get('order') == "undefined") params.delete('order');
-
-    const api_url = `https://sandbox.finapi.io/api/v1/banks?${params}`;
-
-    try {
-        const api_response = await fetch(api_url, {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': req.signedCookies.finapi_token
-            }
-        });
-
-        if (!api_response.ok) res.status = api_response.status;
-
-        const response = await api_response.json();
-        res.json(response);
-    } catch (err) {
-        res.send(err.message);
-    }
-
-});
-
-router.get('/importConnection/:bankId', passport.authenticate('jwt', { session: false }), async(req, res) => {
-    let body = { //e.g. 26628 - stadtsparkasse
-        bankId: req.params.bankId
-    };
-
-    const api_url = `https://sandbox.finapi.io/api/v1/bankConnections/import`;
-
-    try {
-        const api_response = await fetch(api_url, {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': req.signedCookies.finapi_token
-            }
-        });
-
-        const json_response = await api_response;
-
-        var response = {
-            "link": json_response.headers.get('Location')
-        }
-
-        res.json(response);
-
-    } catch (err) {
-        res.send(err.message);
-    }
-
-});
-
-router.post('/bankConnections/', passport.authenticate('jwt', { session: false }), async(req, res) => {
-    if (req.body.ids !== undefined) {
-        var ids = new URLSearchParams({});
-        for (let id of req.body.ids) {
-            ids.append("ids[]", id);
-        }
-    }
-
-    const api_url = `https://sandbox.finapi.io/api/v1/bankConnections?${ids}`;
-
-    try {
-        const api_response = await fetch(api_url, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': req.signedCookies.finapi_token
-            }
-        });
-
-        if (!api_response.ok) res.status = api_response.status;
-
-        const json_response = await api_response.json();
-        res.json(json_response);
-    } catch (err) {
-        res.send(err.message);
-    }
-
-});
-
-router.get('/deleteConnection/:id', passport.authenticate('jwt', { session: false }), async(req, res) => {
-    var id = req.params.id;
-
-    const api_url = `https://sandbox.finapi.io/api/v1/bankConnections/${id}`;
-
-    try {
-        const api_response = await fetch(api_url, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': req.signedCookies.finapi_token
-            }
-        });
-        if (!api_response.ok) res.status = api_response.status;
-
-        var response = { "id": id };
-        res.json(response);
-
-        console.log("successfully deleted a bank connection " + id)
-    } catch (err) {
-        res.send(err.message);
-    }
-});
-
-router.get('/deleteAllConnections', passport.authenticate('jwt', { session: false }), async(req, res) => {
-
-    const api_url = `https://sandbox.finapi.io/api/v1/bankConnections`;
-
-    try {
-        const api_response = await fetch(api_url, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': req.signedCookies.finapi_token
-            }
-        });
-
-        if (!api_response.ok) res.status = api_response.status;
-
-        const json_response = await api_response.json();
-        res.json(json_response);
-    } catch (err) {
-        res.send(err.message);
-    }
-
-});
-
-router.post('/securities', passport.authenticate('jwt', { session: false }), async(req, res) => {
-    // if no body, all securities given
-    let params = new URLSearchParams({
-        'search': req.body.search, // isin, name, wkn contain
-        'order': req.body.order // string array,e.g. order by 'id', 'name', 'blz', 'bic' or 'popularity'
-    });
-    if (params.get('search') == "undefined") params.delete('search');
-    if (params.get('order') == "undefined") params.delete('order');
-
-    if (req.body.ids !== undefined) {
-        var ids = new URLSearchParams({});
-        for (let id of req.body.ids) {
-            ids.append("ids[]", id);
-        }
-    }
-
-    const api_url = `https://sandbox.finapi.io/api/v1/securities?${params}`;
-
-    try {
-        const api_response = await fetch(api_url, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': req.signedCookies.finapi_token
-            }
-        });
-
-        if (!api_response.ok) res.status = api_response.status;
-
-        const json_response = await api_response.json();
-        res.json(json_response);
-
-    } catch (err) {
-        console.log(err.message);
-    }
-
-});
-
-router.post('/saveAllSecurities', passport.authenticate('jwt', { session: false }), async(req, res) => {
-    var name = req.body.name;
-    var response = {};
-
-    if (!name) {
-        response.error = "PORTFOLIO_NAME_INVALID";
-        res.status(400).json(response);
-    } else {
-        var portfolioId = new mongoose.Types.ObjectId();
-        Portfolio.findOne({ "userId": req.user.id, "portfolio.overview.name": name }).exec(async(err, result) => {
-            if (err) {
-                handle_database_error(res, err);
-            } else {
-                const api_url = `https://sandbox.finapi.io/api/v1/securities`;
-
-                try {
-                    const api_response = await fetch(api_url, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': req.signedCookies.finapi_token
-                        }
-                    });
-
-                    if (!api_response.ok) res.status = api_response.status;
-
-                    const json_response = await api_response.json();
-
-                    var positions = [];
-                    var totalCount = 0;
-                    if (json_response.securities !== undefined) {
-                        positions = convertSecurities(json_response.securities);
-                        totalCount = json_response.paging.totalCount;
-                    }
-
-                    if (!result) {
-                        var portfolio = new Portfolio({
-                            "id": portfolioId,
-                            "userId": req.user.id,
-                            "portfolio": {
-                                "overview": {
-                                    "id": portfolioId,
-                                    "name": name,
-                                    "virtual": false,
-                                    "positionCount": totalCount,
-                                    "value": 0,
-                                    "score": 0,
-                                    "perf7d": 0,
-                                    "perf1y": 0,
-                                    "modified": 1617710040
-                                },
-                                "positions": positions,
-                                "risk": {
-                                    "countries": {
-                                        "count": 0,
-                                        "score": 0,
-                                        "warnings": []
-                                    },
-                                    "segments": {
-                                        "count": 0,
-                                        "score": 0,
-                                        "warnings": []
-                                    },
-                                    "currency": {
-                                        "count": 0,
-                                        "score": 0,
-                                        "warnings": []
-                                    }
-                                },
-                                "keyFigures": [{
-                                    "year": 0,
-                                    "pte": 0,
-                                    "ptb": 0,
-                                    "ptg": 0,
-                                    "eps": 0,
-                                    "div": 0,
-                                    "dividendPayoutRatio": 0
-                                }],
-                                "nextDividend": 0,
-                                "dividendPayoutRatio": 0,
-                                "totalReturn": 0,
-                                "totalReturnPercent": 0
-                            }
-                        });
-
-                        portfolio.save(
-                            function(error, portfolioRes) {
-                                if (error) handle_database_error(res, error)
-                                else {
-                                    res.json(portfolioRes);
-                                    console.log('saved successfully');
-                                }
-                            }
-                        );
-                    } else {
-                        Portfolio.findOneAndUpdate({ "portfolio.overview.name": name, "userId": req.user.id }, { "portfolio.positions": positions }, (error, portfolioRes) => {
-                            if (error) {
-                                handle_database_error(res, error2)
-                            } else {
-                                res.json(portfolioRes);
-                                console.log('updated successfully');
-                            }
-                        })
-                    }
-
-                } catch (error) {
-                    console.log(error.message);
-                }
-            }
-
-        });
-
-    }
-});
-
-// convert definitions of finapi into the mongodb schema, handling an array of securities 
-function convertSecurities(securities) {
-    var positions = [];
-    securities.forEach((item, i) => {
-        positions.push({
-            "stock": {
-                "isin": securities[i].isin,
-                "wkn": securities[i].wkn,
-                "symbol": "",
-                //  searchSymbol(securities[i].isin),
-                "name": securities[i].name,
-                "price": securities[i].marketValue,
-                "marketValueCurrency": securities[i].marketValueCurrency,
-                "quote": securities[i].quote,
-                "quoteCurrency": securities[i].quoteCurrency,
-                "quoteDate": securities[i].quoteDate,
-                "entryQuote": securities[i].entryQuote,
-                "entryQuoteCurrency": securities[i].entryQuoteCurrency,
-                "perf7d": 0,
-                "perf1y": 0,
-                "country": "USA",
-                "industry": "industry",
-                "score": 0
-            },
-            "qty": securities[i].quantityNominal,
-            "quantityNominalType": securities[i].quantityNominalType,
-            "totalReturn": 1,
-            "totalReturnPercent": 0
-        });
-    });
-    return positions;
-}
-
-router.get('/searchSymbol/:isin', async(req, res) => {
-
-    let isin = req.params.isin;
-
-    const api_url = `https://finnhub.io/api/v1/search?${isin}`;
-
-    try {
-        const api_response = await fetch(api_url, {
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Finnhub-Token': process.env.finnhub_key
-            }
-        });
-
-        if (!api_response.ok) res.status = api_response.status;
-
-        const json_response = await api_response.json();
-        res.json(json_response);
-
-    } catch (err) {
-        console.log(err.message);
-    }
-
-});
 
 module.exports = router;

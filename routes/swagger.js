@@ -1004,7 +1004,6 @@
  *          type: number
  *      analytics:
  *          $ref: '#/definitions/analytics'
- *
  *  bestYear:
  *      properties:
  *          changeBest:
@@ -1091,6 +1090,9 @@
  *     - portfolio
  *     summary: Get details of portfolio
  *     description: Gets portfolio details including key figures, scores and positions.
+ *                      
+ *                      The currency of the price of the single stocks is the currency specified inside of the "stock" parameter.
+ *                      The currency of the portfolio fields "totalReturn", "value" and "perf7d/perf1y" are always in EUR.
  *     operationId: getPortfolio
  *     produces:
  *     - application/json
@@ -1535,8 +1537,8 @@
  *
  * /stocks/search?id={id}:
  *  get:
- *   summary: Returns a stock with given id.
- *   description: Returns a stock with given id.
+ *   summary: Returns stock list with search parameter.
+ *   description: Returns stock list with search parameter.
  *   produces:
  *     - application/json
  *   parameters:
@@ -1790,41 +1792,6 @@
  *       properties:
  *        news:
  *         $ref: '#/definitions/newsss'
- *    '400':
- *      description: Invalid
- *
- * /stocks/risk?id={id}:
- *  get:
- *   summary: Returns risk analysis.
- *   description: Returns risk analysis.
- *   produces:
- *     - application/json
- *   parameters:
- *     - name: id
- *       in: path
- *       description: symbol of stock
- *       required: true
- *       type: string
- *   tags:
- *    - stocks
- *   responses:
- *    '200':
- *      description: Successful operation
- *      schema:
- *       type: object
- *       properties:
- *        rewards:
- *         type: array
- *         items:
- *          type: string
- *        risks:
- *         type: array
- *         items:
- *          type: string
- *        risk_checks:
- *         type: array
- *         items:
- *          type: string
  *    '400':
  *      description: Invalid
  *

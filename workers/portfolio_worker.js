@@ -5,9 +5,54 @@ const portfolioFetcher = require('../data-analytics/dynamic_data/portfolio-fetch
 const analytics = require('../data-analytics/analytics/analytics');
 const stockTimeSeries = require('../data-analytics/dynamic_data/stock-time-series');
 const stockModel = require("../models/stock");
+const stockDetailedAnalysisModel = require('../models/stockDetailedAnalysis');
+const balanceSheets = require('../data-analytics/dynamic_data/balance-sheets');
+
+
+const fetch = require('node-fetch');
+const { variance } = require('stats-lite');
+
+
+const getExchangeRate = async (from_currency, to_currency) => {
+    let rate = 1;
+    if (from_currency != to_currency && from_currency !== undefined) {
+        var params = new URLSearchParams({
+            "base": from_currency,
+            "symbols": to_currency
+        });
+
+        const api_url = `https://api.ratesapi.io/api/latest?${params}`;
+
+        try {
+            const api_response = await fetch(api_url, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const json_response = await api_response.json();
+            if (json_response.rates)
+                rate = json_response.rates[to_currency];
+            else
+                rate = 1
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
+    return rate;
+}
+
+const toEur = async (money, currency) => {
+    if (money) {
+        var exchangeRate = await getExchangeRate(currency, "EUR")
+        return money * exchangeRate
+    }
+    else {
+        return 0
+    }
+}
 
 const percent = (nr1, nr2) => {
-    if (nr1 && nr2 && !isNaN(nr1) && !isNaN(nr2) && nr2 != 0)
+    if (nr1 && nr2 && !isNaN(nr1) && !isNaN(nr2))
         return nr1 / (nr2) * 100
     else
         return 0
@@ -26,10 +71,10 @@ const searchStock = async (searchString) => {
 }
 
 const returnValueIfDefined = (value) => {
-    if (value == undefined) {
-        return 0
-    } else {
+    if (isFinite(value) && value) {
         return value
+    } else {
+        return 0
     }
 }
 
@@ -50,8 +95,6 @@ function tofinAPIPortfolio(returnedPortfolio) {
     return reformattedPortfolio;
 }
 
-
-
 async function updateStock(position) {
     //search updated stock data in database
     var stockArray = await searchStock(position.stock.symbol);
@@ -65,8 +108,14 @@ async function updateStock(position) {
         position.stock.perf7dPercent = percent(stock.per7d, (stock.price * position.qty))
         position.stock.perf1yPercent = percent(stock.per365d, (stock.price * position.qty))
         //volatility and debt equity is done in updatePortfolio()
-        //TODO score
-        position.stock.score = 0
+        var detailedAnalysis = await stockDetailedAnalysisModel.findOne({ "symbol": stock.symbol })
+        if (detailedAnalysis) {
+            position.stock.score = detailedAnalysis.averageGoal
+        } else {
+            position.stock.score = 0
+        }
+        position.totalReturn = returnValueIfDefined(position.stock.quote * position.qty - position.stock.entryQuote * position.qty)
+        position.totalReturnPercent = percent(position.totalReturn, position.stock.quote * position.qty)
     } else {
         position.stock.price = 0
         position.stock.quote = 0
@@ -76,52 +125,79 @@ async function updateStock(position) {
         position.stock.perf7dPercent = 0
         position.stock.perf1yPercent = 0
         position.stock.score = 0
+        position.totalReturn = 0
+        position.totalReturnPercent = 0
     }
 }
 
 async function updateStockWhenModifed(position) {
-    await updateStock(position)
+    await updateStock(position);
+
     //entryQuote is the price of the Stock at buy time, therefore it should only be changed when we modify it, not when the cronjob happens
-    position.stock.entryQuote = position.stock.quote
+    // no wait it should only be changed when a new stock is added
+    //position.stock.entryQuote = position.stock.quote
+
 }
 
 async function updateStockCronjob(position) {
-    var oldPerf7d = position.stock.perf7d
     await updateStock(position)
-    // TODO check if this makes sense
-    //TODO don't do this for real portfolios
-    if (!position.totalReturn) {
-        position.totalReturn = 0
-        position.totalReturnPercent = 0
-    }
-    position.totalReturn += returnValueIfDefined((position.stock.perf7d - oldPerf7d) * position.qty)
-    position.totalReturnPercent = percent(position.totalReturn, position.stock.price * position.qty)
 }
 
+async function calculateStockPricesInEur(portfolio) {
+    var result = []
+    var positions = portfolio.portfolio.positions
+    for (var i = 0; i < positions.length; i++) {
+        var newStock = { "stock": {} }
+        newStock.stock.price = await toEur(positions[i].stock.price, positions[i].stock.marketValueCurrency)
+        newStock.qty = positions[i].qty
+        newStock.stock.score = positions[i].stock.score
+        newStock.stock.perf7d = positions[i].stock.perf7d
+        newStock.stock.perf1y = positions[i].stock.perf1y
+        newStock.totalReturn = positions[i].totalReturn
+        result.push(newStock)
+    }
+    return result
+}
 
 async function updatePortfolio(portfolio) {
     //overview
-    portfolio.portfolio.overview.modified = Date.now() // current timestamp
     var overview = portfolio.portfolio.overview
+    overview.modified = Date.now() // current timestamp
     overview.positionCount = portfolio.portfolio.positions.length;
     if (overview.positionCount == 0) {
+        //empty portfolio
         overview.value = 0;
+        overview.score = 0
         overview.perf7d = 0
         overview.perf1y = 0
         overview.perf7dPercent = 0
         overview.perf1yPercent = 0
-        overview.score = 0
+        portfolio.portfolio.risk = {
+            "countries": {},
+            "segments": {},
+            "currency": {}
+        }
+        portfolio.portfolio.analytics = {
+            "volatility": 0,
+            "standardDeviation": 0,
+            "sharpeRatio": 0,
+            "treynorRatio": 0,
+            "debtEquity": 0,
+            "correlations": {}
+        }
     } else {
-        overview.perf7d = portfolio.portfolio.positions.map(({ stock: { perf7d: performance } }) => {
-            return returnValueIfDefined(performance)
-        }).reduce((a, b) => a + b, 0)
+        var stockArrayWithPriceInEur = await calculateStockPricesInEur(portfolio)
+        overview.value = stockArrayWithPriceInEur.map(({ stock: { price: price }, qty: qty }) => returnValueIfDefined(price * qty)).reduce((a, b) => a + b, 0)
 
-        overview.perf1y = portfolio.portfolio.positions.map(({ stock: { perf1y: performance } }) => { return returnValueIfDefined(performance) }).reduce((a, b) => a + b, 0)
+        if (overview.value) {
+            overview.score = stockArrayWithPriceInEur.map(({ stock: { price: price, score: score }, qty: qty }) => returnValueIfDefined(price * qty * score)).reduce((a, b) => a + b, 0) / (overview.value)
+        } else {
+            overview.score = 0
+        }
+        overview.perf7d = stockArrayWithPriceInEur.map(({ stock: { perf7d: performance } }) => returnValueIfDefined(performance)).reduce((a, b) => a + b, 0)
+        overview.perf1y = stockArrayWithPriceInEur.map(({ stock: { perf1y: performance } }) => returnValueIfDefined(performance)).reduce((a, b) => a + b, 0)
         overview.perf7dPercent = percent(overview.perf7d, overview.value)
         overview.perf1yPercent = percent(overview.perf1y, overview.value)
-        //TODO score
-        overview.score = 0
-        overview.value = portfolio.portfolio.positions.map(({ stock: { price: price }, qty: qty }) => { return returnValueIfDefined(price * qty) }).reduce((a, b) => a + b, 0)
         //risk
         var currPortfolio = tofinAPIPortfolio(portfolio)
         var currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
@@ -129,7 +205,8 @@ async function updatePortfolio(portfolio) {
         if (currSymbols)
             currCompanyOverviews = await companyOverviews.getCompanyOverviewForSymbols(currSymbols);
         if (currCompanyOverviews) {
-            var portfDiversification = diversification.calculateDiversification(currPortfolio, currCompanyOverviews)//TODO
+            var portfDiversification = diversification.calculateDiversification(currPortfolio, currCompanyOverviews)
+
             portfolio.portfolio.risk.countries = portfDiversification.countries
             portfolio.portfolio.risk.currency = portfDiversification.currencies
             portfolio.portfolio.risk.segments = portfDiversification.industries
@@ -141,8 +218,9 @@ async function updatePortfolio(portfolio) {
         var currStocksData
         if (currSymbols)
             currStocksData = await stockTimeSeries.getStocksDataForSymbols(currSymbols);
+        //SD and correlation and volatility
         var SDandCorr;
-        if (portfolio.portfolio.positions.length > 0 && currStocksData) {
+        if (currStocksData) {
             SDandCorr = analytics.calculateSDAndCorrelationAndVolatility(currPortfolio, currStocksData);
         } else {
             SDandCorr = {
@@ -156,20 +234,62 @@ async function updatePortfolio(portfolio) {
         if (!pAnalytics)
             pAnalytics = {}
         pAnalytics.volatility = SDandCorr.portfolioVolatility
-        //volatility of positions
-        if (portfolio.portfolio.positions.length > 0)
-            portfolio.portfolio.positions.forEach(position => {
-                position.stock.volatility = SDandCorr.volatility[position.stock.name]
-            });
-        pAnalytics.standardDeviation = SDandCorr.standardDeviation
-        pAnalytics.sharpeRatio = 0//TODO
-        //TODO var debtEquity = analytics.calculateDebtEquity(currPortfolio)
-        pAnalytics.debtEquity = 0
-        //TODO treynorRatio	
         pAnalytics.correlations = SDandCorr.correlations
+        //volatility of positions
+        portfolio.portfolio.positions.forEach(position => {
+            position.stock.volatility = returnValueIfDefined(SDandCorr.volatility[position.stock.name])
+        });
+        pAnalytics.standardDeviation = SDandCorr.standardDeviation
+
+        //sharpeRatio
+        var analyzedData
+        if (currStocksData) {
+            try {
+                analyzedData = analytics.calculateSharpeRatio(currPortfolio, currStocksData);
+                pAnalytics.sharpeRatio = analyzedData.portfolioSharpeRatio
+            } catch (err) {
+                pAnalytics.sharpeRatio = 0
+            }
+        } else {
+            pAnalytics.sharpeRatio = 0
+        }
+
+        // debtEquity
+        var currBalanceSheetPerSymbol
+        if (currSymbols) {
+            currBalanceSheetPerSymbol = await balanceSheets.getBalanceSheetForSymbols(currSymbols);
+        }
+        if (currBalanceSheetPerSymbol) {
+            const analyzedData = analytics.calculateDebtEquity(currPortfolio, currBalanceSheetPerSymbol);
+            portfolio.portfolio.positions.forEach(position => {
+                position.stock.debtEquity = returnValueIfDefined(analyzedData.debtEquityPerStock[position.stock.symbol])
+            });
+            pAnalytics.debtEquity = analyzedData.averageDebtEquity
+        } else {
+            pAnalytics.debtEquity = 0
+            portfolio.portfolio.positions.forEach(position => {
+                position.stock.debtEquity = 0
+            });
+        }
+
+
+        // treynorRatio	
+        var currCompanyOverviews2
+        if (currSymbols)
+            currCompanyOverviews2 = await companyOverviews.getCompanyOverviewsBySymbolsWithoutReformatting(currSymbols)
+        if (currStocksData && currCompanyOverviews2) {
+            try {
+                const analyzedData = analytics.calculateTreynorRatio(currPortfolio, currStocksData, currCompanyOverviews2)
+                pAnalytics.treynorRatio = analyzedData.treynorRatio
+            } catch (err) {
+                pAnalytics.treynorRatio = 0
+            }
+        } else {
+            pAnalytics.treynorRatio = 0
+        }
 
         //others
-        portfolio.portfolio.totalReturn = portfolio.portfolio.positions.map(({ totalReturn: performance }) => performance).reduce((a, b) => a + b, 0)
+        portfolio.portfolio.totalReturn = stockArrayWithPriceInEur.map(({ totalReturn: performance }) => returnValueIfDefined(performance)).reduce((a, b) => a + b, 0)
         portfolio.portfolio.totalReturnPercent = percent(portfolio.portfolio.totalReturn, overview.value)
         //TODO nextDividend: Number,//no data, maybe Alpha Vantage
     }
@@ -187,11 +307,6 @@ async function updatePortfolioWhenModified(portfolio) {
 }
 
 async function updatePortfolioCronjob(portfolio) {
-
-    if (portfolio.portfolio.overview.virtual) {
-        //TODO import from finAPI, if real
-    }
-
     if (portfolio.portfolio.positions.length > 0)
         // update all stocks
         await portfolio.portfolio.positions.forEach(async (position) => {
@@ -203,8 +318,6 @@ async function updatePortfolioCronjob(portfolio) {
     //performance
     var newDataPoint = [Date.now(), portfolio.portfolio.overview.value]
     portfolio.portfolio.performance.push(newDataPoint)
-
-
 
 }
 
