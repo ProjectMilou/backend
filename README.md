@@ -129,7 +129,7 @@ Endpoint | Parameters | Description
 /portfolio/modify/:portfolioId | ID of a portfolio to modify, symbols of positions and a new quantity for them. | Modifies a virtual portfolio, if exists, by adjusting a quantity of specified positions and updates timestamp of the last change.
 /portfolio/duplicate/:portfolioId | ID of a portfolio to duplicate, name for a new one. | Creates a new virtual portfolio as a duplicate of a real or virtual portfolio. Changes to a real portfolio will not be tracked in the duplicated version.
 /portfolio/stock/:symbol | Symbol/name/isin/wkn (symbol preferred) of the specified stock | Get request. After adding a stock to his portfolios returns portfolio name and quantity of a specified stock for all portfolios of the authorized user.
-/portfolio/stock/:symbol | Symbol/name/isin/wkn (symbol preferred) of the specified stock | Modifies a stock's quantity within multiple portfolios simultaneously.
+/portfolio/stock/:symbol | Symbol/name/isin/wkn (symbol preferred) of the specified stock | Put request. Modifies a stock's quantity within multiple portfolios simultaneously.
 
 ## Domains
 
