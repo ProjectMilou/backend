@@ -37,8 +37,6 @@ function getHistoricalPERatios(stocksData, keyFigures, balanceSheet) {
             const PEGrowthRatio = (peratio / keyFigure.reportedEPS) / (epsGrowth*100)  
 
             const bookValue = getBookValueForYear(balanceSheet, currDate)
-            console.log(bookValue)
-            console.log(latestPrice)
             const PBRatio = latestPrice / bookValue
             results.push({
                date: currDate.toISOString().slice(0,10),
