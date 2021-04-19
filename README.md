@@ -116,6 +116,21 @@ Endpoint | Parameters | Description | Example response
 <sup>2</sup> [Benzinga](https://www.benzinga.com/) is on free student trial currently and valid until 19.04.2021. After this date, detailed-analysts endpoint will not be updated.
 
 
+### Portfolios
+
+Endpoint | Parameters | Description 
+------------- | ------------- | ------------- 
+/portfolio/list | - | Returns all portfolios of the authorized user
+/portfolio/details/:portfolioId  | ID of a portfolio | Returns a global overview of a portfolio, positions, risk, analytics etc.   
+/portfolio/performance/:portfolioId | ID of a portfolio | Returns data points to display a performance chart. 
+/portfolio/create | Name of a portfolio to create | Creates a new, empty, virtual portfolio and saves the timestamp of the portfolio creation in the portfolio's history. 
+/portfolio/:portfolioId | ID of a portfolio to delete | A request to delete a portfolio with a given ID, if exists.
+/portfolio/rename/:portfolioId | ID of a portfolio to rename, a new name | Renames a specific portfolio with a given name.
+/portfolio/modify/:portfolioId | ID of a portfolio to modify, symbols of positions and a new quantity for them. | Modifies a virtual portfolio, if exists, by adjusting a quantity of specified positions and updates timestamp of the last change.
+/portfolio/duplicate/:portfolioId | ID of a portfolio to duplicate, name for a new one. | Creates a new virtual portfolio as a duplicate of a real or virtual portfolio. Changes to a real portfolio will not be tracked in the duplicated version.
+/portfolio/stock/:symbol | Symbol/name/isin/wkn (symbol preferred) of the specified stock | Get request. After adding a stock to his portfolios returns portfolio name and quantity of a specified stock for all portfolios of the authorized user.
+/portfolio/stock/:symbol | Symbol/name/isin/wkn (symbol preferred) of the specified stock | Modifies a stock's quantity within multiple portfolios simultaneously.
+
 ## Domains
 
 ​ The application can be found at:
