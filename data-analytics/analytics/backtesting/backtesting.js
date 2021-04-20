@@ -131,23 +131,21 @@ function mdd(portfolio, stocksData, namesToSymbols) {
         }
     }
     // According to the definition
-    let MDDMaxToMin = ((aggregatedMin - aggregatedMax) / aggregatedMax).toFixed(
-        4
-    );
+    let MDDMaxToMin = ((aggregatedMin - aggregatedMax) / aggregatedMax)
     // According to Julien
     let MDDInitialToMin = (
         (aggregatedMin - initialValue) /
         initialValue
-    ).toFixed(4);
+    )
 
     return {
         MDDMaxToMin,
         MDDInitialToMin,
         dateMax,
         dateMin,
-        maxValue: aggregatedMax.toFixed(4),
-        minValue: aggregatedMin.toFixed(4),
-        initialValue: initialValue.toFixed(4),
+        maxValue: aggregatedMax,
+        minValue: aggregatedMin,
+        initialValue: initialValue,
         portfolioValues
     };
 }
