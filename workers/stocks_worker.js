@@ -363,19 +363,23 @@ async function getYearlyPerformance(symbol, api_key) {
 }
 
 async function getTimeIntervalPerformance(symbol, api_key) {
-    let url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + symbol + '&apikey=' + api_key;
+    let url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED' +
+        '&symbol=' + symbol +
+        '&apikey=' + api_key;
+
     await fetch(url)
         .then(response => response.json())
         .then(data => {
+            let closeType = "5. adjusted close";
             const timeSeriesData = data["Time Series (Daily)"];
             const lastDay = Object.keys(timeSeriesData)[0];
             const previousDay = Object.keys(timeSeriesData)[1];
             const lastWeek = Object.keys(timeSeriesData)[5];
             const lastMonth = Object.keys(timeSeriesData)[20];
-            const lastDayClose = timeSeriesData[lastDay]["4. close"]
-            const previousDayClose = timeSeriesData[previousDay]["4. close"]
-            const lastWeekClose = timeSeriesData[lastWeek]["4. close"]
-            const lastMonthClose = timeSeriesData[lastMonth]["4. close"]
+            const lastDayClose = timeSeriesData[lastDay][closeType]
+            const previousDayClose = timeSeriesData[previousDay][closeType]
+            const lastWeekClose = timeSeriesData[lastWeek][closeType]
+            const lastMonthClose = timeSeriesData[lastMonth][closeType]
             const per1d = (lastDayClose / previousDayClose).toFixed(3);
             const per7d = (lastDayClose / lastWeekClose).toFixed(3);
             const per30d = (lastDayClose / lastMonthClose).toFixed(3);

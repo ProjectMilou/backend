@@ -45,15 +45,20 @@ module.exports.updateAllCharts = async function () {
 }
 
 async function getDataPoints(symbol, api_key) {
-    let url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&outputsize=full&symbol=' + symbol + '&apikey=' + api_key;
+    let url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED' +
+        '&outputsize=full' +
+        '&symbol=' + symbol +
+        '&apikey=' + api_key;
+
     await fetch(url)
         .then(response => response.json())
         .then(data => {
             const timeSeriesData = data["Time Series (Daily)"];
             let closingPrice;
             let dataPoints = [];
+            let closeType = "5. adjusted close";
             Object.keys(timeSeriesData).forEach(function (date) {
-                closingPrice = timeSeriesData[date]["4. close"];
+                closingPrice = timeSeriesData[date][closeType];
                 dataPoints.push({date: date, close: closingPrice})
             })
             dataPointModel.create(
