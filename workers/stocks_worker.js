@@ -327,15 +327,15 @@ async function updateMcSize(symbol, api_key) {
 }
 
 async function getYearlyPerformance(symbol, api_key) {
-    let url = 'https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY&symbol=' + symbol + '&apikey=' + api_key;
+    let url = 'https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol=' + symbol + '&apikey=' + api_key;
     await fetch(url)
         .then(response => response.json())
         .then(data => {
             const timeSeriesData = data["Weekly Time Series"];
             const lastDay = Object.keys(timeSeriesData)[0];
             const lastYear = Object.keys(timeSeriesData)[52];
-            const lastDayClose = timeSeriesData[lastDay]["4. close"]
-            const lastYearClose = timeSeriesData[lastYear]["4. close"]
+            const lastDayClose = timeSeriesData[lastDay]["5. adjusted close"]
+            const lastYearClose = timeSeriesData[lastYear]["5. adjusted close"]
             const per365d = (lastDayClose / lastYearClose).toFixed(3);
 
 
