@@ -18,10 +18,6 @@ called `analyticsRoutes.js`, which offers a connection to the Analyzer part of M
 
 - data on the database is not stored encrypted (only password hashed), but the functions for encryption/decryption can
   be accessed
-- password reset process is finished, redirect link to frontend-webform not provided yet
-- bank-connections can be imported, a cron-job or refresh-route has to be set up, so that portfolios can actually be
-  viewed.
-- deletion of a user or bank-connection does not delete all user-sensitive data yet.
 - project needs a restructuring, regarding the folder structure
 
 
