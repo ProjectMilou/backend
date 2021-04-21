@@ -259,7 +259,7 @@ router.get('/charts/dividend', async (req, res) => {
 
 router.get('/news', async (req, res) => {
     var date = new Date();
-    date.setDate(date.getDate() - 3);
+    date.setDate(date.getDate() - 2);
     var threeDaysAgoString = date.toISOString().slice(0, 10);
 
     var id = req.query.id;
@@ -294,7 +294,8 @@ router.get('/news', async (req, res) => {
                         "id": id,
                         "headline": article["title"],
                         "summary": article["description"].replace(/\n/g, ""),
-                        "url": article["url"]
+                        "url": article["url"],
+                        "publishedAt" : article["publishedAt"]
                     }
                 )
             })
