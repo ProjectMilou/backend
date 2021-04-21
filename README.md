@@ -5,7 +5,7 @@ an [Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/) environment on 
 connection and can be interfaced via HTTPS requests. It is also fetching from different financial APIs such
 as [Alpha Vantage](https://www.alphavantage.co/), [Finnhub](https://finnhub.io/), [Benzinga](https://benzinga.com/)
 and [News API](https://newsapi.org/)
-to retrieve information/news about stocks and companies. For a proper manipulation of different currencies real time rate data is collected from [Rates API](https://ratesapi.io/). to convert prices to Euro. 
+to retrieve information/news about stocks and companies. For a proper manipulation of different currencies real time rate data is collected from [Rates API](https://ratesapi.io/) to convert prices to Euro. 
 Furthermore, [finAPI](https://www.finapi.io/)
 is used to enable users to connect their bank-accounts, which allows the application to import their real portfolios. 
 Besides, the Analytics part of Milou is integrated in a sub-folder called `data-analytics` and one file
