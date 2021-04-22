@@ -127,6 +127,13 @@ Endpoint | Parameters | Description
 /portfolio/stock/:symbol | Symbol/name/isin/wkn (symbol preferred) of the specified stock | Get request. After adding a stock to his portfolios returns portfolio name and quantity of a specified stock for all portfolios of the authorized user.
 /portfolio/stock/:symbol | Symbol/name/isin/wkn (symbol preferred) of the specified stock | Put request. Modifies a stock's quantity within multiple portfolios simultaneously.
 
+### Users
+The User Routes enable the user to interact with his identity model, which consists of an email and a password. First- and lastname are optional and can be set later on via edit. [In this part of the documentation](https://api.milou.io/api-docs/#/user) it can be reviewed. Users can register, login and confirm their emails via a token that gets send, once registered. Also the token can be resent. If a password was forgotten, a reset process can be started, wich sends an email with a link in it, including a token used for verification of the user.
+
+Besides that main user functionality also a user is able to search for banks and add, view, remove and refresh bank-connections.
+
+Of course a user can delete the account, including all user-related data on the database, such as portfolios, user-information, bank-information as well as the account on finAPI.
+
 ## Domains
 
 ​ The application can be found at:
