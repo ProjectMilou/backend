@@ -45,8 +45,7 @@ const toEur = async (money, currency) => {
     if (money) {
         var exchangeRate = await getExchangeRate(currency, "EUR")
         return money * exchangeRate
-    }
-    else {
+    } else {
         return 0
     }
 }
@@ -95,22 +94,33 @@ function tofinAPIPortfolio(returnedPortfolio) {
     return reformattedPortfolio;
 }
 
+// updates price, performance etc. of stock and converts all currencies to Euro
+// the fields "marketValueCurrency" and "quoteCurrency" still refer to the original currency, because otherwise the analysis of how many different currencies are in the portfolio would be wrong
 async function updateStock(position) {
     //search updated stock data in database
     var stockArray = await searchStock(position.stock.symbol);
     var stock = stockArray[0]
     if (stock) {
-        position.stock.price = stock.price
-        position.stock.quote = stock.price
+        position.stock.price = await toEur(stock.price, stock.currency)
+        //position.stock.marketValueCurrency = "EUR"
+        position.stock.quote = await toEur(stock.price, stock.currency)
+        //position.stock.quoteCurrency = "EUR"
         position.stock.quoteDate = stock.date
-        position.stock.perf7d = stock.per7d
-        position.stock.perf1y = stock.per365d
-        position.stock.perf7dPercent = percent(stock.per7d, (stock.price * position.qty))
-        position.stock.perf1yPercent = percent(stock.per365d, (stock.price * position.qty))
+        position.stock.perf7d = await toEur(stock.per7d, stock.currency)
+        position.stock.perf1y = await toEur(stock.per365d, stock.currency)
+        position.stock.perf7dPercent = percent(position.stock.perf7d, (position.stock.price * position.qty))
+        position.stock.perf1yPercent = percent(position.stock.perf1y, (position.stock.price * position.qty))
         //volatility and debt equity is done in updatePortfolio()
         var detailedAnalysis = await stockDetailedAnalysisModel.findOne({ "symbol": stock.symbol })
         if (detailedAnalysis) {
-            position.stock.score = detailedAnalysis.averageGoal
+            var score = 50
+            score += ((detailedAnalysis.averageGoal - position.stock.price) / position.stock.price) * 200
+            if (score > 100)
+                score = 100
+            if (score < 0)
+                score = 0
+            position.stock.score = score
+            console.log("score: " + position.stock.score)
         } else {
             position.stock.score = 0
         }
@@ -132,17 +142,15 @@ async function updateStock(position) {
 
 async function updateStockWhenModifed(position) {
     await updateStock(position);
-
-    //entryQuote is the price of the Stock at buy time, therefore it should only be changed when we modify it, not when the cronjob happens
-    // no wait it should only be changed when a new stock is added
-    //position.stock.entryQuote = position.stock.quote
-
 }
 
 async function updateStockCronjob(position) {
     await updateStock(position)
 }
 
+// parameter: portfolio
+// returns: array of stocks contained in the portfolio with their price converted to Eur
+// it's useless now that all the values of the stocks are already calculated in EUR
 async function calculateStockPricesInEur(portfolio) {
     var result = []
     var positions = portfolio.portfolio.positions
@@ -186,7 +194,8 @@ async function updatePortfolio(portfolio) {
             "correlations": {}
         }
     } else {
-        var stockArrayWithPriceInEur = await calculateStockPricesInEur(portfolio)
+        var stockArrayWithPriceInEur = portfolio.portfolio.positions
+        //var stockArrayWithPriceInEur = await calculateStockPricesInEur(portfolio)
         overview.value = stockArrayWithPriceInEur.map(({ stock: { price: price }, qty: qty }) => returnValueIfDefined(price * qty)).reduce((a, b) => a + b, 0)
 
         if (overview.value) {
@@ -237,7 +246,7 @@ async function updatePortfolio(portfolio) {
         pAnalytics.correlations = SDandCorr.correlations
         //volatility of positions
         portfolio.portfolio.positions.forEach(position => {
-            position.stock.volatility = returnValueIfDefined(SDandCorr.volatility[position.stock.name])
+            position.stock.volatility = returnValueIfDefined(SDandCorr.volatility[position.stock.symbol])
         });
         pAnalytics.standardDeviation = SDandCorr.standardDeviation
 
@@ -296,22 +305,20 @@ async function updatePortfolio(portfolio) {
 }
 
 async function updatePortfolioWhenModified(portfolio) {
-    if (portfolio.portfolio.positions.length > 0)
-        // update all stocks
-        await portfolio.portfolio.positions.forEach(async (position) => {
-            await updateStockWhenModifed(position)
-        });
-
+    // update all stocks
+    for (var i = 0; i < positions.length; i++) {
+        await updateStockWhenModifed(positions[i])
+    }
     // update other values of portfolio
     await updatePortfolio(portfolio)
 }
 
 async function updatePortfolioCronjob(portfolio) {
-    if (portfolio.portfolio.positions.length > 0)
-        // update all stocks
-        await portfolio.portfolio.positions.forEach(async (position) => {
-            await updateStockCronjob(position)
-        });
+    // update all stocks
+    var positions = portfolio.portfolio.positions
+    for (var i = 0; i < positions.length; i++) {
+        await updateStockCronjob(positions[i])
+    }
 
     // update other values of portfolio
     await updatePortfolio(portfolio)
@@ -325,3 +332,4 @@ async function updatePortfolioCronjob(portfolio) {
 module.exports.updatePortfolioWhenModified = updatePortfolioWhenModified
 module.exports.updatePortfolioCronjob = updatePortfolioCronjob
 module.exports.searchStock = searchStock
+module.exports.toEur = toEur
