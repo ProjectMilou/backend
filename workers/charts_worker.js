@@ -61,10 +61,17 @@ async function getDataPoints(symbol, api_key) {
                 closingPrice = timeSeriesData[date][closeType];
                 dataPoints.push({date: date, close: closingPrice})
             })
-            dataPointModel.create(
+            let dataPoint = dataPointModel.findOneAndUpdate(
+                { symbol: symbol },
                 {
-                    symbol: symbol,
-                    dataPoints: dataPoints
+                    $set:
+                        {
+                            "dataPoints": dataPoints,
+                        },
+                },
+                {
+                    upsert: true,
+                    new: true
                 },
                 function (err, _dataPointInstance) {
                     if (err)
