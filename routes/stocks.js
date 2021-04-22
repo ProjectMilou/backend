@@ -259,7 +259,7 @@ router.get('/charts/dividend', async (req, res) => {
 
 router.get('/news', async (req, res) => {
     var date = new Date();
-    date.setDate(date.getDate() - 3);
+    date.setDate(date.getDate() - 2);
     var threeDaysAgoString = date.toISOString().slice(0, 10);
 
     var id = req.query.id;
@@ -294,7 +294,8 @@ router.get('/news', async (req, res) => {
                         "id": id,
                         "headline": article["title"],
                         "summary": article["description"].replace(/\n/g, ""),
-                        "url": article["url"]
+                        "url": article["url"],
+                        "publishedAt" : article["publishedAt"]
                     }
                 )
             })
@@ -329,7 +330,7 @@ router.get('/balanceSheet', async (req, res) => {
         res.json({
             "symbol": id,
             "annualReports": balanceSheet[0]["annualReports"],
-            "quarterlyReports": balanceSheet[0]["quarterlyReports"]
+            // "quarterlyReports": balanceSheet[0]["quarterlyReports"]
         });
     } else {
         res.json({ "error": "STOCK_ID_INVALID" })
@@ -359,7 +360,7 @@ router.get('/incomeStatement', async (req, res) => {
         res.json({
             "symbol": id,
             "annualReports": incomeStatement[0]["annualReports"],
-            "quarterlyReports": incomeStatement[0]["quarterlyReports"]
+            // "quarterlyReports": incomeStatement[0]["quarterlyReports"]
         });
     } else {
         res.json({ "error": "STOCK_ID_INVALID" })
@@ -389,7 +390,7 @@ router.get('/cashFlow', async (req, res) => {
         res.json({
             "symbol": id,
             "annualReports": cashFlow[0]["annualReports"],
-            "quarterlyReports": cashFlow[0]["quarterlyReports"]
+            // "quarterlyReports": cashFlow[0]["quarterlyReports"]
         });
     } else {
         res.json({ "error": "STOCK_ID_INVALID" })
