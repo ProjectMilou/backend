@@ -54,6 +54,10 @@ const StockSchema = new mongoose.Schema({
     currency: {
         type: String,
     },
+    displayedCurrency: {
+        type: String,
+        default: 'EUR',
+    },
     country: {
         type: String,
     },

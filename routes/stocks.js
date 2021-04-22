@@ -330,7 +330,7 @@ router.get('/balanceSheet', async (req, res) => {
         res.json({
             "symbol": id,
             "annualReports": balanceSheet[0]["annualReports"],
-            "quarterlyReports": balanceSheet[0]["quarterlyReports"]
+            // "quarterlyReports": balanceSheet[0]["quarterlyReports"]
         });
     } else {
         res.json({ "error": "STOCK_ID_INVALID" })
@@ -360,7 +360,7 @@ router.get('/incomeStatement', async (req, res) => {
         res.json({
             "symbol": id,
             "annualReports": incomeStatement[0]["annualReports"],
-            "quarterlyReports": incomeStatement[0]["quarterlyReports"]
+            // "quarterlyReports": incomeStatement[0]["quarterlyReports"]
         });
     } else {
         res.json({ "error": "STOCK_ID_INVALID" })
@@ -390,7 +390,7 @@ router.get('/cashFlow', async (req, res) => {
         res.json({
             "symbol": id,
             "annualReports": cashFlow[0]["annualReports"],
-            "quarterlyReports": cashFlow[0]["quarterlyReports"]
+            // "quarterlyReports": cashFlow[0]["quarterlyReports"]
         });
     } else {
         res.json({ "error": "STOCK_ID_INVALID" })
