@@ -40,7 +40,7 @@ function finalPortfolioBalance(portfolio, stocksData, namesToSymbols) {
     });
     totalBalance = totalEndYear - totalStartYear;
     if (totalBalance < 0) {
-        return { totalBalance: 0 };
+        return { finalPortfolioBalance: 0 };
     }
     return {
         // used to be totalBalance :)
