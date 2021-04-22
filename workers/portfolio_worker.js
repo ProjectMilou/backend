@@ -113,7 +113,14 @@ async function updateStock(position) {
         //volatility and debt equity is done in updatePortfolio()
         var detailedAnalysis = await stockDetailedAnalysisModel.findOne({ "symbol": stock.symbol })
         if (detailedAnalysis) {
-            position.stock.score = detailedAnalysis.averageGoal
+            var score = 50
+            score += ((detailedAnalysis.averageGoal - position.stock.price) / position.stock.price) * 200
+            if (score > 100)
+                score = 100
+            if (score < 0)
+                score = 0
+            position.stock.score = score
+            console.log("score: " + position.stock.score)
         } else {
             position.stock.score = 0
         }
@@ -239,7 +246,7 @@ async function updatePortfolio(portfolio) {
         pAnalytics.correlations = SDandCorr.correlations
         //volatility of positions
         portfolio.portfolio.positions.forEach(position => {
-            position.stock.volatility = returnValueIfDefined(SDandCorr.volatility[position.stock.name])
+            position.stock.volatility = returnValueIfDefined(SDandCorr.volatility[position.stock.symbol])
         });
         pAnalytics.standardDeviation = SDandCorr.standardDeviation
 
@@ -298,22 +305,20 @@ async function updatePortfolio(portfolio) {
 }
 
 async function updatePortfolioWhenModified(portfolio) {
-    if (portfolio.portfolio.positions.length > 0)
-        // update all stocks
-        await portfolio.portfolio.positions.forEach(async (position) => {
-            await updateStockWhenModifed(position)
-        });
-
+    // update all stocks
+    for (var i = 0; i < positions.length; i++) {
+        await updateStockWhenModifed(positions[i])
+    }
     // update other values of portfolio
     await updatePortfolio(portfolio)
 }
 
 async function updatePortfolioCronjob(portfolio) {
-    if (portfolio.portfolio.positions.length > 0)
-        // update all stocks
-        await portfolio.portfolio.positions.forEach(async (position) => {
-            await updateStockCronjob(position)
-        });
+    // update all stocks
+    var positions = portfolio.portfolio.positions
+    for (var i = 0; i < positions.length; i++) {
+        await updateStockCronjob(positions[i])
+    }
 
     // update other values of portfolio
     await updatePortfolio(portfolio)
