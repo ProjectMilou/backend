@@ -76,7 +76,7 @@ const UserSchema = new mongoose.Schema({
     }
 });
 
-UserSchema.plugin(encrypt, { encryptionKey: encKey, signingKey: sigKey });
+UserSchema.plugin(encrypt, { encryptionKey: encKey, signingKey: sigKey, excludeFromEncryption: ['password'] });
 
 // store hash of password
 // store finUserId

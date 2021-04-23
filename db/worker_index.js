@@ -4,8 +4,7 @@ const mongoose = require('mongoose');//https://mongoosejs.com/docs/index.html
 mongoose.set('useFindAndModify', false);
 
 // access pwd from AWS Secret Manager
-let pwd = process.env.db_admin_pw
-let url = "mongodb+srv://admin:" + pwd + "@miloucluster.q8dhp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+let url = "mongodb+srv://admin:" + process.env.db_admin_pw + "@stagingcluster.q8dhp.mongodb.net/stagingDatabase?retryWrites=true&w=majority";
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
 
 /*
