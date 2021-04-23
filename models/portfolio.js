@@ -18,8 +18,6 @@ const portfolioOverviewSchema = new mongoose.Schema({
     modified: Number
 });
 
-portfolioOverviewSchema.plugin(encrypt, { encryptionKey: encKey, signingKey: sigKey });
-
 const portfolioSchema = new mongoose.Schema({
     id: mongoose.ObjectId,
     userId: mongoose.ObjectId,
@@ -88,8 +86,8 @@ const portfolioSchema = new mongoose.Schema({
     }
 });
 
+portfolioOverviewSchema.plugin(encrypt, { encryptionKey: encKey, signingKey: sigKey });
 portfolioSchema.plugin(encrypt, { encryptionKey: encKey, signingKey: sigKey });
-
 
 const Portfolio = mongoose.model('Portfolio', portfolioSchema)
 
