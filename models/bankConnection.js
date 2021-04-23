@@ -16,6 +16,7 @@ const bankConnectionSchema = new mongoose.Schema({
     }]
 });
 
+bankConnectionSchema.plugin(encrypt, { encryptionKey: encKey, signingKey: sigKey });
 
 const bankConnection = mongoose.model('bankConnection', bankConnectionSchema)
 

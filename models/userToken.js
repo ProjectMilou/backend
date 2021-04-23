@@ -43,6 +43,8 @@ const UserTokenSchema = new mongoose.Schema({
     }
 });
 
+UserTokenSchema.plugin(encrypt, { encryptionKey: encKey, signingKey: sigKey });
+
 // set expiration date in 24 hours.
 UserTokenSchema.pre(
     'save',
