@@ -632,6 +632,7 @@ router.post('/bank/connections/add/:bankId', passport.authenticate('jwt', { sess
     const bankId = req.params.bankId;
     const user = req.user;
     const finResponse = await finAPI.importBankConnection(user, bankId)
+    res.header("Access-control-Allow-Origin", "*");
     res.redirect(finResponse.link);
 });
 
