@@ -3,6 +3,8 @@ const bankConnection = require('../models/bankConnection');
 const stockModel = require("../models/stock");
 const UserModel = require("../models/user");
 const Portfolio = require('../models/portfolio');
+const mongoose = require('mongoose');
+const portfolioWorkers = require('../workers/portfolio_worker')
 
 // all functions, that work on finAPI are here
 
@@ -108,7 +110,6 @@ const searchBanks = async(searchString, location) => {
         });
 
         const response = await api_response.json();
-        console.log(response);
 
         return response;
     } catch (err) {
@@ -223,8 +224,6 @@ const refreshBankConnections = async(user) => {
     const access_token = await getUserAccessToken(user);
     const userId = user.id;
 
-    console.log(userId);
-
     const api_url = `https://sandbox.finapi.io/api/v1/bankConnections`;
 
     try {
@@ -236,14 +235,44 @@ const refreshBankConnections = async(user) => {
         });
 
         const json_response = await api_response.json();
-
-        console.log(json_response);
-
         let connections = json_response.connections;
 
-        bankConnection.deleteOne({ "userId": userId }, function(err, resp) {
-            if (err) console.log(err);
-            else console.log("deleted connections");
+
+        await bankConnection.findOne({ "userId": userId }).select('bankConnections.bankConnectionId').exec(async function(err, bcs) {
+            if (!err && bcs !== undefined && bcs != null && bcs.length != 0) {
+                if (connections !== undefined && connections.length != 0) {
+
+                    let bankArray = bcs.bankConnections; // db result
+                    let dbConnections = [];
+
+                    for (var i in bankArray) {
+                        dbConnections.push(JSON.stringify(bankArray[i].bankConnectionId));
+                    }
+
+                    let finapiConnections = [];
+                    for (var j in connections) {
+                        finapiConnections.push(connections[j].id + '');
+                    }
+
+                    dbConnections = finapiConnections.filter(x => !dbConnections.includes(x) || dbConnections.includes(x));
+
+                    for (var i in bankArray) {
+                        if (!dbConnections.includes(bankArray[i].bankConnectionId))
+                            delete bankArray[i];
+                    }
+
+                } else {
+                    for (var i in bankArray) {
+                        delete bankArray[i];
+                    }
+                }
+
+                bcs.save(
+                    function(error, connectionRes) {
+                        if (error) console.log(error)
+                    });
+            }
+
         });
 
         if (connections !== undefined && connections.length > 0) {
@@ -270,9 +299,6 @@ async function updateOrSaveConnections(userId, connection) {
                 bConnection.save(
                     function(error, conn) {
                         if (error) console.log(error);
-                        else {
-                            console.log('saved successfully');
-                        }
                     }
                 );
             } else {
@@ -280,27 +306,26 @@ async function updateOrSaveConnections(userId, connection) {
                     let accounts = connection.accountIds;
 
                     for (var i in accounts) {
-                        let account = result.bankConnections.accountIds.find((accountId) => {
-                            return accounts[i] == accountId;
-                        });
-                        if (!account) {
-                            var today = new Date();
-                            var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-                            var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-                            var dateTime = date + ' ' + time;
+                        for (var j in result.bankConnections) {
+                            let account = result.bankConnections[j].accountIds.find((accountId) => {
+                                return accounts[i] == accountId;
+                            });
+                            if (!account) {
+                                var today = new Date();
+                                var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+                                var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                                var dateTime = date + ' ' + time;
 
-                            result.bankConnections.accountIds.push(accounts[i]);
-                            result.bankConnections.modified = dateTime;
-                            console.log("added a connection");
+                                result.bankConnections[j].accountIds.push(accounts[i]);
+                                result.bankConnections[j].modified = dateTime;
+                            }
                         }
+
                     }
 
                     result.save(
                         function(error, connectionRes) {
                             if (error) console.log(error)
-                            else {
-                                console.log('updated connection successfully');
-                            }
                         });
                 }
 
@@ -332,15 +357,20 @@ const deleteOneBankConnection = async(user, idToRemove) => {
                         return connection.bankConnectionId == idToRemove
                     });
                     if (found) {
+
+                        let accountIds = found.accountIds;
+
                         result.bankConnections.pull(found);
 
                         result.save(
                             function(error, connectionRes) {
                                 if (error) console.log(error)
-                                else {
-                                    console.log('updated connection successfully');
-                                }
                             });
+
+                        // in case updateConnection not up, verifying
+                        await Portfolio.deleteMany({ "userId": userId, "bankAccountId": { "$in": accountIds } }).exec(async(err, res) => {
+                            if (err) console.log(err);
+                        });
 
                         await refreshPortfolios(user);
                     }
@@ -348,7 +378,6 @@ const deleteOneBankConnection = async(user, idToRemove) => {
             }
         });
 
-        console.log("successfully deleted a bank connection " + idToRemove)
     } catch (err) {
         console.log(err.message);
     }
@@ -369,11 +398,12 @@ const deleteAllBankConnections = async(user) => {
         });
 
         bankConnection.deleteMany({ "userId": userId }).exec(async(err, result) => {
-            if (err) {
-                console.log(err);
-            } else {
-
-                console.log("successfully deleted all bank connections ")
+            if (err) console.log(err)
+            else {
+                // in case updateConnection not up, verifying
+                await Portfolio.deleteMany({ "userId": userId }).exec(async(err, result) => {
+                    if (err) console.log(err);
+                });
             }
         });
 
@@ -402,12 +432,16 @@ const refreshPortfolios = async(user) => {
         const json_response = await api_response.json();
         let securities = json_response.securities;
 
-        if (securities !== undefined && securities.length > 0) {
-            Portfolio.deleteMany({ "userId": userId, "portfolio.overview.virtual": false }, function(err, resp) {
-                if (err) console.log(err);
-                else console.log("deleted real\n" + JSON.stringify(resp));
-            });
+        Portfolio.find({ "userId": userId, "portfolio.overview.virtual": false }).select('portfolio.positions').exec(async function(err, pfs) {
+            if (!err) {
+                for (var i in pfs) {
+                    deleteInDocs(pfs[i], securities);
+                }
+            }
 
+        });
+
+        if (securities !== undefined && securities.length > 0) {
             for (var k in securities) {
                 await updateOrSavePortfolios(userId, securities[k]);
             }
@@ -418,6 +452,41 @@ const refreshPortfolios = async(user) => {
         console.log(error.message);
     }
 
+}
+
+async function deleteInDocs(pf, securities) {
+    if (securities !== undefined && securities.length != 0) {
+
+        let positions = pf.portfolio.positions;
+
+        let dbIsins = [];
+        for (var i in positions) {
+            dbIsins.push(JSON.stringify(positions[i].stock.isin));
+        }
+
+        let finapiIsins = [];
+
+        for (var j in securities) {
+            finapiIsins.push(securities[j].id + '');
+        }
+
+        dbIsins = finapiIsins.filter(x => !dbIsins.includes(x) || dbIsins.includes(x));
+
+        for (var i in positions) {
+            if (!dbIsins.includes(positions[i].stock.isin))
+                delete positions[i];
+        }
+
+    } else {
+        for (var i in pf.portfolio.positions) {
+            delete pf.portfolio.positions[i];
+        }
+    }
+
+    pf.save(
+        function(error, pfRes) {
+            if (error) console.log(error)
+        });
 }
 
 async function updateOrSavePortfolios(userId, security) {
@@ -433,9 +502,6 @@ async function updateOrSavePortfolios(userId, security) {
                 portfolio.save(
                     function(error, portfolioRes) {
                         if (error) console.log(error);
-                        else {
-                            console.log('saved successfully');
-                        }
                     }
                 );
             } else {
@@ -447,10 +513,8 @@ async function updateOrSavePortfolios(userId, security) {
 
                 if (stock) {
                     stock = positions;
-                    console.log("modified");
                 } else {
-                    result.portfolio.positions.push(positions)
-                    console.log("added");
+                    result.portfolio.positions.push(positions);
                 }
 
                 portfolioWorkers.updatePortfolioWhenModified(result);
@@ -459,9 +523,6 @@ async function updateOrSavePortfolios(userId, security) {
                 result.save(
                     function(error, portfolioRes) {
                         if (error) console.log(error)
-                        else {
-                            console.log('updated successfully');
-                        }
                     });
             }
         }
@@ -534,7 +595,7 @@ const newPortfolio = async(portfolioId, userId, security) => {
                 "dividendPayoutRatio": 0
             }],
             "nextDividend": 0,
-            "totalReturn": 0,
+            "totalReturn": security.profitOrLoss,
             "totalReturnPercent": 0,
             "analytics": {
                 "volatility": 0,
@@ -623,18 +684,18 @@ const searchSymbol = async(isin, wkn) => {
 }
 
 const refreshCronjob = async() => {
-    // await UserModel.find({}, async(err, users) => {
-    //         console.log("before");
-    //         if (!err) {
-    //             for (var i = 0; i < users.length; i++) {
-    //                 // await updateFinApiConnection(id);
-    //                 await refreshBankConnections(users[i]);
-    //                 await refreshPortfolios(users[i]);
-    //             }
-    //         }
-    //     }
+    await UserModel.find({}, async(err, users) => {
 
-    // );
+            if (!err) {
+                for (var i in users) {
+                    // await updateFinApiConnection(id);
+                    await refreshBankConnections(users[i]);
+                    await refreshPortfolios(users[i]);
+                }
+            }
+        }
+
+    );
 }
 
 module.exports = {
@@ -648,5 +709,6 @@ module.exports = {
     updateFinApiConnection,
     refreshBankConnections,
     refreshPortfolios,
-    refreshCronjob
+    refreshCronjob,
+    getUserAccessToken
 }

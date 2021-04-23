@@ -6,6 +6,10 @@ const dataPointModel = require("../models/dataPoint");
 const dividendModel = require("../models/dividend");
 const keyFigureModel = require("../models/keyFigure");
 const db = require('../db/worker_index.js');
+const stockModel = require("../models/stock");
+const exchangeRateModel = require("../models/exchangeRate");
+
+
 dotenv.config();
 
 module.exports.updateAllCharts = async function () {
@@ -27,8 +31,9 @@ module.exports.updateAllCharts = async function () {
 
 
     const startFetching = async () => {
+        // let counter = 0;
         for await (const symbol of rl) {
-            // console.log(symbol);
+            // console.log(counter + ' - ' + symbol);
             await getDataPoints(symbol, api_key_alphavantage);
             // await getTimeIntervalPerformance(symbol, api_key_alphavantage);
             // await getYearlyPerformance(symbol, api_key_alphavantage);
@@ -36,6 +41,7 @@ module.exports.updateAllCharts = async function () {
             // await getDividends(symbol, api_key_alphavantage);    // there are 2 calls
             // await getKeyFigures(symbol, api_key_alphavantage);
             let numberOfCalls = 1;
+            // counter++;
             await sleep(numberOfCalls * 1500);
         }
         rl.close()
@@ -44,27 +50,65 @@ module.exports.updateAllCharts = async function () {
     startFetching()
 }
 
+async function getExhangeRateToEur(currencyFrom) {
+    let query = {};
+    query["base"] = "EUR";
+    let exchangeRates = await exchangeRateModel.find(query, '-_id');
+    let rate;
+    try {
+        rate = exchangeRates[0]["rates"][0][currencyFrom];
+    } catch (e) {
+        rate = 1;
+    }
+    return 1 / parseFloat(rate);
+}
+
+
 async function getDataPoints(symbol, api_key) {
     let url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED' +
         '&outputsize=full' +
         '&symbol=' + symbol +
         '&apikey=' + api_key;
 
+    let query = {};
+    query["symbol"] = symbol;
+    let stocks = await stockModel.find(query, '-_id');
+    let currencyOfStock;
+    try {
+        currencyOfStock = stocks[0]["currency"];
+    } catch (e) {
+        currencyOfStock = "USD";
+    }
+    let exchangeRate = await getExhangeRateToEur(currencyOfStock);
+
     await fetch(url)
         .then(response => response.json())
-        .then(data => {
-            const timeSeriesData = data["Time Series (Daily)"];
+        .then(async data => {
+            let timeSeriesData = data["Time Series (Daily)"];
             let closingPrice;
             let dataPoints = [];
             let closeType = "5. adjusted close";
+
             Object.keys(timeSeriesData).forEach(function (date) {
                 closingPrice = timeSeriesData[date][closeType];
-                dataPoints.push({date: date, close: closingPrice})
+                dataPoints.push(
+                    {
+                        date: date,
+                        close: Math.floor(closingPrice * exchangeRate) //await convertToEur(closingPrice, currencyOfStock) //closingPrice
+                    })
             })
-            dataPointModel.create(
+
+            let dataPoint = dataPointModel.findOneAndUpdate(
+                { symbol: symbol },
                 {
-                    symbol: symbol,
-                    dataPoints: dataPoints
+                    $set:
+                        {
+                            "dataPoints": dataPoints,
+                        },
+                },
+                {
+                    upsert: true,
+                    new: true
                 },
                 function (err, _dataPointInstance) {
                     if (err)

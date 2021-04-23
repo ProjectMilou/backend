@@ -31,7 +31,7 @@ const { finalPortfolioBalance } = require('../data-analytics/analytics/backtesti
 
 cron.schedule("0 2 * * *", async() => {
     await finAPI.refreshCronjob();
-    Portfolio.find({}, async function (err, portf) {
+    Portfolio.find({}, async function(err, portf) {
         if (err) {
             console.log(err)
         } else {

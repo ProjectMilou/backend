@@ -13,6 +13,9 @@ const NewsSchema = new mongoose.Schema({
     url: {
         type: String,
     },
+    publishedAt: {
+        type: String,
+    },
 }, {
     versionKey: false
 });

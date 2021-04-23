@@ -632,7 +632,7 @@ router.post('/bank/connections/add/:bankId', passport.authenticate('jwt', { sess
     const bankId = req.params.bankId;
     const user = req.user;
     const finResponse = await finAPI.importBankConnection(user, bankId)
-    res.send(finResponse);
+    res.json(finResponse);
 });
 
 /**
@@ -661,7 +661,7 @@ router.get('/bank/connections', passport.authenticate('jwt', { session: false })
     await finAPI.refreshBankConnections(user);
 
     const finResponse = await finAPI.getAllBankConnections(user)
-    res.send(finResponse);
+    res.json(finResponse);
 });
 
 /**
@@ -693,7 +693,6 @@ router.get('/refresh', passport.authenticate('jwt', { session: false }), async(r
     res.status(200).json("User-related bank information successfully updated.")
 
 });
-
 
 /**
  * @swagger
