@@ -1,7 +1,11 @@
 const mongoose = require("mongoose");
-const { encrypt, decrypt, hash } = require('../encryption/encryption');
+const { hash } = require('../encryption/encryption');
 const fetch = require('node-fetch');
-// const { createFinAPIUser } = require('./finAPI');
+const encrypt = require('mongoose-encryption');
+
+const encKey = process.env.encryption_32byte_base64;
+const sigKey = process.env.encryption_64byte_base64;
+
 // adapted from https://www.digitalocean.com/community/tutorials/api-authentication-with-json-web-tokensjwt-and-passport
 
 /**
@@ -71,6 +75,8 @@ const UserSchema = new mongoose.Schema({
         required: true
     }
 });
+
+UserSchema.plugin(encrypt, { encryptionKey: encKey, signingKey: sigKey });
 
 // store hash of password
 // store finUserId

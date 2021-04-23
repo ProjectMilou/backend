@@ -1,5 +1,9 @@
 const mongoose = require("mongoose");
 const {randomToken} = require('../encryption/encryption');
+const encrypt = require('mongoose-encryption');
+
+const encKey = process.env.encryption_32byte_base64;
+const sigKey = process.env.encryption_64byte_base64;
 
 /**
  * @swagger

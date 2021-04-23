@@ -66,6 +66,8 @@ module.exports = async () => {
                 process.env.finnhub_key = secrets.finnhub_key;
                 process.env.aws_access_id = secrets.aws_access_id;
                 process.env.news_api_key = secrets.news_api_key;
+                process.env.encryption_32byte_base64 = secrets.encryption_32byte_base64;
+                process.env.encryptino_64byte_base64 = secrets.encryptino_64byte_base64;
             }
         }).promise().then();
     }

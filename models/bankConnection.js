@@ -1,4 +1,8 @@
 const mongoose = require('mongoose')
+const encrypt = require('mongoose-encryption');
+
+const encKey = process.env.encryption_32byte_base64;
+const sigKey = process.env.encryption_64byte_base64;
 
 const bankConnectionSchema = new mongoose.Schema({
     id: mongoose.ObjectId,
