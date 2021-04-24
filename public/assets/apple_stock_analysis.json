@@ -1,0 +1,9 @@
+{
+    "symbol": "AAPL",
+    "buy": "25",
+    "date": "2021-04-01",
+    "hold": "7",
+    "sell": "1",
+    "source": "finnhub.io/api",
+    "strategy": "buy"
+}

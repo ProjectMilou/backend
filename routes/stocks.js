@@ -104,7 +104,7 @@ router.get('/list', async (req, res) => {
                 }
             }
         }
-        const stocks = await stockModel.find(query, listIncludeFields);
+        const stocks = await stockModel.find(query,  excludeFields);
         res.json({ "stocks": stocks });
     }
 });
@@ -118,7 +118,6 @@ router.get('/search', async (req, res) => {
         { "name": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
         { "symbol": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
     ]
-    console.log(query)
     const stocks = await stockModel.find(query, excludeFields);
 
     res.json({ "stocks": stocks })
