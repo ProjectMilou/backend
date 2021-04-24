@@ -61,8 +61,8 @@ function mdd(portfolio, stocksData, namesToSymbols) {
     const [symbolToQuantity, symbols] = getSymbolsAndMappingToQuantity(
         portfolio, namesToSymbols
     );
-    let aggregatedMax = -9999999;
-    let aggregatedMin = 9999999;
+    let aggregatedMax = Number.MIN_VALUE;
+    let aggregatedMin = Number.MAX_VALUE;
     let dateMax = "";
     let dateMin = "";
     let initialValue = 0;

@@ -354,7 +354,7 @@ const deleteOneBankConnection = async(user, idToRemove) => {
             } else {
                 if (result) {
                     let found = result.bankConnections.find((connection) => {
-                        return connection.bankConnectionId == idToRemove
+                        return connection.bankConnectionId === idToRemove
                     });
                     if (found) {
 

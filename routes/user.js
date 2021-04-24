@@ -661,7 +661,10 @@ router.get('/bank/connections', passport.authenticate('jwt', { session: false })
     await finAPI.refreshBankConnections(user);
 
     const finResponse = await finAPI.getAllBankConnections(user)
-    res.json(finResponse);
+    if (finResponse === null)
+        res.json({"bankConnections" : []})
+    else
+        res.json(finResponse);
 });
 
 /**

@@ -406,12 +406,12 @@ async function getYearlyPerformance(symbol, api_key) {
     await fetch(url)
         .then(response => response.json())
         .then(data => {
-            const timeSeriesData = data["Weekly Time Series"];
+            const timeSeriesData = data["Weekly Adjusted Time Series"];
             const lastDay = Object.keys(timeSeriesData)[0];
             const lastYear = Object.keys(timeSeriesData)[52];
             const lastDayClose = timeSeriesData[lastDay]["5. adjusted close"]
             const lastYearClose = timeSeriesData[lastYear]["5. adjusted close"]
-            const per365d = (lastDayClose / lastYearClose).toFixed(3);
+            const per365d = ((lastDayClose / lastYearClose) * 100 - 100).toFixed(2);
 
 
             let stock = stockModel.findOneAndUpdate(
@@ -466,9 +466,9 @@ async function getTimeIntervalPerformance(symbol, api_key) {
             const previousDayClose = timeSeriesData[previousDay][closeType]
             const lastWeekClose = timeSeriesData[lastWeek][closeType]
             const lastMonthClose = timeSeriesData[lastMonth][closeType]
-            const per1d = (lastDayClose / previousDayClose).toFixed(3);
-            const per7d = (lastDayClose / lastWeekClose).toFixed(3);
-            const per30d = (lastDayClose / lastMonthClose).toFixed(3);
+            const per1d = ((lastDayClose / previousDayClose) * 100 - 100).toFixed(2);
+            const per7d = ((lastDayClose / lastWeekClose) * 100 - 100).toFixed(2);
+            const per30d = ((lastDayClose / lastMonthClose) * 100 - 100).toFixed(2);
 
             let stock = stockModel.findOneAndUpdate(
                 {symbol: symbol},

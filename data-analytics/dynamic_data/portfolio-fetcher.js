@@ -11,6 +11,9 @@ async function findPortfolioByID(id) {
     const reformattedPortfolio = {
         securities: []
     }
+    if(!returnedPortfolio) {
+        return undefined
+    }
     returnedPortfolio.portfolio.positions.forEach(position => {
         const currSecurity = {};
         currSecurity["name"] = position.stock.name;
