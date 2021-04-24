@@ -16,8 +16,8 @@ const cron = require("node-cron");
     
 const app = express();
 
-if(process.env.NODE_ENV != 'test') {
-    require('./secret/secret')();
+async function initialize() {
+    await require('./secret/secret')();
     require('./auth/auth');
     const { PORT = 3000 } = process.env;
     const swaggerJsDoc = require('swagger-jsdoc');
@@ -45,9 +45,12 @@ if(process.env.NODE_ENV != 'test') {
 
     const getUserRoute = require('./routes/user');
     app.use('/user', getUserRoute);
+    require("./db/index.js")(app);
 }
-    
-    
+
+if(process.env.NODE_ENV != 'test') {
+    initialize();
+}
 
 cron.schedule("0 4 * * *", () => {
     stockWorkers.updateAllStocks();
@@ -57,7 +60,7 @@ cron.schedule("0 4 * * *", () => {
 });
 
 // database setup
-require("./db/index.js")(app);
+
 
 app.get('/', (req, res) => {
     res.statusCode = 200;
