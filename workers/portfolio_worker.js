@@ -13,7 +13,7 @@ const fetch = require('node-fetch');
 const { variance } = require('stats-lite');
 
 
-const getExchangeRate = async(from_currency, to_currency) => {
+const getExchangeRate = async (from_currency, to_currency) => {
     let rate = 1;
     if (from_currency != to_currency && from_currency !== undefined) {
         var params = new URLSearchParams({
@@ -41,10 +41,12 @@ const getExchangeRate = async(from_currency, to_currency) => {
     return rate;
 }
 
-const toEur = async(money, currency) => {
+const toEur = async (money, currency) => {
+    if (currency == "EUR")
+        return money;
     if (money) {
         var exchangeRate = await getExchangeRate(currency, "EUR")
-        return money * exchangeRate
+        return money / exchangeRate
     } else {
         return 0
     }
@@ -57,7 +59,7 @@ const percent = (nr1, nr2) => {
         return 0
 }
 
-const searchStock = async(searchString) => {
+const searchStock = async (searchString) => {
     let query = {};
     query["$or"] = [
         { "isin": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
@@ -96,21 +98,27 @@ function tofinAPIPortfolio(returnedPortfolio) {
 
 // updates price, performance etc. of stock and converts all currencies to Euro
 // the fields "marketValueCurrency" and "quoteCurrency" still refer to the original currency, because otherwise the analysis of how many different currencies are in the portfolio would be wrong
-async function updateStock(position) {
+async function updateStock(position, virtual) {
     //search updated stock data in database
     var stockArray = await searchStock(position.stock.symbol);
     var stock = stockArray[0]
     if (stock) {
-        position.stock.price = await toEur(stock.price, stock.currency)
-            //position.stock.marketValueCurrency = "EUR"
-        position.stock.quote = await toEur(stock.price, stock.currency)
-            //position.stock.quoteCurrency = "EUR"
-        position.stock.quoteDate = stock.date
-        position.stock.perf7d = await toEur(stock.per7d, stock.currency)
-        position.stock.perf1y = await toEur(stock.per365d, stock.currency)
+        if (virtual) {
+            position.stock.displayedCurrency = stock.displayedCurrency
+            position.stock.price = stock.price
+            position.stock.quote = stock.price
+            position.stock.quoteDate = stock.date
+        } else {
+            //convert to EUR
+            position.stock.price = await toEur(position.stock.price, position.stock.marketValueCurrency)
+            position.stock.displayedCurrency = "EUR"
+        }
+
+        position.stock.perf7d = stock.per7d, stock.displayedCurrency
+        position.stock.perf1y = stock.per365d, stock.displayedCurrency
         position.stock.perf7dPercent = percent(position.stock.perf7d, (position.stock.price * position.qty))
         position.stock.perf1yPercent = percent(position.stock.perf1y, (position.stock.price * position.qty))
-            //volatility and debt equity is done in updatePortfolio()
+        //volatility and debt equity is done in updatePortfolio()
         var detailedAnalysis = await stockDetailedAnalysisModel.findOne({ "symbol": stock.symbol })
         if (detailedAnalysis) {
             var score = 50
@@ -124,9 +132,11 @@ async function updateStock(position) {
         } else {
             position.stock.score = 0
         }
-        position.totalReturn = returnValueIfDefined(position.stock.quote * position.qty - position.stock.entryQuote * position.qty)
+        if (virtual) {
+            position.totalReturn = returnValueIfDefined(position.stock.quote * position.qty - position.stock.entryQuote * position.qty)
+        }
         position.totalReturnPercent = percent(position.totalReturn, position.stock.quote * position.qty)
-    } else {
+    } else if (virtual) {
         position.stock.price = 0
         position.stock.quote = 0
         position.stock.quoteDate = 0
@@ -140,12 +150,12 @@ async function updateStock(position) {
     }
 }
 
-async function updateStockWhenModifed(position) {
-    await updateStock(position);
+async function updateStockWhenModifed(position, virtual) {
+    await updateStock(position, virtual);
 }
 
-async function updateStockCronjob(position) {
-    await updateStock(position)
+async function updateStockCronjob(position, virtual) {
+    await updateStock(position, virtual)
 }
 
 // parameter: portfolio
@@ -195,7 +205,7 @@ async function updatePortfolio(portfolio) {
         }
     } else {
         var stockArrayWithPriceInEur = portfolio.portfolio.positions
-            //var stockArrayWithPriceInEur = await calculateStockPricesInEur(portfolio)
+        //var stockArrayWithPriceInEur = await calculateStockPricesInEur(portfolio) //this is useless now that the prices in the database of the stocks are also in euro
         overview.value = stockArrayWithPriceInEur.map(({ stock: { price: price }, qty: qty }) => returnValueIfDefined(price * qty)).reduce((a, b) => a + b, 0)
 
         if (overview.value) {
@@ -207,7 +217,7 @@ async function updatePortfolio(portfolio) {
         overview.perf1y = stockArrayWithPriceInEur.map(({ stock: { perf1y: performance } }) => returnValueIfDefined(performance)).reduce((a, b) => a + b, 0)
         overview.perf7dPercent = percent(overview.perf7d, overview.value)
         overview.perf1yPercent = percent(overview.perf1y, overview.value)
-            //risk
+        //risk
         var currPortfolio = tofinAPIPortfolio(portfolio)
         var currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
         var currCompanyOverviews
@@ -244,7 +254,7 @@ async function updatePortfolio(portfolio) {
             pAnalytics = {}
         pAnalytics.volatility = SDandCorr.portfolioVolatility
         pAnalytics.correlations = SDandCorr.correlations
-            //volatility of positions
+        //volatility of positions
         portfolio.portfolio.positions.forEach(position => {
             position.stock.volatility = returnValueIfDefined(SDandCorr.volatility[position.stock.symbol])
         });
@@ -300,7 +310,7 @@ async function updatePortfolio(portfolio) {
         //others
         portfolio.portfolio.totalReturn = stockArrayWithPriceInEur.map(({ totalReturn: performance }) => returnValueIfDefined(performance)).reduce((a, b) => a + b, 0)
         portfolio.portfolio.totalReturnPercent = percent(portfolio.portfolio.totalReturn, overview.value)
-            //TODO nextDividend: Number,//no data, maybe Alpha Vantage
+        //TODO nextDividend: Number,//no data, maybe Alpha Vantage
     }
 }
 
@@ -308,7 +318,7 @@ async function updatePortfolioWhenModified(portfolio) {
     // update all stocks
     var positions = portfolio.portfolio.positions;
     for (var i = 0; i < positions.length; i++) {
-        await updateStockWhenModifed(positions[i])
+        await updateStockWhenModifed(positions[i], portfolio.portfolio.overview.virtual)
     }
     // update other values of portfolio
     await updatePortfolio(portfolio)
@@ -318,12 +328,12 @@ async function updatePortfolioCronjob(portfolio) {
     // update all stocks
     var positions = portfolio.portfolio.positions
     for (var i = 0; i < positions.length; i++) {
-        await updateStockCronjob(positions[i])
+        await updateStockCronjob(positions[i], portfolio.portfolio.overview.virtual)
     }
 
     // update other values of portfolio
     await updatePortfolio(portfolio)
-        //performance
+    //performance
     var newDataPoint = [Date.now(), portfolio.portfolio.overview.value]
     portfolio.portfolio.performance.push(newDataPoint)
 

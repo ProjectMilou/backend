@@ -6,6 +6,7 @@ const portfolioOverviewSchema = new mongoose.Schema({
     virtual: Boolean,
     positionCount: Number,
     value: Number,
+    displayedCurrency: String,
     score: Number,
     perf7d: Number,
     perf1y: Number,
@@ -26,8 +27,9 @@ const portfolioSchema = new mongoose.Schema({
                 wkn: String,
                 symbol: String,
                 name: String,
-                price: Number, //=marketValue!
+                price: Number,
                 marketValueCurrency: String,
+                displayedCurrency: String,
                 quote: Number,
                 quoteCurrency: String,
                 quoteDate: String,
@@ -43,7 +45,7 @@ const portfolioSchema = new mongoose.Schema({
                 industry: String,
                 score: Number
             },
-            qty: Number, // = quantityNominal?
+            qty: Number,
             quantityNominalType: String,
             totalReturn: Number, //=profitOrLoss?
             totalReturnPercent: Number

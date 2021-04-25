@@ -53,6 +53,8 @@
  *        type: string
  *      price:
  *        type: number
+ *      displayedCurrency: 
+ *          type: string
  *      marketValueCurrency:
  *          type: string
  *      perf7d:
@@ -885,6 +887,8 @@
  *        type: integer
  *      value:
  *        type: number
+ *      displayedCurrency: 
+ *          type: string
  *      score:
  *        type: number
  *      perf7d:
@@ -1060,6 +1064,8 @@
  *    description: Gets all portfolios of the current user with basic information to display in the portfolio dashboard.
  *
  *                  (The value of "id" is the real one, "_id" can be ignored)
+ * 
+ *                  The currency of "value" is defined in "displayedCurrency", and it is always "EUR".
  *    operationId: getPortfolios
  *    produces:
  *    - application/json
@@ -1089,10 +1095,12 @@
  *     tags:
  *     - portfolio
  *     summary: Get details of portfolio
- *     description: Gets portfolio details including key figures, scores and positions.
+ *     description: Gets portfolio details including key figures (empty for now), scores(?), positions and analytics values.
  *                      
- *                      The currency of the price of the single stocks is the currency specified inside of the "stock" parameter.
- *                      The currency of the portfolio fields "totalReturn", "value" and "perf7d/perf1y" are always in EUR.
+ *                      The currency of the price of the single stocks is the currency specified inside of the "stock.displayedCurrency" parameter, 
+ *                      which is always EUR. The value that we get from Alpha Vantage is therefore converted to EUR.
+ *                      The "stock.marketValueCurrency" value gives information about what currency the price has on the market. 
+ *                      This is important for calculationg the risks and diversification of the portfolio.
  *     operationId: getPortfolio
  *     produces:
  *     - application/json
@@ -1127,6 +1135,7 @@
  *     - portfolio
  *     summary: Get data for portfolio chart
  *     description: Gets the data points to display a performance chart.
+ *                   A new data point is added every day at 2 o'clock.
  *     operationId: portfolioPerformance
  *     produces:
  *     - application/json
@@ -1246,7 +1255,7 @@
  *     tags:
  *     - portfolio
  *     summary: Rename a portfolio
- *     description: Renames the portfoliowith the given id.
+ *     description: Renames the portfolio with the given id.
  *     operationId: renamePortfolio
  *     produces:
  *     - application/json
@@ -1300,10 +1309,11 @@
  *
  *       Positions not included in the request remain unchanged.
  *       The position which is changed is the one which has isin, wkn, symbol or name equal to the parameter symbol
- *       (which you can call either isin, wkn, name or symbol)
- *       It is safest to search with the symbol as parameter, because in our API we can search stocks by symbol
- *       (Right now we haen't implemented the stock search yet, so it just creates a lot of question marks as fields for added positions)
+ *       (which you can call either isin, wkn, name or symbol).
+ *       It is safest to search with the symbol as parameter, because in our API we can search stocks by symbol.
+ * 
  *       Only virtual portfolios can be modified.
+ *       
  *       If any of the modifications causes an error, none of the modifications get stored in the database.
  *     operationId: modifyPortfolio
  *     produces:
