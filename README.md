@@ -16,9 +16,8 @@ called `analyticsRoutes.js`, which offers a connection to the Analyzer part of M
 
 ​ What's not working yet?
 
-- data on the database is not stored encrypted (only password hashed), but the functions for encryption/decryption can
-  be accessed
-- project needs a restructuring, regarding the folder structure
+- automatic tests for the routes need to be implemented
+- the formula for calculating the portfolio score needs to be revised
 
 
 ## Dependencies
@@ -67,16 +66,18 @@ changes on `master` within seconds using
 
 ## Database
 
-The backend's database is running on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). It is used to cache
-information about stocks and companies, enabling us to update analysis of portfolios, even tough we are limited in terms
-of calls per minute to our financial APIs.
+The backend's database is running on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). It is used to cache information about stocks, companies and currencies, enabling us to update analysis of portfolios, even tough we are limited in terms of calls per minute to our financial APIs.
 
-Sensitive user data is stored encrypted _(not yet for better debugging)_, while passwords are stored hashed. ​
+It also stores the user profiles and all the portfolios of the users, as well as the analysis values of the portfolios, calculated by the analysis team.
 
-## Updating stocks data in MongoDB
+All data is stored encrypted (MongoDB automatically encrypts all data), and passwords are stored hashed. ​
+
+## Cronjobs
 
 These two endpoints<sup>1</sup> and these five fields<sup>2</sup> of stocks are updated every night at 4:00 am via CronJobWorker from Alpha Vantage API, because they are important for frontend and require daily updates. 
-Other fields/endpoints do not require daily update and hence information is static.
+Other fields/endpoints of the stocks do not require daily update and hence information is static.
+
+The information about stock values in the portfolio and the analysis of portfolios are updated every night at 2:00 am, in order to keep the values of the stock prices and of the performance chart up to date.
 
 <sup>1</sup> Endpoints: /stocks/charts/historic , /stocks/charts/analysts <br/>
 <sup>2</sup> Fields: price, per1d, per7d, per30d, date
@@ -113,6 +114,10 @@ Endpoint | Parameters | Description | Example response
 
 
 ### Portfolios
+
+Endpoints for reading, modifying, creating and deleting portfolios. For accessing these routes, a valid access_token of a specific user must be passed in the header of the request. A user can view/modify only their own portfolios. 
+Only virtual portfolios can be modified. 
+These routes are used by the frontend portfolio application.
 
 Endpoint | Parameters | Description 
 ------------- | ------------- | ------------- 
