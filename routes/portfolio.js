@@ -68,6 +68,7 @@ const emptyPortfolio = (portfolioId, userId, name) => {
                 "virtual": true,
                 "positionCount": 0,
                 "value": 0,
+                "displayedCurrency": "EUR",
                 "score": 0,
                 "perf7d": 0,
                 "perf1y": 0,
@@ -92,6 +93,7 @@ const newStock = async(symbol, qty) => {
             "symbol": symbol,
             "name": symbol,
             "price": 0,
+            "displayedCurrency": "EUR",
             "marketValueCurrency": "?",
             "quote": 0,
             "quoteCurrency": "?",
@@ -109,12 +111,6 @@ const newStock = async(symbol, qty) => {
             "score": 0
         }
     }
-    var detailedAnalysis = await stockDetailedAnalysisModel.findOne({ "symbol": stock.symbol })
-    if (!detailedAnalysis) {
-        detailedAnalysis = {
-            "averageGoal": 0
-        }
-    }
     var result = {
         "stock": {
             "isin": stock.isin,
@@ -122,6 +118,7 @@ const newStock = async(symbol, qty) => {
             "symbol": stock.symbol,
             "name": stock.name,
             "price": stock.price,
+            "displayedCurrency": stock.displayedCurrency,
             "marketValueCurrency": stock.currency,
             "quote": stock.price,
             "quoteCurrency": stock.currency,
@@ -133,8 +130,7 @@ const newStock = async(symbol, qty) => {
             "perf7dPercent": percent(stock.per7d, (stock.price * qty)),
             "perf1yPercent": percent(stock.per365d, (stock.price * qty)),
             "country": stock.country,
-            "industry": stock.industry,
-            "score": detailedAnalysis.averageGoal
+            "industry": stock.industry
         },
         "qty": qty,
         "quantityNominalType": "UNIT",

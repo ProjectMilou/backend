@@ -6,6 +6,7 @@ const portfolioOverviewSchema = new mongoose.Schema({
     virtual: Boolean,
     positionCount: Number,
     value: Number,
+    displayedCurrency: String,
     score: Number,
     perf7d: Number,
     perf1y: Number,
@@ -22,17 +23,18 @@ const portfolioSchema = new mongoose.Schema({
         overview: portfolioOverviewSchema,
         positions: [{
             stock: {
-                isin: String,
-                wkn: String,
-                symbol: String,
-                name: String,
-                price: Number, //=marketValue!
-                marketValueCurrency: String,
-                quote: Number,
-                quoteCurrency: String,
-                quoteDate: String,
-                entryQuote: Number,
-                entryQuoteCurrency: String,
+                isin: String,//finAPI
+                wkn: String,//finAPI
+                symbol: String,//finHub?
+                name: String,//finAPI
+                price: Number, //finAPI
+                marketValueCurrency: String,//finAPI
+                displayedCurrency: String,
+                quote: Number,//finAPI
+                quoteCurrency: String,//finAPI
+                quoteDate: String,//finAPI
+                entryQuote: Number,//finAPI
+                entryQuoteCurrency: String,//finAPI
                 perf7d: Number,
                 perf1y: Number,
                 perf7dPercent: Number,
@@ -43,9 +45,9 @@ const portfolioSchema = new mongoose.Schema({
                 industry: String,
                 score: Number
             },
-            qty: Number, // = quantityNominal?
-            quantityNominalType: String,
-            totalReturn: Number, //=profitOrLoss?
+            qty: Number,//finAPI
+            quantityNominalType: String,//finAPI
+            totalReturn: Number, //=profitOrLoss?//finAPI
             totalReturnPercent: Number
         }],
         risk: {
