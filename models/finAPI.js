@@ -240,9 +240,10 @@ const refreshBankConnections = async(user) => {
 
         await bankConnection.findOne({ "userId": userId }).select('bankConnections.bankConnectionId').exec(async function(err, bcs) {
             if (!err && bcs !== undefined && bcs != null && bcs.length != 0) {
+                let bankArray = bcs.bankConnections; // db result
                 if (connections !== undefined && connections.length != 0) {
 
-                    let bankArray = bcs.bankConnections; // db result
+                    
                     let dbConnections = [];
 
                     for (var i in bankArray) {

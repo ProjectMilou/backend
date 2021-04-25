@@ -46,7 +46,7 @@ const toEur = async (money, currency) => {
         return money;
     if (money) {
         var exchangeRate = await getExchangeRate(currency, "EUR")
-        return money * exchangeRate
+        return money / exchangeRate
     } else {
         return 0
     }
@@ -98,17 +98,22 @@ function tofinAPIPortfolio(returnedPortfolio) {
 
 // updates price, performance etc. of stock and converts all currencies to Euro
 // the fields "marketValueCurrency" and "quoteCurrency" still refer to the original currency, because otherwise the analysis of how many different currencies are in the portfolio would be wrong
-async function updateStock(position) {
+async function updateStock(position, virtual) {
     //search updated stock data in database
     var stockArray = await searchStock(position.stock.symbol);
     var stock = stockArray[0]
     if (stock) {
-        position.stock.displayedCurrency = stock.displayedCurrency
-        position.stock.price = stock.price
-        //position.stock.marketValueCurrency = "EUR"
-        position.stock.quote = stock.price
-        //position.stock.quoteCurrency = "EUR"
-        position.stock.quoteDate = stock.date
+        if (virtual) {
+            position.stock.displayedCurrency = stock.displayedCurrency
+            position.stock.price = stock.price
+            position.stock.quote = stock.price
+            position.stock.quoteDate = stock.date
+        } else {
+            //convert to EUR
+            position.stock.price = await toEur(position.stock.price, position.stock.marketValueCurrency)
+            position.stock.displayedCurrency = "EUR"
+        }
+
         position.stock.perf7d = stock.per7d, stock.displayedCurrency
         position.stock.perf1y = stock.per365d, stock.displayedCurrency
         position.stock.perf7dPercent = percent(position.stock.perf7d, (position.stock.price * position.qty))
@@ -127,9 +132,11 @@ async function updateStock(position) {
         } else {
             position.stock.score = 0
         }
-        position.totalReturn = returnValueIfDefined(position.stock.quote * position.qty - position.stock.entryQuote * position.qty)
+        if (virtual) {
+            position.totalReturn = returnValueIfDefined(position.stock.quote * position.qty - position.stock.entryQuote * position.qty)
+        }
         position.totalReturnPercent = percent(position.totalReturn, position.stock.quote * position.qty)
-    } else {
+    } else if (virtual) {
         position.stock.price = 0
         position.stock.quote = 0
         position.stock.quoteDate = 0
@@ -143,12 +150,12 @@ async function updateStock(position) {
     }
 }
 
-async function updateStockWhenModifed(position) {
-    await updateStock(position);
+async function updateStockWhenModifed(position, virtual) {
+    await updateStock(position, virtual);
 }
 
-async function updateStockCronjob(position) {
-    await updateStock(position)
+async function updateStockCronjob(position, virtual) {
+    await updateStock(position, virtual)
 }
 
 // parameter: portfolio
@@ -311,7 +318,7 @@ async function updatePortfolioWhenModified(portfolio) {
     // update all stocks
     var positions = portfolio.portfolio.positions;
     for (var i = 0; i < positions.length; i++) {
-        await updateStockWhenModifed(positions[i])
+        await updateStockWhenModifed(positions[i], portfolio.portfolio.overview.virtual)
     }
     // update other values of portfolio
     await updatePortfolio(portfolio)
@@ -321,7 +328,7 @@ async function updatePortfolioCronjob(portfolio) {
     // update all stocks
     var positions = portfolio.portfolio.positions
     for (var i = 0; i < positions.length; i++) {
-        await updateStockCronjob(positions[i])
+        await updateStockCronjob(positions[i], portfolio.portfolio.overview.virtual)
     }
 
     // update other values of portfolio
