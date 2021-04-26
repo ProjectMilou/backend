@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "serve": "nodemon server.js"
+    "test": "jest --detectOpenHandles",
+    "test:watch": "jest --watch",
+    "start": "node start.js",
+    "serve": "nodemon start.js"
+  },
+  "jest": {
+    "testEnvironment": "node"
   },
   "repository": {
     "type": "git",
@@ -27,6 +31,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
+    "mongodb": "^3.6.5",
     "mongoose": "^5.12.1",
     "node-cron": "^3.0.0",
     "node-fetch": "^2.6.1",
@@ -39,7 +44,9 @@
     "swagger-ui-express": "^4.1.6"
   },
   "devDependencies": {
-    "nodemon": "^2.0.7"
+    "jest": "^26.6.3",
+    "nodemon": "^2.0.7",
+    "supertest": "^6.1.3"
   },
   "keywords": [],
   "description": ""

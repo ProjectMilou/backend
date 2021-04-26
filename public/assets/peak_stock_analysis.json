@@ -1,0 +1,9 @@
+{
+    "symbol": "PEAK",
+    "buy": "10",
+    "date": "2021-04-01",
+    "hold": "9",
+    "sell": "1",
+    "source": "finnhub.io/api",
+    "strategy": "buy"
+}
