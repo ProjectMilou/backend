@@ -161,7 +161,16 @@ router.get('/list', passport.authenticate('jwt', { session: false }), (req, res)
             handle_database_error(res, err)
         } else {
             response.portfolios = portf.map(({ portfolio: { overview: portfOverview } }) => portfOverview)
-            res.json(response);
+
+            console.log(response);
+
+            var portfolios = response.portfolios;
+            for(var pf of portfolios){
+                pf._id = pf.id;
+            }
+
+
+            res.json({"portfolios": portfolios});
         }
     })
 });

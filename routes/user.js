@@ -693,7 +693,6 @@ router.get('/bank/refresh', passport.authenticate('jwt', { session: false }), as
     await finAPI.refreshPortfolios(user);
 
     res.status(200).json("User-related bank information successfully updated.")
-
 });
 
 /**
