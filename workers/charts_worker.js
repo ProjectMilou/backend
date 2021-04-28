@@ -5,7 +5,6 @@ const readline = require('readline');
 const dataPointModel = require("../models/dataPoint");
 const dividendModel = require("../models/dividend");
 const keyFigureModel = require("../models/keyFigure");
-const db = require('../db/worker_index.js');
 const stockModel = require("../models/stock");
 const exchangeRateModel = require("../models/exchangeRate");
 

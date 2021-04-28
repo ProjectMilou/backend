@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const bankConnection = require('../models/bankConnection');
 const stockModel = require("../models/stock");
-const UserModel = require("../models/user");
+// const UserModel = require("../models/user");
 const Portfolio = require('../models/portfolio');
 const mongoose = require('mongoose');
 const portfolioWorkers = require('../workers/portfolio_worker')
@@ -48,13 +48,23 @@ const getUserAccessToken = async(user) => {
 }
 
 // create a user in finAPI and return credentials
-const createFinAPIUser = async() => {
+const createFinAPIUser = async () => {
     const access_token = await getClientAccessToken();
+
+    // prepare body for user-creation
+    const body = {
+        id: undefined,
+        password: undefined,
+        email: undefined,
+        phone: undefined,
+        isAutoUpdateEnabled: true
+    };
 
     // adjust url for user-creation
     const api_url = `https://sandbox.finapi.io/api/v1/users`;
     const api_response = await fetch(api_url, {
         method: 'POST',
+        body: JSON.stringify(body),
         headers: {
             'Content-Type': 'application/json',
             'Authorization': access_token
@@ -64,8 +74,8 @@ const createFinAPIUser = async() => {
     const json_response = await api_response.json();
 
     return {
-        finUserId: json_response.id,
-        finUserPassword: json_response.password
+        finUserId : json_response.id,
+        finUserPassword : json_response.password
     };
 }
 
@@ -289,6 +299,7 @@ const refreshBankConnections = async(user) => {
 
 
 async function updateOrSaveConnections(userId, connection) {
+
     bankConnection.findOne({ "userId": userId }).exec(async(err, result) => {
         if (err) {
             console.log(err);
@@ -684,20 +695,15 @@ const searchSymbol = async(isin, wkn) => {
     return symbol;
 }
 
+/*
 const refreshCronjob = async() => {
-    await UserModel.find({}, async(err, users) => {
-
-            if (!err) {
-                for (var i in users) {
-                    // await updateFinApiConnection(id);
-                    await refreshBankConnections(users[i]);
-                    await refreshPortfolios(users[i]);
-                }
-            }
-        }
-
-    );
+    const users = await UserModel.find({});
+    for(let user of users){
+        await refreshBankConnections(user);
+        await refreshPortfolios(user);
+    }
 }
+ */
 
 module.exports = {
     createFinAPIUser,
@@ -710,6 +716,6 @@ module.exports = {
     updateFinApiConnection,
     refreshBankConnections,
     refreshPortfolios,
-    refreshCronjob,
+    // refreshCronjob,
     getUserAccessToken
 }

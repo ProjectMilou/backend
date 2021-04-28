@@ -8,7 +8,6 @@ const stockDetailedAnalysisModel = require("../models/stockDetailedAnalysis");
 const balanceSheetModel = require("../models/balanceSheet");
 const incomeStatementModel = require("../models/incomeStatement");
 const cashFlowModel = require("../models/cashFlow");
-const db = require('../db/worker_index.js');
 const exchangeRateModel = require("../models/exchangeRate");
 dotenv.config();
 
