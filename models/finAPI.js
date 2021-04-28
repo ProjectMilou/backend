@@ -110,21 +110,17 @@ const searchBanks = async(searchString, location) => {
     }
 
     const api_url = `https://sandbox.finapi.io/api/v1/banks?${params}`;
+    const api_response = await fetch(api_url, {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': access_token
+        }
+    });
 
-    try {
-        const api_response = await fetch(api_url, {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': access_token
-            }
-        });
+    const response = await api_response.json();
+    const banks = await response.banks.filter((bank) => {return bank.isSupported});
 
-        const response = await api_response.json();
-
-        return response;
-    } catch (err) {
-        console.log(err);
-    }
+    return {banks};
 }
 
 /* const importConnections = async(bankId) => {
