@@ -685,8 +685,7 @@ router.get('/bank/connections', passport.authenticate('jwt', { session: false })
  *          security:
  *            - bearerAuth: []
  */
-// getSecurities todo (?) what used for (?)
-router.get('/refresh', passport.authenticate('jwt', { session: false }), async(req, res) => {
+router.get('/bank/refresh', passport.authenticate('jwt', { session: false }), async(req, res) => {
     const user = req.user;
 
     // await finAPI.updateFinApiConnection(id); 
