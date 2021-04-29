@@ -328,18 +328,7 @@ const findPortfolioId = (modification) => {
         return modification.name
 }
 
-// query for mongoose
-// matches document which has isin, wkn, symbol or name equal to positionId
-const query = (userId, positionId) => {
-    return {
-        $or: [
-            { "userId": userId, "portfolio.positions.stock.isin": positionId },
-            { "userId": userId, "portfolio.positions.stock.wkn": positionId },
-            { "userId": userId, "portfolio.positions.stock.symbol": positionId },
-            { "userId": userId, "portfolio.positions.stock.name": positionId }
-        ]
-    }
-}
+
 
 /** Modifies the positions of a portfolio and saves the timestamp of the modification in the portfolio's history.
  * If the specified quantity for a portfolio is 0, the position in the specified portfolio is deleted if it exists. 

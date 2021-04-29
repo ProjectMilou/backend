@@ -62,10 +62,10 @@ const percent = (nr1, nr2) => {
 const searchStock = async (searchString) => {
     let query = {};
     query["$or"] = [
-        { "isin": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
-        { "wkn": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
-        { "name": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
-        { "symbol": { $regex: ".*" + searchString + ".*", '$options': 'i' } },
+        { "isin": searchString },
+        { "wkn": searchString },
+        { "name": searchString },
+        { "symbol": searchString },
     ]
     var stocks = await stockModel.find(query);
     return stocks
@@ -128,7 +128,6 @@ async function updateStock(position, virtual) {
             if (score < 0)
                 score = 0
             position.stock.score = score
-            console.log("score: " + position.stock.score)
         } else {
             position.stock.score = 0
         }
