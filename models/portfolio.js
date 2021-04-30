@@ -56,7 +56,7 @@ const portfolioSchema = new mongoose.Schema({
             segments: {},
             currency: {},
         },
-        keyFigures: [ //no data
+        keyFigures: [ 
             {
                 year: String,
                 pte: Number,
@@ -67,7 +67,7 @@ const portfolioSchema = new mongoose.Schema({
                 dividendPayoutRatio: Number
             }
         ],
-        nextDividend: Number, //no data, maybe Alpha Vantage
+        nextDividend: Number,
         totalReturn: Number,
         totalReturnPercent: Number,
         analytics: {

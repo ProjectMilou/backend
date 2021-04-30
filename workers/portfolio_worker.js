@@ -8,6 +8,7 @@ const stockModel = require("../models/stock");
 const stockDetailedAnalysisModel = require('../models/stockDetailedAnalysis');
 const balanceSheets = require('../data-analytics/dynamic_data/balance-sheets');
 const KeyFigure = require('../models/keyFigure');
+const dividendModel = require("../models/dividend");
 
 
 const fetch = require('node-fetch');
@@ -308,7 +309,6 @@ async function updatePortfolio(portfolio) {
         //others
         portfolio.portfolio.totalReturn = stockArrayWithPriceInEur.map(({ totalReturn: performance }) => returnValueIfDefined(performance)).reduce((a, b) => a + b, 0)
         portfolio.portfolio.totalReturnPercent = percent(portfolio.portfolio.totalReturn, overview.value)
-        //TODO nextDividend: Number,//no data, maybe Alpha Vantage
 
 
         // keyfigures
@@ -318,6 +318,7 @@ async function updatePortfolio(portfolio) {
             for (var i = 0; i < portfolio.portfolio.positions.length; i++) {
                 var position = portfolio.portfolio.positions[i]
                 if (!position.stock.missingData) {
+                    //keyFigures
                     let keyFigureData = await KeyFigure.findOne({ 'symbol': position.stock.symbol });
 
                     const today = new Date()
@@ -345,13 +346,22 @@ async function updatePortfolio(portfolio) {
                         }
                         );
                     }
+                    result.symbol = position.stock.symbol
                     keyFigures.push(result)
                 }
             }
+
+
             // weighted average of keyfigures for stock
             var keyFiguresMappedToDate = {}
             var dates = []
+            var countHowManyValidDivs = 0;
             for (var i = 0; i < keyFigures.length; i++) {
+                //dividends
+                dataPointDividend = await dividendModel.findOne({ "symbol": keyFigures[i].symbol }, {
+                    symbol: false,
+                    _id: false
+                });
                 for (var j = 0; j < keyFigures[i].length; j++) {
                     if (keyFiguresMappedToDate[keyFigures[i][j].date]) {
                         var keyFigure = keyFiguresMappedToDate[keyFigures[i][j].date]
@@ -359,16 +369,44 @@ async function updatePortfolio(portfolio) {
                         keyFigure.ptb += keyFigures[i][j].PBRatio
                         keyFigure.ptg += keyFigures[i][j].PEGrowthRatio
                         keyFigure.eps += parseFloat(keyFigures[i][j].EPS)
+                        if (dataPointDividend) {
+                            var dataPointOfThisYear = dataPointDividend.dataPoints.find((dataPoint) => {
+                                dataPoint.date.slice(0, 4) == keyFigures[i][j].date.slice(0, 4)
+                            });
+                            if (dataPointOfThisYear) {
+                                if (dataPointOfThisYear.div && dataPointOfThisYear.div != "NaN") {
+                                    keyFigure.div += dataPointOfThisYear.div
+                                    countHowManyValidDivs++
+                                }
+                            }
+                        }
                     } else {
-                        var keyFigure = { "year": keyFigures[i][j].date }
+                        var keyFigure = { "year": keyFigures[i][j].date.slice(0, 4) }
                         keyFiguresMappedToDate[keyFigures[i][j].date] = keyFigure
                         keyFigure.pte = keyFigures[i][j].PERatio
                         keyFigure.ptb = keyFigures[i][j].PBRatio
                         keyFigure.ptg = keyFigures[i][j].PEGrowthRatio
                         keyFigure.eps = parseFloat(keyFigures[i][j].EPS)
+                        //dividends
+                        if (dataPointDividend) {
+                            var dataPointOfThisYear = dataPointDividend.dataPoints.find((dataPoint) => {
+                                dataPoint.date.slice(0, 4) == keyFigures[i][j].date.slice(0, 4)
+                            });
+                            if (dataPointOfThisYear) {
+                                if (dataPointOfThisYear.div && dataPointOfThisYear.div != "NaN") {
+                                    keyFigure.div = dataPointOfThisYear.div//TODO div
+                                    countHowManyValidDivs++
+                                }
+                            }
+                            keyFigure.dividendPayoutRatio = dataPointDividend.quota
+                        }
                         dates.push(keyFigures[i][j].date)
                     }
                 }
+            }
+            //average
+            if (countHowManyValidDivs) {
+                keyFigure.div /= countHowManyValidDivs;
             }
             keyFiguresNotMappedToDate = []
             //change it to the right format
@@ -376,12 +414,17 @@ async function updatePortfolio(portfolio) {
                 keyFiguresNotMappedToDate.push(keyFiguresMappedToDate[dates[i]])
             }
             portfolio.portfolio.keyFigures = keyFiguresNotMappedToDate
-
-            portfolio.portfolio.nextDividend = Date.now();
-            console.log(keyFiguresNotMappedToDate)
+            const nextDividend = new Date(dataPointDividend.date);
+            if (dataPointDividend && !isNaN(nextDividend.valueOf())) {
+                portfolio.portfolio.nextDividend = nextDividend;
+            }
+            console.log(portfolio.portfolio.keyFigures)
         } else {
             //console.log(portfolio.id)
         }
+
+
+
     }
 }
 
