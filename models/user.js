@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
-const { encrypt, decrypt, hash } = require('../encryption/encryption');
-const fetch = require('node-fetch');
-const { createFinAPIUser } = require('./finAPI');
+const { encrypt, decrypt, hash } = require("../encryption/encryption");
+const fetch = require("node-fetch");
+const { createFinAPIUser } = require("./finAPI");
 // adapted from https://www.digitalocean.com/community/tutorials/api-authentication-with-json-web-tokensjwt-and-passport
 
 /**
@@ -39,62 +39,59 @@ const { createFinAPIUser } = require('./finAPI');
  */
 
 const UserSchema = new mongoose.Schema({
-    email: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    lastName: {
-        type: String,
-        required: false,
-        trim: true
-    },
-    firstName: {
-        type: String,
-        required: false,
-        trim: true
-    },
-    password: {
-        type: String,
-        required: true
-    },
-    finUserId: {
-        type: String,
-        required: false,
-    },
-    finUserPassword: {
-        type: String,
-        required: false
-    },
-    confirmed: {
-        type: Boolean,
-        required: true
-    }
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  lastName: {
+    type: String,
+    required: false,
+    trim: true,
+  },
+  firstName: {
+    type: String,
+    required: false,
+    trim: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  finUserId: {
+    type: String,
+    required: false,
+  },
+  finUserPassword: {
+    type: String,
+    required: false,
+  },
+  confirmed: {
+    type: Boolean,
+    required: true,
+  },
 });
 
 // store hash of password
 // store finUserId
 // store finUserPassword
-UserSchema.pre(
-    'save',
-    async function(next) {
-        // store hash of password in database
-        this.password = await hash(this.password);
+UserSchema.pre("save", async function (next) {
+  // store hash of password in database
+  this.password = await hash(this.password);
 
-        // Creating a new user @finAPI and storing its credentials in our database.
-        const finCredential = await createFinAPIUser();
+  // Creating a new user @finAPI and storing its credentials in our database.
+  const finCredential = await createFinAPIUser();
 
-        this.finUserId = finCredential.finUserId;
-        this.finUserPassword = finCredential.finUserPassword;
+  this.finUserId = finCredential.finUserId;
+  this.finUserPassword = finCredential.finUserPassword;
 
-        next();
-    }
-);
+  next();
+});
 
-UserSchema.methods.isValidPassword = async function(password) {
-    const user = this;
-    return (await hash(password) === user.password);
-}
+UserSchema.methods.isValidPassword = async function (password) {
+  const user = this;
+  return (await hash(password)) === user.password;
+};
 
 const User = mongoose.model("User", UserSchema);
 

@@ -4,36 +4,36 @@
  * @param {object} portfolio Portfolio from finAPI
  * @param {{symbol: {date: {"1. open": "20.6350", "2. high": "71.7300", "3. low": "70.5200","4. close": "71.4900", "5. volume": "114923"}}}} stocksData Stocks data according to symbols
  * @returns {{totalGainLoss: number, symbol:{symbolGainLoss: number}}} The gain or loss for a portfolio.
- * 
+ *
  */
 function gainOrLossLastYearOrMonth(portfolio, stocksData, namesToSymbols) {
-    let symbolsToQuantity = {};
+  let symbolsToQuantity = {};
 
-    let stockEntryQuote = {
-        totalEntry: 0
-    };
-    portfolio.securities.forEach((element) => {
-        symbolsToQuantity[namesToSymbols[element.name]] =
-            element.quantityNominal;
-        stockEntryQuote[namesToSymbols[element.name]] =
-            element.entryQuote * element.quantityNominal;
-        stockEntryQuote.totalEntry += element.entryQuote * element.quantityNominal;
-    });
+  let stockEntryQuote = {
+    totalEntry: 0,
+  };
+  portfolio.securities.forEach((element) => {
+    symbolsToQuantity[namesToSymbols[element.name]] = element.quantityNominal;
+    stockEntryQuote[namesToSymbols[element.name]] =
+      element.entryQuote * element.quantityNominal;
+    stockEntryQuote.totalEntry += element.entryQuote * element.quantityNominal;
+  });
 
-    let gainLoss = {
-        totalGainLoss: 0
-    }
-    let perSymbol = {}
+  let gainLoss = {
+    totalGainLoss: 0,
+  };
+  let perSymbol = {};
 
-    Object.keys(stocksData).forEach(symbol => {
-        let lastDate = Object.keys(stocksData[symbol])[0];
-        let currGainLoss = stocksData[symbol][lastDate]["4. close"] * symbolsToQuantity[symbol] -
-            stockEntryQuote[symbol]
-        gainLoss.totalGainLoss += currGainLoss;
-        perSymbol[symbol] = currGainLoss;
-    });
+  Object.keys(stocksData).forEach((symbol) => {
+    let lastDate = Object.keys(stocksData[symbol])[0];
+    let currGainLoss =
+      stocksData[symbol][lastDate]["4. close"] * symbolsToQuantity[symbol] -
+      stockEntryQuote[symbol];
+    gainLoss.totalGainLoss += currGainLoss;
+    perSymbol[symbol] = currGainLoss;
+  });
 
-    return {...gainLoss, perSymbol}
+  return { ...gainLoss, perSymbol };
 }
 
 exports.gainOrLossLastYearOrMonth = gainOrLossLastYearOrMonth;
