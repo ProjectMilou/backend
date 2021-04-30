@@ -43,7 +43,8 @@ const portfolioSchema = new mongoose.Schema({
                 debtEquity: Number,
                 country: String,
                 industry: String,
-                score: Number
+                score: Number,
+                missingData: Boolean
             },
             qty: Number,
             quantityNominalType: String,
@@ -57,7 +58,7 @@ const portfolioSchema = new mongoose.Schema({
         },
         keyFigures: [ //no data
             {
-                year: Number,
+                year: String,
                 pte: Number,
                 ptb: Number,
                 ptg: Number,

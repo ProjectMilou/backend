@@ -7,6 +7,7 @@ const stockTimeSeries = require('../data-analytics/dynamic_data/stock-time-serie
 const stockModel = require("../models/stock");
 const stockDetailedAnalysisModel = require('../models/stockDetailedAnalysis');
 const balanceSheets = require('../data-analytics/dynamic_data/balance-sheets');
+const KeyFigure = require('../models/keyFigure');
 
 
 const fetch = require('node-fetch');
@@ -103,6 +104,7 @@ async function updateStock(position, virtual) {
     var stockArray = await searchStock(position.stock.symbol);
     var stock = stockArray[0]
     if (stock) {
+        position.stock.missingData = false;
         if (virtual) {
             position.stock.displayedCurrency = stock.displayedCurrency
             position.stock.price = stock.price
@@ -134,19 +136,16 @@ async function updateStock(position, virtual) {
         if (virtual) {
             position.totalReturn = returnValueIfDefined(position.stock.quote * position.qty - position.stock.entryQuote * position.qty)
         }
-        position.totalReturnPercent = percent(position.totalReturn, position.stock.quote * position.qty)
-    } else if (virtual) {
-        position.stock.price = 0
-        position.stock.quote = 0
-        position.stock.quoteDate = 0
-        position.stock.perf7d = 0
-        position.stock.perf1y = 0
-        position.stock.perf7dPercent = 0
-        position.stock.perf1yPercent = 0
-        position.stock.score = 0
-        position.totalReturn = 0
-        position.totalReturnPercent = 0
+    } else {
+        position.stock.missingData = true;
+        if (virtual) {
+            position.stock.price = 0
+            position.stock.quote = 0
+            position.stock.quoteDate = 0
+            position.totalReturn = 0
+        }
     }
+    position.totalReturnPercent = percent(position.totalReturn, position.stock.quote * position.qty)
 }
 
 async function updateStockWhenModifed(position, virtual) {
@@ -230,7 +229,7 @@ async function updatePortfolio(portfolio) {
             portfolio.portfolio.risk.segments = portfDiversification.industries
         }
 
-        //TODO keyfigures
+
 
         //analytics
         var currStocksData
@@ -310,6 +309,79 @@ async function updatePortfolio(portfolio) {
         portfolio.portfolio.totalReturn = stockArrayWithPriceInEur.map(({ totalReturn: performance }) => returnValueIfDefined(performance)).reduce((a, b) => a + b, 0)
         portfolio.portfolio.totalReturnPercent = percent(portfolio.portfolio.totalReturn, overview.value)
         //TODO nextDividend: Number,//no data, maybe Alpha Vantage
+
+
+        // keyfigures
+        if (currStocksData && currBalanceSheetPerSymbol && portfolio.portfolio.positions) {
+            var keyFigures = []
+            //find values
+            for (var i = 0; i < portfolio.portfolio.positions.length; i++) {
+                var position = portfolio.portfolio.positions[i]
+                if (!position.stock.missingData) {
+                    let keyFigureData = await KeyFigure.findOne({ 'symbol': position.stock.symbol });
+
+                    const today = new Date()
+                    const toDate = new Date().setFullYear(today.getFullYear() - 1)
+                    const fiveYearsAgo = new Date().setFullYear(today.getFullYear() - 5)
+                    const result = analytics.calculateKeyFigures(currStocksData, keyFigureData,
+                        currBalanceSheetPerSymbol[position.stock.symbol], fiveYearsAgo, toDate)
+                    //weigh the result
+                    var weight = position.stock.price * position.stock.qty / portfolio.portfolio.overview.value
+                    if (result.length > 0) {
+                        result.map(({
+                            "date": date,
+                            "PERatio": PERatio,
+                            "EPS": EPS,
+                            "PEGrowthRatio": PEGrowthRatio,
+                            "PBRatio": PBRatio
+                        }) => {
+                            return {
+                                "date": date,
+                                "PERatio": parseFloat(PERatio) * weight,
+                                "EPS": EPS * weight,
+                                "PEGrowthRatio": PEGrowthRatio * weight,
+                                "PBRatio": PBRatio * weight
+                            }
+                        }
+                        );
+                    }
+                    keyFigures.push(result)
+                }
+            }
+            // weighted average of keyfigures for stock
+            var keyFiguresMappedToDate = {}
+            var dates = []
+            for (var i = 0; i < keyFigures.length; i++) {
+                for (var j = 0; j < keyFigures[i].length; j++) {
+                    if (keyFiguresMappedToDate[keyFigures[i][j].date]) {
+                        var keyFigure = keyFiguresMappedToDate[keyFigures[i][j].date]
+                        keyFigure.pte += keyFigures[i][j].PERatio
+                        keyFigure.ptb += keyFigures[i][j].PBRatio
+                        keyFigure.ptg += keyFigures[i][j].PEGrowthRatio
+                        keyFigure.eps += parseFloat(keyFigures[i][j].EPS)
+                    } else {
+                        var keyFigure = { "year": keyFigures[i][j].date }
+                        keyFiguresMappedToDate[keyFigures[i][j].date] = keyFigure
+                        keyFigure.pte = keyFigures[i][j].PERatio
+                        keyFigure.ptb = keyFigures[i][j].PBRatio
+                        keyFigure.ptg = keyFigures[i][j].PEGrowthRatio
+                        keyFigure.eps = parseFloat(keyFigures[i][j].EPS)
+                        dates.push(keyFigures[i][j].date)
+                    }
+                }
+            }
+            keyFiguresNotMappedToDate = []
+            //change it to the right format
+            for (var i = 0; i < dates.length; i++) {
+                keyFiguresNotMappedToDate.push(keyFiguresMappedToDate[dates[i]])
+            }
+            portfolio.portfolio.keyFigures = keyFiguresNotMappedToDate
+
+            portfolio.portfolio.nextDividend = Date.now();
+            console.log(keyFiguresNotMappedToDate)
+        } else {
+            //console.log(portfolio.id)
+        }
     }
 }
 

@@ -75,6 +75,8 @@
  *        type: string
  *      score:
  *        type: number
+ *      missingData:
+ *        type: boolean
  *  stockk:
  *    type: object
  *    properties:

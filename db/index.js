@@ -7,6 +7,7 @@ mongoose.set('useCreateIndex', true);
 module.exports = function (app) {
 
     let url = "mongodb+srv://admin:" + process.env.db_admin_pw + "@miloucluster.q8dhp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+    //let url = "mongodb+srv://admin:" + process.env.db_admin_pw + "@stagingcluster.q8dhp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
     mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
     app.set("mongoose", mongoose);
 
