@@ -1,101 +1,104 @@
 const mongoose = require("mongoose");
 
-const CashFlowSchema = new mongoose.Schema({
+const CashFlowSchema = new mongoose.Schema(
+  {
     symbol: {
-        type: String,
-        required: true,
-        index: true,
-        trim: true,
+      type: String,
+      required: true,
+      index: true,
+      trim: true,
     },
-    annualReports: [{
+    annualReports: [
+      {
         fiscalDateEnding: {
-            type: String,
+          type: String,
         },
         reportedCurrency: {
-            type: String,
+          type: String,
         },
         operatingCashflow: {
-            type: String,
+          type: String,
         },
         paymentsForOperatingActivities: {
-            type: String,
+          type: String,
         },
         proceedsFromOperatingActivities: {
-            type: String,
+          type: String,
         },
         changeInOperatingLiabilities: {
-            type: String,
+          type: String,
         },
         changeInOperatingAssets: {
-            type: String,
+          type: String,
         },
         depreciationDepletionAndAmortization: {
-            type: String,
+          type: String,
         },
         capitalExpenditures: {
-            type: String,
+          type: String,
         },
         changeInReceivables: {
-            type: String,
+          type: String,
         },
         changeInInventory: {
-            type: String,
+          type: String,
         },
         profitLoss: {
-            type: String,
+          type: String,
         },
         cashflowFromInvestment: {
-            type: String,
+          type: String,
         },
         cashflowFromFinancing: {
-            type: String,
+          type: String,
         },
         proceedsFromRepaymentsOfShortTermDebt: {
-            type: String,
+          type: String,
         },
         paymentsForRepurchaseOfCommonStock: {
-            type: String,
+          type: String,
         },
         paymentsForRepurchaseOfEquity: {
-            type: String,
+          type: String,
         },
         paymentsForRepurchaseOfPreferredStock: {
-            type: String,
+          type: String,
         },
         dividendPayout: {
-            type: String,
+          type: String,
         },
         dividendPayoutCommonStock: {
-            type: String,
+          type: String,
         },
         dividendPayoutPreferredStock: {
-            type: String,
+          type: String,
         },
         proceedsFromIssuanceOfCommonStock: {
-            type: String,
+          type: String,
         },
         proceedsFromIssuanceOfLongTermDebtAndCapitalSecuritiesNet: {
-            type: String,
+          type: String,
         },
         proceedsFromIssuanceOfPreferredStock: {
-            type: String,
+          type: String,
         },
         proceedsFromRepurchaseOfEquity: {
-            type: String,
+          type: String,
         },
         proceedsFromSaleOfTreasuryStock: {
-            type: String,
+          type: String,
         },
         changeInCashAndCashEquivalents: {
-            type: String,
+          type: String,
         },
         changeInExchangeRate: {
-            type: String,
+          type: String,
         },
         netIncome: {
-            type: String,
+          type: String,
         },
-    }],
+      },
+    ],
 
     // quarterlyReports: [{
     //     fiscalDateEnding: {
@@ -186,9 +189,11 @@ const CashFlowSchema = new mongoose.Schema({
     //         type: String,
     //     },
     // }],
-}, {
-    versionKey: false
-});
+  },
+  {
+    versionKey: false,
+  }
+);
 
 const CashFlow = mongoose.model("CashFlow", CashFlowSchema);
 

@@ -1,30 +1,35 @@
 const mongoose = require("mongoose");
 
-const DividendSchema = new mongoose.Schema({
+const DividendSchema = new mongoose.Schema(
+  {
     symbol: {
-        type: String,
-        required: true,
-        index: true,
-        trim: true,
-        unique: true,
+      type: String,
+      required: true,
+      index: true,
+      trim: true,
+      unique: true,
     },
-    dataPoints: [{
+    dataPoints: [
+      {
         date: {
-            type: String,
+          type: String,
         },
         div: {
-            type: String,
-        }
-    }],
+          type: String,
+        },
+      },
+    ],
     date: {
-        type: String,
+      type: String,
     },
     quota: {
-        type: String,
+      type: String,
     },
-}, {
-    versionKey: false
-});
+  },
+  {
+    versionKey: false,
+  }
+);
 
 const Dividend = mongoose.model("Dividend", DividendSchema);
 
