@@ -21,55 +21,53 @@ const portfolioSchema = new mongoose.Schema({
   bankAccountId: String,
   portfolio: {
     overview: portfolioOverviewSchema,
-    positions: [
-      {
-        stock: {
-          isin: String,
-          wkn: String,
-          symbol: String,
-          name: String,
-          price: Number,
-          marketValueCurrency: String,
-          displayedCurrency: String,
-          quote: Number,
-          quoteCurrency: String,
-          quoteDate: String,
-          entryQuote: Number,
-          entryQuoteCurrency: String,
-          perf7d: Number,
-          perf1y: Number,
-          perf7dPercent: Number,
-          perf1yPercent: Number,
-          volatility: Number,
-          debtEquity: Number,
-          country: String,
-          industry: String,
-          score: Number,
-        },
-        qty: Number,
-        quantityNominalType: String,
-        totalReturn: Number, //=profitOrLoss?
-        totalReturnPercent: Number,
+    positions: [{
+      stock: {
+        isin: String,
+        wkn: String,
+        symbol: String,
+        name: String,
+        price: Number,
+        marketValueCurrency: String,
+        displayedCurrency: String,
+        quote: Number,
+        quoteCurrency: String,
+        quoteDate: String,
+        entryQuote: Number,
+        entryQuoteCurrency: String,
+        perf7d: Number,
+        perf1y: Number,
+        perf7dPercent: Number,
+        perf1yPercent: Number,
+        volatility: Number,
+        debtEquity: Number,
+        country: String,
+        industry: String,
+        score: Number,
+        missingData: Boolean
       },
-    ],
+      qty: Number,
+      quantityNominalType: String,
+      totalReturn: Number, //=profitOrLoss?
+      totalReturnPercent: Number
+    }],
     risk: {
       countries: {}, //any type can be in here
       segments: {},
       currency: {},
     },
     keyFigures: [
-      //no data
       {
-        year: Number,
+        year: String,
         pte: Number,
         ptb: Number,
         ptg: Number,
         eps: Number,
         div: Number,
-        dividendPayoutRatio: Number,
-      },
+        dividendPayoutRatio: Number
+      }
     ],
-    nextDividend: Number, //no data, maybe Alpha Vantage
+    nextDividend: Number,
     totalReturn: Number,
     totalReturnPercent: Number,
     analytics: {
