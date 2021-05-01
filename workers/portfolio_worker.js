@@ -351,17 +351,21 @@ async function updatePortfolio(portfolio) {
                 }
             }
 
-
+            var nextDividend
             // weighted average of keyfigures for stock
             var keyFiguresMappedToDate = {}
             var dates = []
             for (var i = 0; i < keyFigures.length; i++) {
                 //dividends
-                dataPointDividend = await dividendModel.findOne({ "symbol": keyFigures[i].symbol }, {
+                const dataPointDividend = await dividendModel.findOne({ "symbol": keyFigures[i].symbol }, {
                     symbol: false,
                     _id: false
                 });
-
+                // get the earliest dividend payout date
+                var nextDividendOfThisStock = new Date(dataPointDividend.date)
+                if ((!nextDividend || nextDividendOfThisStock < nextDividend) && dataPointDividend && !isNaN(nextDividendOfThisStock)) {
+                    nextDividend = nextDividendOfThisStock
+                }
                 for (var j = 0; j < keyFigures[i].length; j++) {
                     if (keyFiguresMappedToDate[keyFigures[i][j].date]) {
                         var keyFigure = keyFiguresMappedToDate[keyFigures[i][j].date]
@@ -377,7 +381,10 @@ async function updatePortfolio(portfolio) {
                                 if (dataPointOfThisYear.div && !isNaN(dataPointOfThisYear.div)) {
                                     keyFigure.div = returnValueIfDefined(keyFigure.div) + parseFloat(dataPointOfThisYear.div)
                                     keyFigure.countHowManyValidDivs++
+                                }
+                                if (dataPointDividend.quota) {
                                     keyFigure.dividendPayoutRatio = returnValueIfDefined(keyFigure.dividendPayoutRatio) + parseFloat(returnValueIfDefined(dataPointDividend.quota))
+                                    keyFigure.countHowManyValidDPR++
                                 }
                             }
                         }
@@ -389,20 +396,22 @@ async function updatePortfolio(portfolio) {
                         keyFigure.ptg = keyFigures[i][j].PEGrowthRatio
                         keyFigure.eps = parseFloat(keyFigures[i][j].EPS)
                         keyFigure.countHowManyValidDivs = 0
+                        keyFigure.countHowManyValidDPR = 0
                         //dividends
                         if (dataPointDividend) {
                             var dataPointOfThisYear = dataPointDividend.dataPoints.find((dataPoint) => {
                                 return dataPoint.date.slice(0, 4) == keyFigures[i][j].date.slice(0, 4)
                             });
-
                             if (dataPointOfThisYear) {
                                 if (dataPointOfThisYear.div && !isNaN(dataPointOfThisYear.div)) {
                                     keyFigure.div = parseFloat(dataPointOfThisYear.div)
                                     keyFigure.countHowManyValidDivs++
+                                }
+                                if (dataPointDividend.quota) {
                                     keyFigure.dividendPayoutRatio = parseFloat(returnValueIfDefined(dataPointDividend.quota))
+                                    keyFigure.countHowManyValidDPR++
                                 }
                             }
-
                         }
                         dates.push(keyFigures[i][j].date)
                     }
@@ -415,20 +424,26 @@ async function updatePortfolio(portfolio) {
             for (var i = 0; i < dates.length; i++) {
                 const keyFigure = keyFiguresMappedToDate[dates[i]]
                 //average
-                if (keyFigure.countHowManyValidDivs && keyFigure.div && keyFigure.dividendPayoutRatio) {
+                if (keyFigure.countHowManyValidDivs && keyFigure.div) {
                     keyFigure.div /= keyFigure.countHowManyValidDivs;
-                    keyFigure.dividendPayoutRatio /= keyFigure.countHowManyValidDivs
                 } else {
                     keyFigure.div = 0;
+                }
+                if (keyFigure.countHowManyValidDPR && keyFigure.dividendPayoutRatio) {
+                    keyFigure.dividendPayoutRatio /= keyFigure.countHowManyValidDPR
+                } else {
+
                     keyFigure.dividendPayoutRatio = 0
                 }
                 delete keyFigure.countHowManyValidDivs
+                delete keyFigure.countHowManyValidDPR
                 keyFiguresNotMappedToDate.push(keyFigure)
             }
             portfolio.portfolio.keyFigures = keyFiguresNotMappedToDate
-            const nextDividend = new Date(dataPointDividend.date);
-            if (dataPointDividend && !isNaN(nextDividend.valueOf())) {
+            if (!isNaN(nextDividendOfThisStock)) {
                 portfolio.portfolio.nextDividend = nextDividend;
+            } else {
+                portfolio.portfolio.nextDividend = 0;
             }
             //console.log(portfolio.portfolio.keyFigures)
         } else {
