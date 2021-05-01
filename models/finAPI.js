@@ -570,10 +570,6 @@ const newPortfolio = async(portfolioId, userId, security) => {
                 debtEquity: 0,
                 correlations: {},
             },
-            performance: [
-                // cron scheduler time as parameter how often should it work
-                [0],
-            ],
         },
     };
 };
