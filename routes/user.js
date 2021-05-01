@@ -60,23 +60,23 @@ const router = express.Router();
  *                  message: Signup failed - mail has got an account already
  */
 router.post(
-  "/register",
-  passport.authenticate("register", { session: false }),
-  async (req, res) => {
-    if (req.user.statusCode === 409) {
-      res.status(409).json({
-        message: "Signup failed - mail has got an account already",
-      });
-    }
+    "/register",
+    passport.authenticate("register", { session: false }),
+    async(req, res) => {
+        if (req.user.statusCode === 409) {
+            res.status(409).json({
+                message: "Signup failed - mail has got an account already",
+            });
+        }
 
-    // success
-    else {
-      await confirmation.startConfirmationProcess(req.user.user);
-      res.status(201).json({
-        message: "Signup success, check your mails",
-      });
+        // success
+        else {
+            await confirmation.startConfirmationProcess(req.user.user);
+            res.status(201).json({
+                message: "Signup success, check your mails",
+            });
+        }
     }
-  }
 );
 
 /**
@@ -92,12 +92,12 @@ router.post(
  *            - user
  */
 router.post(
-  "/confirm/resent",
-  passport.authenticate("jwt", { session: false }),
-  async (req, res) => {
-    await confirmation.startConfirmationProcess(req.user);
-    res.status(201).json({ message: "Resent confirmation email." });
-  }
+    "/confirm/resent",
+    passport.authenticate("jwt", { session: false }),
+    async(req, res) => {
+        await confirmation.startConfirmationProcess(req.user);
+        res.status(201).json({ message: "Resent confirmation email." });
+    }
 );
 
 /**
@@ -135,18 +135,18 @@ router.post(
  *              example:
  *                  message: Failed
  */
-router.get("/confirm/:id/:token", async (req, res) => {
-  const token = req.params.token;
-  const id = req.params.id;
+router.get("/confirm/:id/:token", async(req, res) => {
+    const token = req.params.token;
+    const id = req.params.id;
 
-  const confirmed = await confirmation.endConfirmationProcess(id, token);
+    const confirmed = await confirmation.endConfirmationProcess(id, token);
 
-  // todo: frontend needs to add some "wow great, you are confirmed" banner
-  if (confirmed) res.redirect("https://milou.io/profile");
-  else
-    res
-      .status(404)
-      .json({ message: "User not found or Token not found or Token invalid." });
+    // todo: frontend needs to add some "wow great, you are confirmed" banner
+    if (confirmed) res.redirect("https://milou.io/profile");
+    else
+        res
+        .status(404)
+        .json({ message: "User not found or Token not found or Token invalid." });
 });
 
 /**
@@ -211,36 +211,36 @@ router.get("/confirm/:id/:token", async (req, res) => {
  *          example:
  *              message: Wrong Password
  */
-router.post("/login", async (req, res, next) => {
-  passport.authenticate("login", async (err, user, info) => {
-    try {
-      if (err || !user) {
-        return res.status(400).json({
-          // todo: should be specified if wrong pwd or wrong mail ???
-          message: info.message,
-        });
-      }
+router.post("/login", async(req, res, next) => {
+    passport.authenticate("login", async(err, user, info) => {
+        try {
+            if (err || !user) {
+                return res.status(400).json({
+                    // todo: should be specified if wrong pwd or wrong mail ???
+                    message: info.message,
+                });
+            }
 
-      req.login(user, { session: false }, async (error) => {
-        if (error) return next(error);
+            req.login(user, { session: false }, async(error) => {
+                if (error) return next(error);
 
-        const body = { id: user._id };
-        const token = genToken(body); //jwt.sign({ user: body }, 'TOP_SECRET');
+                const body = { id: user._id };
+                const token = genToken(body); //jwt.sign({ user: body }, 'TOP_SECRET');
 
-        return res.json({
-          user: {
-            email: user.email,
-            lastName: user.lastName,
-            firstName: user.firstName,
-            confirmed: user.confirmed,
-          },
-          token: token,
-        });
-      });
-    } catch (error) {
-      return next(error);
-    }
-  })(req, res, next);
+                return res.json({
+                    user: {
+                        email: user.email,
+                        lastName: user.lastName,
+                        firstName: user.firstName,
+                        confirmed: user.confirmed,
+                    },
+                    token: token,
+                });
+            });
+        } catch (error) {
+            return next(error);
+        }
+    })(req, res, next);
 });
 
 /**
@@ -280,23 +280,23 @@ router.post("/login", async (req, res, next) => {
  */
 // profile
 router.get(
-  "/profile",
-  passport.authenticate("jwt", { session: false }),
-  async (req, res) => {
-    // http://www.passportjs.org/docs/username-password/
-    // request just contains an JWT token in its header, that will be checked by passport automaticaly. If unathorized, 401 will be sent back.
-    try {
-      res.json({
-        email: req.user.email,
-        lastName: req.user.lastName,
-        firstName: req.user.firstName,
-        confirmed: req.user.confirmed,
-      });
-    } catch (err) {
-      console.log(err);
-      res.json("error occured");
+    "/profile",
+    passport.authenticate("jwt", { session: false }),
+    async(req, res) => {
+        // http://www.passportjs.org/docs/username-password/
+        // request just contains an JWT token in its header, that will be checked by passport automaticaly. If unathorized, 401 will be sent back.
+        try {
+            res.json({
+                email: req.user.email,
+                lastName: req.user.lastName,
+                firstName: req.user.firstName,
+                confirmed: req.user.confirmed,
+            });
+        } catch (err) {
+            console.log(err);
+            res.json("error occured");
+        }
     }
-  }
 );
 
 /**
@@ -349,35 +349,35 @@ router.get(
  *              example: Unauthorized
  */
 router.put(
-  "/edit",
-  passport.authenticate("jwt", { session: false }),
-  async (req, res) => {
-    // implement the following authorization: http://www.passportjs.org/docs/username-password/
+    "/edit",
+    passport.authenticate("jwt", { session: false }),
+    async(req, res) => {
+        // implement the following authorization: http://www.passportjs.org/docs/username-password/
 
-    let changes = {};
-    if (req.body.firstName !== undefined) {
-      changes.firstName = req.body.firstName;
-    }
-    if (req.body.lastName !== undefined) {
-      changes.lastName = req.body.lastName;
-    }
+        let changes = {};
+        if (req.body.firstName !== undefined) {
+            changes.firstName = req.body.firstName;
+        }
+        if (req.body.lastName !== undefined) {
+            changes.lastName = req.body.lastName;
+        }
 
-    try {
-      await UserModel.updateOne({ _id: req.user.id }, changes, null);
-      const user = await UserModel.findOne({ _id: req.user.id });
-      res.json({
-        user: {
-          email: user.email,
-          lastName: user.lastName,
-          firstName: user.firstName,
-          confirmed: user.confirmed,
-        },
-      });
-    } catch (err) {
-      console.log(err);
-      res.json("error occured");
+        try {
+            await UserModel.updateOne({ _id: req.user.id }, changes, null);
+            const user = await UserModel.findOne({ _id: req.user.id });
+            res.json({
+                user: {
+                    email: user.email,
+                    lastName: user.lastName,
+                    firstName: user.firstName,
+                    confirmed: user.confirmed,
+                },
+            });
+        } catch (err) {
+            console.log(err);
+            res.json("error occured");
+        }
     }
-  }
 );
 
 /**
@@ -422,17 +422,17 @@ router.put(
  *                      example:
  *                          message: Specified email not found.
  */
-router.post("/reset/forgot", async (req, res) => {
-  // if user exists: send token to mail and store it at userTokens
-  const resetWorked = await confirmation.startResetProcess(req.body.email);
-  if (resetWorked) {
-    res.status(201).json({ message: "Reset Process started, check your mail" });
-  }
+router.post("/reset/forgot", async(req, res) => {
+    // if user exists: send token to mail and store it at userTokens
+    const resetWorked = await confirmation.startResetProcess(req.body.email);
+    if (resetWorked) {
+        res.status(201).json({ message: "Reset Process started, check your mail" });
+    }
 
-  // if user does not exist: 404
-  else {
-    res.status(404).json({ message: "Specified email not found." });
-  }
+    // if user does not exist: 404
+    else {
+        res.status(404).json({ message: "Specified email not found." });
+    }
 });
 
 /**
@@ -468,22 +468,22 @@ router.post("/reset/forgot", async (req, res) => {
  *                      example:
  *                          message: Invalid user, token, or token was used already
  */
-router.get("/reset/confirm/:id/:token", async (req, res) => {
-  const id = req.params.id;
-  const token = req.params.token;
+router.get("/reset/confirm/:id/:token", async(req, res) => {
+    const id = req.params.id;
+    const token = req.params.token;
 
-  const resetResponse = await confirmation.resetConfirm(id, token);
+    const resetResponse = await confirmation.resetConfirm(id, token);
 
-  if (!resetResponse) {
-    res
-      .status(404)
-      .json({ message: "token invalid or expired or user not found." });
-  } else {
-    // now that user is confirmed -> redirect to frontend-webform
-    const newToken = resetResponse.token;
-    const url = "https://milou.io/reset/" + id + "/" + newToken;
-    res.redirect(url);
-  }
+    if (!resetResponse) {
+        res
+            .status(404)
+            .json({ message: "token invalid or expired or user not found." });
+    } else {
+        // now that user is confirmed -> redirect to frontend-webform
+        const newToken = resetResponse.token;
+        const url = "https://milou.io/reset/" + id + "/" + newToken;
+        res.redirect(url);
+    }
 });
 
 /**
@@ -537,24 +537,22 @@ router.get("/reset/confirm/:id/:token", async (req, res) => {
  *                      example:
  *                          message: Unauthorized
  */
-router.put("/reset/change/:id/:token", async (req, res) => {
-  const reqUserId = req.params.id;
-  const reqToken = req.params.token;
-  const newHashedPassword = hash(req.body.password);
+router.put("/reset/change/:id/:token", async(req, res) => {
+    const reqUserId = req.params.id;
+    const reqToken = req.params.token;
+    const newHashedPassword = hash(req.body.password);
 
-  const userConfirmed = await confirmation.endResetProcess(reqUserId, reqToken);
+    const userConfirmed = await confirmation.endResetProcess(reqUserId, reqToken);
 
-  if (!userConfirmed) {
-    res.status(401).json({ message: "Unauthorized, confirmation failed." });
-  } else {
-    await UserModel.updateOne(
-      { _id: reqUserId },
-      { password: newHashedPassword },
-      null
-    );
-    console.log("bong");
-    res.status(201).json({ message: "Password was successfully changed" });
-  }
+    if (!userConfirmed) {
+        res.status(401).json({ message: "Unauthorized, confirmation failed." });
+    } else {
+        await UserModel.updateOne({ _id: reqUserId }, { password: newHashedPassword },
+            null
+        );
+        console.log("bong");
+        res.status(201).json({ message: "Password was successfully changed" });
+    }
 });
 
 /**
@@ -586,12 +584,12 @@ router.put("/reset/change/:id/:token", async (req, res) => {
  */
 // todo filter!
 // todo add schema, add example for 200 response!
-router.get("/bank/search/:searchString", async (req, res) => {
-  const searchString = req.params.searchString;
-  const location = req.body.location;
+router.get("/bank/search/:searchString", async(req, res) => {
+    const searchString = req.params.searchString;
+    const location = req.body.location;
 
-  const banks = await finAPI.searchBanks(searchString, location);
-  res.status(200).send(banks);
+    const banks = await finAPI.searchBanks(searchString, location);
+    res.status(200).send(banks);
 });
 
 /**
@@ -626,16 +624,16 @@ router.get("/bank/search/:searchString", async (req, res) => {
  *
  */
 router.post(
-  "/bank/connections/add/:bankId",
-  passport.authenticate("jwt", { session: false }),
-  async (req, res) => {
-    // todo should be redirected?
+    "/bank/connections/add/:bankId",
+    passport.authenticate("jwt", { session: false }),
+    async(req, res) => {
+        // todo should be redirected?
 
-    const bankId = req.params.bankId;
-    const user = req.user;
-    const finResponse = await finAPI.importBankConnection(user, bankId);
-    res.json(finResponse);
-  }
+        const bankId = req.params.bankId;
+        const user = req.user;
+        const finResponse = await finAPI.importBankConnection(user, bankId);
+        res.json(finResponse);
+    }
 );
 
 /**
@@ -658,18 +656,18 @@ router.post(
 
 // get bankconnections
 router.get(
-  "/bank/connections",
-  passport.authenticate("jwt", { session: false }),
-  async (req, res) => {
-    const user = req.user;
+    "/bank/connections",
+    passport.authenticate("jwt", { session: false }),
+    async(req, res) => {
+        const user = req.user;
 
-    // await finAPI.updateFinApiConnection(userId);
-    await finAPI.refreshBankConnections(user);
+        await finAPI.updateAllFinApiConnections(user);
+        await finAPI.refreshBankConnections(user);
 
-    const finResponse = await finAPI.getAllBankConnections(user);
-    if (finResponse === null) res.json({ bankConnections: [] });
-    else res.json(finResponse);
-  }
+        const finResponse = await finAPI.getAllBankConnections(user);
+        if (finResponse === null) res.json({ bankConnections: [] });
+        else res.json(finResponse);
+    }
 );
 
 /**
@@ -691,17 +689,17 @@ router.get(
  *            - bearerAuth: []
  */
 router.get(
-  "/bank/refresh",
-  passport.authenticate("jwt", { session: false }),
-  async (req, res) => {
-    const user = req.user;
+    "/bank/refresh",
+    passport.authenticate("jwt", { session: false }),
+    async(req, res) => {
+        const user = req.user;
 
-    // await finAPI.updateFinApiConnection(id);
-    await finAPI.refreshBankConnections(user);
-    await finAPI.refreshPortfolios(user);
+        await finAPI.updateAllFinApiConnections(user);
+        await finAPI.refreshBankConnections(user);
+        await finAPI.refreshPortfolios(user);
 
-    res.status(200).json("User-related bank information successfully updated.");
-  }
+        res.status(200).json("User-related bank information successfully updated.");
+    }
 );
 
 /**
@@ -723,17 +721,17 @@ router.get(
 // delete bankConnection by id
 // todo delete all connected portfolios from our database as well
 router.delete(
-  "/bank/connections/:id",
-  passport.authenticate("jwt", { session: false }),
-  async (req, res) => {
-    const user = req.user;
-    const bankConnectionId = req.params.id;
+    "/bank/connections/:id",
+    passport.authenticate("jwt", { session: false }),
+    async(req, res) => {
+        const user = req.user;
+        const bankConnectionId = req.params.id;
 
-    await finAPI.deleteOneBankConnection(user, bankConnectionId);
-    res
-      .status(200)
-      .json({ message: "deleted bank connection " + bankConnectionId });
-  }
+        await finAPI.deleteOneBankConnection(user, bankConnectionId);
+        res
+            .status(200)
+            .json({ message: "deleted bank connection " + bankConnectionId });
+    }
 );
 
 /**
@@ -758,13 +756,13 @@ router.delete(
 // delete all bankConnections
 // todo delete all connected portfolios from our database as well
 router.delete(
-  "/bank/connections",
-  passport.authenticate("jwt", { session: false }),
-  async (req, res) => {
-    const user = req.user;
-    await finAPI.deleteAllBankConnections(user);
-    res.status(200).json({ message: "deleted all bank connection" });
-  }
+    "/bank/connections",
+    passport.authenticate("jwt", { session: false }),
+    async(req, res) => {
+        const user = req.user;
+        await finAPI.deleteAllBankConnections(user);
+        res.status(200).json({ message: "deleted all bank connection" });
+    }
 );
 
 /**
@@ -792,29 +790,29 @@ router.delete(
  */
 // delete profile
 router.delete(
-  "/profile",
-  passport.authenticate("jwt", { session: false }),
-  async (req, res) => {
-    // implement the following authorization: http://www.passportjs.org/docs/username-password/
-    // JWT token in header as bearer token
+    "/profile",
+    passport.authenticate("jwt", { session: false }),
+    async(req, res) => {
+        // implement the following authorization: http://www.passportjs.org/docs/username-password/
+        // JWT token in header as bearer token
 
-    // todo: delete portfolios
+        // todo: delete portfolios
 
-    try {
-      const user = await UserModel.findOne({ _id: req.user.id });
-      await UserModel.deleteOne({ _id: req.user.id });
-      await UserTokenModel.deleteMany({ email: user.email });
+        try {
+            const user = await UserModel.findOne({ _id: req.user.id });
+            await UserModel.deleteOne({ _id: req.user.id });
+            await UserTokenModel.deleteMany({ email: user.email });
 
-      // todo uncomment when last testing has begun
-      await finAPI.deleteFinAPIUser(user);
-      // todo delete virtual portfolios!
+            // todo uncomment when last testing has begun
+            await finAPI.deleteFinAPIUser(user);
+            // todo delete virtual portfolios!
 
-      res.json("successfully deleted user").status(200);
-    } catch (err) {
-      console.log(err);
-      res.json("error occured");
+            res.json("successfully deleted user").status(200);
+        } catch (err) {
+            console.log(err);
+            res.json("error occured");
+        }
     }
-  }
 );
 
 module.exports = router;
