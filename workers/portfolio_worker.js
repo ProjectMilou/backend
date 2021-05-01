@@ -440,7 +440,7 @@ async function updatePortfolio(portfolio) {
                 keyFiguresNotMappedToDate.push(keyFigure)
             }
             portfolio.portfolio.keyFigures = keyFiguresNotMappedToDate
-            if (!isNaN(nextDividendOfThisStock)) {
+            if (nextDividend && !isNaN(nextDividend.valueOf())) {
                 portfolio.portfolio.nextDividend = nextDividend;
             } else {
                 portfolio.portfolio.nextDividend = 0;
