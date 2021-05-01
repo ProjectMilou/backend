@@ -355,13 +355,13 @@ async function updatePortfolio(portfolio) {
             // weighted average of keyfigures for stock
             var keyFiguresMappedToDate = {}
             var dates = []
-            var countHowManyValidDivs = 0;
             for (var i = 0; i < keyFigures.length; i++) {
                 //dividends
                 dataPointDividend = await dividendModel.findOne({ "symbol": keyFigures[i].symbol }, {
                     symbol: false,
                     _id: false
                 });
+
                 for (var j = 0; j < keyFigures[i].length; j++) {
                     if (keyFiguresMappedToDate[keyFigures[i][j].date]) {
                         var keyFigure = keyFiguresMappedToDate[keyFigures[i][j].date]
@@ -371,12 +371,13 @@ async function updatePortfolio(portfolio) {
                         keyFigure.eps += parseFloat(keyFigures[i][j].EPS)
                         if (dataPointDividend) {
                             var dataPointOfThisYear = dataPointDividend.dataPoints.find((dataPoint) => {
-                                dataPoint.date.slice(0, 4) == keyFigures[i][j].date.slice(0, 4)
+                                return dataPoint.date.slice(0, 4) == keyFigures[i][j].date.slice(0, 4)
                             });
                             if (dataPointOfThisYear) {
-                                if (dataPointOfThisYear.div && dataPointOfThisYear.div != "NaN") {
-                                    keyFigure.div += dataPointOfThisYear.div
-                                    countHowManyValidDivs++
+                                if (dataPointOfThisYear.div && !isNaN(dataPointOfThisYear.div)) {
+                                    keyFigure.div = returnValueIfDefined(keyFigure.div) + parseFloat(dataPointOfThisYear.div)
+                                    keyFigure.countHowManyValidDivs++
+                                    keyFigure.dividendPayoutRatio = returnValueIfDefined(keyFigure.dividendPayoutRatio) + parseFloat(returnValueIfDefined(dataPointDividend.quota))
                                 }
                             }
                         }
@@ -387,38 +388,49 @@ async function updatePortfolio(portfolio) {
                         keyFigure.ptb = keyFigures[i][j].PBRatio
                         keyFigure.ptg = keyFigures[i][j].PEGrowthRatio
                         keyFigure.eps = parseFloat(keyFigures[i][j].EPS)
+                        keyFigure.countHowManyValidDivs = 0
                         //dividends
                         if (dataPointDividend) {
                             var dataPointOfThisYear = dataPointDividend.dataPoints.find((dataPoint) => {
-                                dataPoint.date.slice(0, 4) == keyFigures[i][j].date.slice(0, 4)
+                                return dataPoint.date.slice(0, 4) == keyFigures[i][j].date.slice(0, 4)
                             });
+
                             if (dataPointOfThisYear) {
-                                if (dataPointOfThisYear.div && dataPointOfThisYear.div != "NaN") {
-                                    keyFigure.div = dataPointOfThisYear.div//TODO div
-                                    countHowManyValidDivs++
+                                if (dataPointOfThisYear.div && !isNaN(dataPointOfThisYear.div)) {
+                                    keyFigure.div = parseFloat(dataPointOfThisYear.div)
+                                    keyFigure.countHowManyValidDivs++
+                                    keyFigure.dividendPayoutRatio = parseFloat(returnValueIfDefined(dataPointDividend.quota))
                                 }
                             }
-                            keyFigure.dividendPayoutRatio = dataPointDividend.quota
+
                         }
                         dates.push(keyFigures[i][j].date)
                     }
                 }
+
             }
-            //average
-            if (countHowManyValidDivs) {
-                keyFigure.div /= countHowManyValidDivs;
-            }
+
             keyFiguresNotMappedToDate = []
             //change it to the right format
             for (var i = 0; i < dates.length; i++) {
-                keyFiguresNotMappedToDate.push(keyFiguresMappedToDate[dates[i]])
+                const keyFigure = keyFiguresMappedToDate[dates[i]]
+                //average
+                if (keyFigure.countHowManyValidDivs && keyFigure.div && keyFigure.dividendPayoutRatio) {
+                    keyFigure.div /= keyFigure.countHowManyValidDivs;
+                    keyFigure.dividendPayoutRatio /= keyFigure.countHowManyValidDivs
+                } else {
+                    keyFigure.div = 0;
+                    keyFigure.dividendPayoutRatio = 0
+                }
+                delete keyFigure.countHowManyValidDivs
+                keyFiguresNotMappedToDate.push(keyFigure)
             }
             portfolio.portfolio.keyFigures = keyFiguresNotMappedToDate
             const nextDividend = new Date(dataPointDividend.date);
             if (dataPointDividend && !isNaN(nextDividend.valueOf())) {
                 portfolio.portfolio.nextDividend = nextDividend;
             }
-            console.log(portfolio.portfolio.keyFigures)
+            //console.log(portfolio.portfolio.keyFigures)
         } else {
             //console.log(portfolio.id)
         }
