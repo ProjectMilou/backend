@@ -1831,8 +1831,6 @@
  *         type : string
  *        annualReports:
  *         $ref: '#/definitions/annualReports'
- *        quarterlyReports:
- *         $ref: '#/definitions/quarterlyReports'
  *    '400':
  *      description: Invalid
  *
@@ -1860,8 +1858,6 @@
  *         type : string
  *        annualReports:
  *         $ref: '#/definitions/incomeStatementAnnualReports'
- *        quarterlyReports:
- *         $ref: '#/definitions/incomeStatementQuarterlyReports'
  *    '400':
  *      description: Invalid
  *
@@ -1889,8 +1885,6 @@
  *         type : string
  *        annualReports:
  *         $ref: '#/definitions/cashFlowAnnualReports'
- *        quarterlyReports:
- *         $ref: '#/definitions/cashFlowQuarterlyReports'
  *    '400':
  *      description: Invalid
  *
