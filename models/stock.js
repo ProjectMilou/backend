@@ -1,246 +1,249 @@
 const mongoose = require("mongoose");
 
-const StockSchema = new mongoose.Schema({
+const StockSchema = new mongoose.Schema(
+  {
     symbol: {
-        type: String,
-        required: true,
-        index: true,
-        trim: true,
+      type: String,
+      required: true,
+      index: true,
+      trim: true,
     },
     isin: {
-        type: String,
-        index: true,
-        trim: true,
+      type: String,
+      index: true,
+      trim: true,
     },
     wkn: {
-        type: String,
-        index: true,
-        trim: true,
+      type: String,
+      index: true,
+      trim: true,
     },
     name: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     price: {
-        type: String,
+      type: String,
     },
     per1d: {
-        type: String,
+      type: String,
     },
     per7d: {
-        type: String,
+      type: String,
     },
     per30d: {
-        type: String,
+      type: String,
     },
     per365d: {
-        type: String,
+      type: String,
     },
     marketCapitalization: {
-        type: String,
+      type: String,
     },
     analystTargetPrice: {
-        type: String,
+      type: String,
     },
     valuation: {
-        type: String,
+      type: String,
     },
     growth: {
-        type: String,
+      type: String,
     },
     div: {
-        type: String,
+      type: String,
     },
     currency: {
-        type: String,
+      type: String,
     },
     displayedCurrency: {
-        type: String,
-        default: 'EUR',
+      type: String,
+      default: "EUR",
     },
     country: {
-        type: String,
+      type: String,
     },
     industry: {
-        type: String,
+      type: String,
     },
     picture: {
-        type: String,
+      type: String,
     },
     date: {
-        type: String,
+      type: String,
     },
     intro: {
-        type: String,
+      type: String,
     },
     founded: {
-        type: String,
+      type: String,
     },
     employees: {
-        type: String,
+      type: String,
     },
     website: {
-        type: String,
+      type: String,
     },
     address: {
-        type: String,
+      type: String,
     },
     assembly: {
-        type: String,
+      type: String,
     },
     assetType: {
-        type: String,
+      type: String,
     },
     peRatio: {
-        type: String,
+      type: String,
     },
     cik: {
-        type: String,
+      type: String,
     },
     exchange: {
-        type: String,
+      type: String,
     },
     fiscalYearEnd: {
-        type: String,
+      type: String,
     },
     latestQuarter: {
-        type: String,
+      type: String,
     },
     ebitda: {
-        type: String,
+      type: String,
     },
     pegRatio: {
-        type: String,
+      type: String,
     },
     bookValue: {
-        type: String,
+      type: String,
     },
     dividendPerShare: {
-        type: String,
+      type: String,
     },
     eps: {
-        type: String,
+      type: String,
     },
     revenuePerShareTTM: {
-        type: String,
+      type: String,
     },
     profitMargin: {
-        type: String,
+      type: String,
     },
     operatingMarginTTMprofitMargin: {
-        type: String,
+      type: String,
     },
     returnOnAssetsTTM: {
-        type: String,
+      type: String,
     },
     returnOnEquityTTM: {
-        type: String,
+      type: String,
     },
     revenueTTM: {
-        type: String,
+      type: String,
     },
     grossProfitTTM: {
-        type: String,
+      type: String,
     },
     dilutedEPSTTM: {
-        type: String,
+      type: String,
     },
     quarterlyEarningsGrowthYOY: {
-        type: String,
+      type: String,
     },
     quarterlyRevenueGrowthYOY: {
-        type: String,
+      type: String,
     },
     analystTargetPrice: {
-        type: String,
+      type: String,
     },
     trailingPE: {
-        type: String,
+      type: String,
     },
     forwardPE: {
-        type: String,
+      type: String,
     },
     priceToSalesRatioTTM: {
-        type: String,
+      type: String,
     },
     priceToBookRatio: {
-        type: String,
+      type: String,
     },
     evToRevenue: {
-        type: String,
+      type: String,
     },
     evToEbitda: {
-        type: String,
+      type: String,
     },
     beta: {
-        type: String,
+      type: String,
     },
     per52WeekHigh: {
-        type: String,
+      type: String,
     },
     per52WeekLow: {
-        type: String,
+      type: String,
     },
     per50DayMovingAverage: {
-        type: String,
+      type: String,
     },
     per200DayMovingAverage: {
-        type: String,
+      type: String,
     },
     sharesOutstanding: {
-        type: String,
+      type: String,
     },
     sharesFloat: {
-        type: String,
+      type: String,
     },
     sharesShort: {
-        type: String,
+      type: String,
     },
     sharesShortPriorMonth: {
-        type: String,
+      type: String,
     },
     shortRatio: {
-        type: String,
+      type: String,
     },
     shortPercentOutstanding: {
-        type: String,
+      type: String,
     },
     shortPercentFloat: {
-        type: String,
+      type: String,
     },
     percentInsiders: {
-        type: String,
+      type: String,
     },
     percentInstitutions: {
-        type: String,
+      type: String,
     },
     forwardAnnualDividendRate: {
-        type: String,
+      type: String,
     },
     forwardAnnualDividendYield: {
-        type: String,
+      type: String,
     },
     payoutRatio: {
-        type: String,
+      type: String,
     },
     dividendDate: {
-        type: String,
+      type: String,
     },
     exDividendDate: {
-        type: String,
+      type: String,
     },
     lastSplitFactor: {
-        type: String,
+      type: String,
     },
     lastSplitDate: {
-        type: String,
+      type: String,
     },
     mcSize: {
-        type: String,
-    }
-}, {
-    versionKey: false
-});
+      type: String,
+    },
+  },
+  {
+    versionKey: false,
+  }
+);
 
 const Stock = mongoose.model("Stock", StockSchema);
 

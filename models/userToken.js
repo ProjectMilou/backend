@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const {randomToken} = require('../encryption/encryption');
+const { randomToken } = require("../encryption/encryption");
 
 /**
  * @swagger
@@ -23,31 +23,28 @@ const {randomToken} = require('../encryption/encryption');
  */
 
 const UserTokenSchema = new mongoose.Schema({
-    userID: {
-        type: String,
-        required: true,
-    },
-    token: {
-        type: String
-    },
-    expirationDate: {
-        type: Date
-    },
-    tokenType: {
-        type: String,
-        enum: ["EMAIL_CONFIRMATION", "PASSWORD_RESET"]
-    }
+  userID: {
+    type: String,
+    required: true,
+  },
+  token: {
+    type: String,
+  },
+  expirationDate: {
+    type: Date,
+  },
+  tokenType: {
+    type: String,
+    enum: ["EMAIL_CONFIRMATION", "PASSWORD_RESET"],
+  },
 });
 
 // set expiration date in 24 hours.
-UserTokenSchema.pre(
-    'save',
-    async function(next) {
-        this.expirationDate = new Date().setDate(new Date().getDate() + 1);
-        this.token = await randomToken();
-        next();
-    }
-);
+UserTokenSchema.pre("save", async function (next) {
+  this.expirationDate = new Date().setDate(new Date().getDate() + 1);
+  this.token = await randomToken();
+  next();
+});
 
 const UserToken = mongoose.model("UserToken", UserTokenSchema);
 

@@ -1,24 +1,27 @@
 const mongoose = require("mongoose");
 
-const NewsSchema = new mongoose.Schema({
+const NewsSchema = new mongoose.Schema(
+  {
     id: {
-        type: String,
+      type: String,
     },
     headline: {
-        type: String,
+      type: String,
     },
     summary: {
-        type: String,
+      type: String,
     },
     url: {
-        type: String,
+      type: String,
     },
     publishedAt: {
-        type: String,
+      type: String,
     },
-}, {
-    versionKey: false
-});
+  },
+  {
+    versionKey: false,
+  }
+);
 
 const News = mongoose.model("News", NewsSchema);
 

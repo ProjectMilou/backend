@@ -1,36 +1,39 @@
 const mongoose = require("mongoose");
 
-const StockAnalysisSchema = new mongoose.Schema({
+const StockAnalysisSchema = new mongoose.Schema(
+  {
     symbol: {
-        type: String,
-        required: true,
-        index: true,
-        trim: true,
+      type: String,
+      required: true,
+      index: true,
+      trim: true,
     },
     buy: {
-        type: String,
+      type: String,
     },
     hold: {
-        type: String,
+      type: String,
     },
     sell: {
-        type: String,
+      type: String,
     },
     date: {
-        type: String,
+      type: String,
     },
     strategy: {
-        type: String,
+      type: String,
     },
     source: {
-        type: String,
+      type: String,
     },
     averageGoal: {
-        type: String,
-    }
-}, {
-    versionKey: false
-});
+      type: String,
+    },
+  },
+  {
+    versionKey: false,
+  }
+);
 
 const StockAnalysis = mongoose.model("StockAnalysis", StockAnalysisSchema);
 

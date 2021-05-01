@@ -1,92 +1,95 @@
 const mongoose = require("mongoose");
 
-const IncomeStatementSchema = new mongoose.Schema({
+const IncomeStatementSchema = new mongoose.Schema(
+  {
     symbol: {
-        type: String,
-        required: true,
-        index: true,
-        trim: true,
+      type: String,
+      required: true,
+      index: true,
+      trim: true,
     },
-    annualReports: [{
+    annualReports: [
+      {
         fiscalDateEnding: {
-            type: String,
+          type: String,
         },
         reportedCurrency: {
-            type: String,
+          type: String,
         },
         grossProfit: {
-            type: String,
+          type: String,
         },
         totalRevenue: {
-            type: String,
+          type: String,
         },
         costOfRevenue: {
-            type: String,
+          type: String,
         },
         costofGoodsAndServicesSold: {
-            type: String,
+          type: String,
         },
         operatingIncome: {
-            type: String,
+          type: String,
         },
         sellingGeneralAndAdministrative: {
-            type: String,
+          type: String,
         },
         researchAndDevelopment: {
-            type: String,
+          type: String,
         },
         operatingExpenses: {
-            type: String,
+          type: String,
         },
         investmentIncomeNet: {
-            type: String,
+          type: String,
         },
         netInterestIncome: {
-            type: String,
+          type: String,
         },
         interestIncome: {
-            type: String,
+          type: String,
         },
         interestExpense: {
-            type: String,
+          type: String,
         },
         nonInterestIncome: {
-            type: String,
+          type: String,
         },
         otherNonOperatingIncome: {
-            type: String,
+          type: String,
         },
         depreciation: {
-            type: String,
+          type: String,
         },
         depreciationAndAmortization: {
-            type: String,
+          type: String,
         },
         incomeBeforeTax: {
-            type: String,
+          type: String,
         },
         incomeTaxExpense: {
-            type: String,
+          type: String,
         },
         interestAndDebtExpense: {
-            type: String,
+          type: String,
         },
         netIncomeFromContinuingOperations: {
-            type: String,
+          type: String,
         },
         comprehensiveIncomeNetOfTax: {
-            type: String,
+          type: String,
         },
         ebit: {
-            type: String,
+          type: String,
         },
         ebitda: {
-            type: String,
+          type: String,
         },
         netIncome: {
-            type: String,
+          type: String,
         },
-    }],
+      },
+    ],
 
     // quarterlyReports: [{
     //     fiscalDateEnding: {
@@ -168,10 +171,15 @@ const IncomeStatementSchema = new mongoose.Schema({
     //         type: String,
     //     },
     // }],
-}, {
-    versionKey: false
-});
+  },
+  {
+    versionKey: false,
+  }
+);
 
-const IncomeStatement = mongoose.model("IncomeStatement", IncomeStatementSchema);
+const IncomeStatement = mongoose.model(
+  "IncomeStatement",
+  IncomeStatementSchema
+);
 
 module.exports = IncomeStatement;

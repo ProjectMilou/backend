@@ -1,128 +1,131 @@
 const mongoose = require("mongoose");
 
-const BalanceSheetSchema = new mongoose.Schema({
+const BalanceSheetSchema = new mongoose.Schema(
+  {
     symbol: {
-        type: String,
-        required: true,
-        index: true,
-        trim: true,
+      type: String,
+      required: true,
+      index: true,
+      trim: true,
     },
-    annualReports: [{
+    annualReports: [
+      {
         fiscalDateEnding: {
-            type: String,
+          type: String,
         },
         reportedCurrency: {
-            type: String,
+          type: String,
         },
         totalAssets: {
-            type: String,
+          type: String,
         },
         totalCurrentAssets: {
-            type: String,
+          type: String,
         },
         cashAndCashEquivalentsAtCarryingValue: {
-            type: String,
+          type: String,
         },
         cashAndShortTermInvestments: {
-            type: String,
+          type: String,
         },
         inventory: {
-            type: String,
+          type: String,
         },
         currentNetReceivables: {
-            type: String,
+          type: String,
         },
         totalNonCurrentAssets: {
-            type: String,
+          type: String,
         },
         propertyPlantEquipment: {
-            type: String,
+          type: String,
         },
         accumulatedDepreciationAmortizationPPE: {
-            type: String,
+          type: String,
         },
         intangibleAssets: {
-            type: String,
+          type: String,
         },
         intangibleAssetsExcludingGoodwill: {
-            type: String,
+          type: String,
         },
         goodwill: {
-            type: String,
+          type: String,
         },
         investments: {
-            type: String,
+          type: String,
         },
         longTermInvestments: {
-            type: String,
+          type: String,
         },
         shortTermInvestments: {
-            type: String,
+          type: String,
         },
         otherCurrentAssets: {
-            type: String,
+          type: String,
         },
         otherNonCurrrentAssets: {
-            type: String,
+          type: String,
         },
         totalLiabilities: {
-            type: String,
+          type: String,
         },
         totalCurrentLiabilities: {
-            type: String,
+          type: String,
         },
         currentAccountsPayable: {
-            type: String,
+          type: String,
         },
         deferredRevenue: {
-            type: String,
+          type: String,
         },
         currentDebt: {
-            type: String,
+          type: String,
         },
         shortTermDebt: {
-            type: String,
+          type: String,
         },
         totalNonCurrentLiabilities: {
-            type: String,
+          type: String,
         },
         capitalLeaseObligations: {
-            type: String,
+          type: String,
         },
         longTermDebt: {
-            type: String,
+          type: String,
         },
         currentLongTermDebt: {
-            type: String,
+          type: String,
         },
         longTermDebtNoncurrent: {
-            type: String,
+          type: String,
         },
         shortLongTermDebtTotal: {
-            type: String,
+          type: String,
         },
         otherCurrentLiabilities: {
-            type: String,
+          type: String,
         },
         otherNonCurrentLiabilities: {
-            type: String,
+          type: String,
         },
         totalShareholderEquity: {
-            type: String,
+          type: String,
         },
         treasuryStock: {
-            type: String,
+          type: String,
         },
         retainedEarnings: {
-            type: String,
+          type: String,
         },
         commonStock: {
-            type: String,
+          type: String,
         },
         commonStockSharesOutstanding: {
-            type: String,
+          type: String,
         },
-    }],
+      },
+    ],
 
     // quarterlyReports: [{
     //     fiscalDateEnding: {
@@ -240,9 +243,11 @@ const BalanceSheetSchema = new mongoose.Schema({
     //         type: String,
     //     },
     // }],
-}, {
-    versionKey: false
-});
+  },
+  {
+    versionKey: false,
+  }
+);
 
 const BalanceSheet = mongoose.model("BalanceSheet", BalanceSheetSchema);
 

@@ -3,15 +3,15 @@ const querystring = require("querystring");
 
 // Requires .env file and configures the process environment variables.
 const api = axios.create({
-    baseURL: "https://www.alphavantage.co"
+  baseURL: "https://www.alphavantage.co",
 });
 
 // Gets the apikey which is in the .env file and is now in the process environment variables
 const apikey = process.env.alpha_vantage_key || undefined;
 
 if (!apikey) {
-    console.log("API KEY MISSING");
-    throw new Error("API KEY MISSING");
+  console.log("API KEY MISSING");
+  throw new Error("API KEY MISSING");
 }
 
 /**
@@ -22,21 +22,21 @@ if (!apikey) {
  * @returns {object}            JavaScript Object
  */
 const getTimeSeriesIntraday = async (symbol, interval) => {
-    const TIME_SERIES_INTRADAY_QUERY = querystring.stringify({
-        apikey: apikey,
-        symbol: symbol,
-        function: "TIME_SERIES_INTRADAY",
-        interval: interval
-    });
+  const TIME_SERIES_INTRADAY_QUERY = querystring.stringify({
+    apikey: apikey,
+    symbol: symbol,
+    function: "TIME_SERIES_INTRADAY",
+    interval: interval,
+  });
 
-    console.log(TIME_SERIES_INTRADAY_QUERY);
+  console.log(TIME_SERIES_INTRADAY_QUERY);
 
-    try {
-        const res = await api.get(`query?${TIME_SERIES_INTRADAY_QUERY}`);
-        return res.data;
-    } catch (err) {
-        throw new Error(err);
-    }
+  try {
+    const res = await api.get(`query?${TIME_SERIES_INTRADAY_QUERY}`);
+    return res.data;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 /**
@@ -46,21 +46,21 @@ const getTimeSeriesIntraday = async (symbol, interval) => {
  * @returns {object}        JavaScript Object
  */
 const getTimeSeriesDaily = async (symbol) => {
-    const TIME_SERIES_DAILY_QUERY = querystring.stringify({
-        apikey: apikey,
-        symbol: symbol,
-        function: "TIME_SERIES_DAILY",
-        outputsize: "full"
-    });
+  const TIME_SERIES_DAILY_QUERY = querystring.stringify({
+    apikey: apikey,
+    symbol: symbol,
+    function: "TIME_SERIES_DAILY",
+    outputsize: "full",
+  });
 
-    console.log(TIME_SERIES_DAILY_QUERY);
+  console.log(TIME_SERIES_DAILY_QUERY);
 
-    try {
-        const res = await api.get(`query?${TIME_SERIES_DAILY_QUERY}`);
-        return res.data;
-    } catch (err) {
-        throw new Error(err);
-    }
+  try {
+    const res = await api.get(`query?${TIME_SERIES_DAILY_QUERY}`);
+    return res.data;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 /**
@@ -70,20 +70,20 @@ const getTimeSeriesDaily = async (symbol) => {
  * @returns {object}        JavaScript Object
  */
 const getTimeSeriesWeekly = async (symbol) => {
-    const TIME_SERIES_WEEKLY_QUERY = querystring.stringify({
-        apikey: apikey,
-        symbol: symbol,
-        function: "TIME_SERIES_WEEKLY"
-    });
+  const TIME_SERIES_WEEKLY_QUERY = querystring.stringify({
+    apikey: apikey,
+    symbol: symbol,
+    function: "TIME_SERIES_WEEKLY",
+  });
 
-    console.log(TIME_SERIES_WEEKLY_QUERY);
+  console.log(TIME_SERIES_WEEKLY_QUERY);
 
-    try {
-        const res = await api.get(`query?${TIME_SERIES_WEEKLY_QUERY}`);
-        return res.data;
-    } catch (err) {
-        throw new Error(err);
-    }
+  try {
+    const res = await api.get(`query?${TIME_SERIES_WEEKLY_QUERY}`);
+    return res.data;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 /**
@@ -93,20 +93,20 @@ const getTimeSeriesWeekly = async (symbol) => {
  * @returns {object}        JavaScript Object
  */
 const getTimeSeriesMonthly = async (symbol) => {
-    const TIME_SERIES_MONTHLY_QUERY = querystring.stringify({
-        apikey: apikey,
-        symbol: symbol,
-        function: "TIME_SERIES_MONTHLY"
-    });
+  const TIME_SERIES_MONTHLY_QUERY = querystring.stringify({
+    apikey: apikey,
+    symbol: symbol,
+    function: "TIME_SERIES_MONTHLY",
+  });
 
-    console.log(TIME_SERIES_MONTHLY_QUERY);
+  console.log(TIME_SERIES_MONTHLY_QUERY);
 
-    try {
-        const res = await api.get(`query?${TIME_SERIES_MONTHLY_QUERY}`);
-        return res.data;
-    } catch (err) {
-        throw new Error(err);
-    }
+  try {
+    const res = await api.get(`query?${TIME_SERIES_MONTHLY_QUERY}`);
+    return res.data;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 /**
@@ -121,20 +121,20 @@ const getTimeSeriesMonthly = async (symbol) => {
  * the response includes PERatio(Price-Earning Ratio) and DividendYield
  */
 const getCompanyOverview = async (symbol) => {
-    const COMPANY_OVERVIEW_QUERY = querystring.stringify({
-        apikey: apikey,
-        symbol: symbol,
-        function: "OVERVIEW"
-    });
+  const COMPANY_OVERVIEW_QUERY = querystring.stringify({
+    apikey: apikey,
+    symbol: symbol,
+    function: "OVERVIEW",
+  });
 
-    console.log(COMPANY_OVERVIEW_QUERY);
+  console.log(COMPANY_OVERVIEW_QUERY);
 
-    try {
-        const res = await api.get(`query?${COMPANY_OVERVIEW_QUERY}`);
-        return res.data;
-    } catch (err) {
-        throw new Error(err);
-    }
+  try {
+    const res = await api.get(`query?${COMPANY_OVERVIEW_QUERY}`);
+    return res.data;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 /**
@@ -148,61 +148,61 @@ const getCompanyOverview = async (symbol) => {
  * we receive a match score of 1.000 for symbol="TLO.DEX")
  */
 const getSymbolForKeyword = async (keyword) => {
-    const SYMBOL_SEARCH_QUERY = querystring.stringify({
-        apikey: apikey,
-        keywords: keyword,
-        function: "SYMBOL_SEARCH"
-    });
+  const SYMBOL_SEARCH_QUERY = querystring.stringify({
+    apikey: apikey,
+    keywords: keyword,
+    function: "SYMBOL_SEARCH",
+  });
 
-    console.log(SYMBOL_SEARCH_QUERY);
+  console.log(SYMBOL_SEARCH_QUERY);
 
-    try {
-        const res = await api.get(`query?${SYMBOL_SEARCH_QUERY}`);
-        return res.data;
-    } catch (err) {
-        throw new Error(err);
-    }
+  try {
+    const res = await api.get(`query?${SYMBOL_SEARCH_QUERY}`);
+    return res.data;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 /**
  * Gets the balance sheet of a symbol from the AlphaVantage API
- * 
+ *
  * @param {string} symbol represents the query string (e.g "Tesla")
- * @returns This function returns the annual and quarterly balance sheets 
+ * @returns This function returns the annual and quarterly balance sheets
  * for the company of interest. Data is generally refreshed on the same day
  * a company reports its latest earnings and financials.
  */
 const getBalanceSheetForSymbol = async (symbol) => {
-    const BALANCE_SHEET_QUERY = querystring.stringify({
-        apikey: apikey,
-        symbol: symbol,
-        function: "BALANCE_SHEET"
-    });
+  const BALANCE_SHEET_QUERY = querystring.stringify({
+    apikey: apikey,
+    symbol: symbol,
+    function: "BALANCE_SHEET",
+  });
 
-    console.log(BALANCE_SHEET_QUERY);
+  console.log(BALANCE_SHEET_QUERY);
 
-    try {
-        const res = await api.get(`query?${BALANCE_SHEET_QUERY}`);
-        return res.data;
-    } catch (err) {
-        throw new Error(err);
-    }
-}
+  try {
+    const res = await api.get(`query?${BALANCE_SHEET_QUERY}`);
+    return res.data;
+  } catch (err) {
+    throw new Error(err);
+  }
+};
 
 const getEarningsForSymbol = async (symbol) => {
-    const EARNINGS_QUERY = querystring.stringify({
-        apikey: apikey,
-        symbol: symbol,
-        function: "EARNINGS"
-    });
+  const EARNINGS_QUERY = querystring.stringify({
+    apikey: apikey,
+    symbol: symbol,
+    function: "EARNINGS",
+  });
 
-    try {
-        const res = await api.get(`query?${EARNINGS_QUERY}`);
-        return res.data;
-    } catch (err) {
-        throw new Error(err);
-    }
-}
+  try {
+    const res = await api.get(`query?${EARNINGS_QUERY}`);
+    return res.data;
+  } catch (err) {
+    throw new Error(err);
+  }
+};
 
 exports.getTimeSeriesIntraday = getTimeSeriesIntraday;
 exports.getTimeSeriesDaily = getTimeSeriesDaily;

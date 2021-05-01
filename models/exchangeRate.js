@@ -1,117 +1,122 @@
 const mongoose = require("mongoose");
 
-const ExchangeRateSchema = new mongoose.Schema({
+const ExchangeRateSchema = new mongoose.Schema(
+  {
     base: {
-        type: String,
-        required: true,
-        index: true,
-        trim: true,
-        unique: true,
+      type: String,
+      required: true,
+      index: true,
+      trim: true,
+      unique: true,
     },
-    rates: [{
+    rates: [
+      {
         GBP: {
-            type: String,
+          type: String,
         },
         HKD: {
-            type: String,
+          type: String,
         },
         IDR: {
-            type: String,
+          type: String,
         },
         ILS: {
-            type: String,
+          type: String,
         },
         DKK: {
-            type: String,
+          type: String,
         },
         INR: {
-            type: String,
+          type: String,
         },
         CHF: {
-            type: String,
+          type: String,
         },
         MXN: {
-            type: String,
+          type: String,
         },
         CZK: {
-            type: String,
+          type: String,
         },
         SGD: {
-            type: String,
+          type: String,
         },
         THB: {
-            type: String,
+          type: String,
         },
         HRK: {
-            type: String,
+          type: String,
         },
         MYR: {
-            type: String,
+          type: String,
         },
         NOK: {
-            type: String,
+          type: String,
         },
         CNY: {
-            type: String,
+          type: String,
         },
         BGN: {
-            type: String,
+          type: String,
         },
         PHP: {
-            type: String,
+          type: String,
         },
         SEK: {
-            type: String,
+          type: String,
         },
         PLN: {
-            type: String,
+          type: String,
         },
         ZAR: {
-            type: String,
+          type: String,
         },
         CAD: {
-            type: String,
+          type: String,
         },
         ISK: {
-            type: String,
+          type: String,
         },
         BRL: {
-            type: String,
+          type: String,
         },
         RON: {
-            type: String,
+          type: String,
         },
         NZD: {
-            type: String,
+          type: String,
         },
         TRY: {
-            type: String,
+          type: String,
         },
         JPY: {
-            type: String,
+          type: String,
         },
         RUB: {
-            type: String,
+          type: String,
         },
         KRW: {
-            type: String,
+          type: String,
         },
         USD: {
-            type: String,
+          type: String,
         },
         HUF: {
-            type: String,
+          type: String,
         },
         AUD: {
-            type: String,
+          type: String,
         },
-    }],
+      },
+    ],
     date: {
-        type: String,
+      type: String,
     },
-}, {
-    versionKey: false
-});
+  },
+  {
+    versionKey: false,
+  }
+);
 
 const ExchangeRate = mongoose.model("ExchangeRate", ExchangeRateSchema);
 
