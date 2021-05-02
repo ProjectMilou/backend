@@ -150,6 +150,9 @@ router.get("/list", async (req, res) => {
 
 router.get("/search", async (req, res) => {
   let searchString = req.query.id;
+  let limit = req.query.limit;
+  let pageNumber = req.query.pageNumber;
+
   let query = {};
   query["$or"] = [
     { isin: { $regex: ".*" + searchString + ".*", $options: "i" } },
@@ -157,9 +160,26 @@ router.get("/search", async (req, res) => {
     { name: { $regex: ".*" + searchString + ".*", $options: "i" } },
     { symbol: { $regex: ".*" + searchString + ".*", $options: "i" } },
   ];
-  const stocks = await stockModel.find(query, excludeFields);
+  let stocks = await stockModel.find(query, excludeFields);
+  let total = stocks.length;
 
-  res.json({ stocks: stocks });
+  if (!!limit && !!pageNumber) {
+    limit = parseInt(limit);
+    let offset = (pageNumber - 1) * limit;
+    stocks = stocks.slice(offset, offset + limit);
+  } else {
+    limit = stocks.length;
+    pageNumber = 1;
+  }
+
+  res.json(
+    {
+      total : total,
+      limit : limit,
+      numberOfPage : Math.ceil(total / limit),
+      pageNumber : parseInt(pageNumber) + "/" + Math.ceil(total / limit),
+      stocks: stocks
+    });
 });
 
 router.get("/overview", async (req, res) => {
