@@ -274,44 +274,30 @@ router.get("/charts/dividend", async (req, res) => {
   let quota;
   let dataPoints;
 
-  let query = {};
-  query["symbol"] = id;
-  let stocks = await stockModel.find(query, "-_id");
-  try {
-    stocks[0]["name"];
-  } catch (e) {
-    res.status(404).json({ error: "STOCK_ID_INVALID" });
-  }
-
-  if (max !== "true") {
-    dataPoints = await dividendModel.find(
+  dataPoints = await dividendModel.find(
       { symbol: id },
       {
         symbol: false,
         _id: false,
       }
-    );
-    date = dataPoints[0]["date"];
-    quota = dataPoints[0]["quota"];
-    dataPoints = dataPoints[0]["dataPoints"].slice(0, 5);
-  } else {
-    dataPoints = await dividendModel.find(
-      { symbol: id },
-      {
-        symbol: false,
-        _id: false,
-      }
-    );
-    date = dataPoints[0]["date"];
-    quota = dataPoints[0]["quota"];
-    dataPoints = dataPoints[0]["dataPoints"];
-  }
+  );
+  dataPoints = dataPoints[0];
 
-  if (dataPoints) {
+  if (!!dataPoints) {
+    date = dataPoints["date"];
+    quota = dataPoints["quota"];
+    if (max !== "true") {
+      dataPoints = dataPoints["dataPoints"].slice(0, 5);
+    } else {
+      dataPoints = dataPoints["dataPoints"];
+    }
     res.json({ symbol: id, dataPoints, date, quota });
   } else {
-    res.json({ error: "STOCK_ID_INVALID" });
+    try {
+      res.json({error: "STOCK_ID_INVALID"});
+    } catch (e) {}
   }
+
 });
 
 router.get("/news", async (req, res) => {
@@ -333,15 +319,12 @@ router.get("/news", async (req, res) => {
 
   var url =
     "https://newsapi.org/v2/everything?" +
-    "q=" +
-    name +
-    "&from=" +
-    threeDaysAgoString +
+    "q=" + name +
+    "&from=" + threeDaysAgoString +
     "&sortBy=popularity" +
     "&language=en" +
     "&domains=yahoo.com,seekingalpha.com,marketwatch.com,investors.com,bloomberg.com" +
-    "&apiKey=" +
-    process.env.news_api_key;
+    "&apiKey=" + process.env.news_api_key;
 
   await fetch(url)
     .then((response) => response.json())
@@ -368,100 +351,73 @@ router.get("/news", async (req, res) => {
 
 router.get("/balanceSheet", async (req, res) => {
   let id = req.query.id;
-  let isExist = false;
 
-  let query = {};
-  query["symbol"] = id;
-  let stocks = await stockModel.find(query, "-_id");
-  try {
-    stocks[0]["name"];
-    isExist = true;
-  } catch (e) {
-    isExist = false;
-    res.status(404).json({ error: "STOCK_ID_INVALID" });
-  }
+  let balanceSheet = await balanceSheetModel.find(
+    { symbol: id },
+    {
+      symbol: false,
+      _id: false,
+    }
+  );
+  balanceSheet = balanceSheet[0];
 
-  if (isExist) {
-    let balanceSheet = await balanceSheetModel.find(
-      { symbol: id },
-      {
-        symbol: false,
-        _id: false,
-      }
-    );
+  if (!!balanceSheet) {
     res.json({
       symbol: id,
-      annualReports: balanceSheet[0]["annualReports"],
-      // "quarterlyReports": balanceSheet[0]["quarterlyReports"]
+      annualReports: balanceSheet["annualReports"],
     });
   } else {
-    res.json({ error: "STOCK_ID_INVALID" });
+    try {
+      res.json({error: "STOCK_ID_INVALID"});
+    } catch (e) {}
   }
 });
 
 router.get("/incomeStatement", async (req, res) => {
   let id = req.query.id;
-  let isExist = false;
 
-  let query = {};
-  query["symbol"] = id;
-  let stocks = await stockModel.find(query, "-_id");
-  try {
-    stocks[0]["name"];
-    isExist = true;
-  } catch (e) {
-    isExist = false;
-    res.status(404).json({ error: "STOCK_ID_INVALID" });
-  }
+  let incomeStatement = await incomeStatementModel.find(
+    { symbol: id },
+    {
+      symbol: false,
+      _id: false,
+    }
+  );
+  incomeStatement = incomeStatement[0];
 
-  if (isExist) {
-    let incomeStatement = await incomeStatementModel.find(
-      { symbol: id },
-      {
-        symbol: false,
-        _id: false,
-      }
-    );
+  if (!!incomeStatement) {
     res.json({
       symbol: id,
-      annualReports: incomeStatement[0]["annualReports"],
-      // "quarterlyReports": incomeStatement[0]["quarterlyReports"]
+      annualReports: incomeStatement["annualReports"],
     });
   } else {
-    res.json({ error: "STOCK_ID_INVALID" });
+    try {
+      res.json({error: "STOCK_ID_INVALID"});
+    } catch (e) {}
   }
 });
 
 router.get("/cashFlow", async (req, res) => {
   let id = req.query.id;
-  let isExist = false;
 
-  let query = {};
-  query["symbol"] = id;
-  let stocks = await stockModel.find(query, "-_id");
-  try {
-    stocks[0]["name"];
-    isExist = true;
-  } catch (e) {
-    isExist = false;
-    res.status(404).json({ error: "STOCK_ID_INVALID" });
-  }
+  let cashFlow = await cashFlowModel.find(
+    { symbol: id },
+    {
+      symbol: false,
+      _id: false,
+    }
+  );
+  cashFlow = cashFlow[0];
 
-  if (isExist) {
-    let cashFlow = await cashFlowModel.find(
-      { symbol: id },
-      {
-        symbol: false,
-        _id: false,
-      }
-    );
+  if (!!cashFlow) {
     res.json({
       symbol: id,
-      annualReports: cashFlow[0]["annualReports"],
-      // "quarterlyReports": cashFlow[0]["quarterlyReports"]
+      annualReports: cashFlow["annualReports"],
     });
   } else {
-    res.json({ error: "STOCK_ID_INVALID" });
+    try {
+      res.json({error: "STOCK_ID_INVALID"});
+    } catch (e) {}
   }
 });
 
@@ -470,40 +426,28 @@ router.get("/charts/key_figures", async (req, res) => {
   let max = req.query.max;
   let keyFigures;
 
-  let query = {};
-  query["symbol"] = id;
-  let stocks = await stockModel.find(query, "-_id");
-  try {
-    stocks[0]["name"];
-  } catch (e) {
-    res.status(404).json({ error: "STOCK_ID_INVALID" });
-  }
-
-  if (max !== "true") {
-    keyFigures = await keyFigureModel.find(
+  keyFigures = await keyFigureModel.find(
       { symbol: id },
       {
         symbol: false,
         _id: false,
       }
-    );
-    keyFigures = keyFigures[0]["keyFigures"].slice(0, 20);
-  } else {
-    keyFigures = await keyFigureModel.find(
-      { symbol: id },
-      {
-        symbol: false,
-        _id: false,
-      }
-    );
-    keyFigures = keyFigures[0]["keyFigures"];
-  }
+  );
+  keyFigures = keyFigures[0];
 
-  if (keyFigures) {
+  if (!!keyFigures) {
+    if (max !== "true") {
+      keyFigures = keyFigures["keyFigures"].slice(0, 20);
+    } else {
+      keyFigures = keyFigures["keyFigures"];
+    }
     res.json({ symbol: id, keyFigures });
   } else {
-    res.json({ error: "STOCK_ID_INVALID" });
+    try {
+      res.json({error: "STOCK_ID_INVALID"});
+    } catch (e) {}
   }
+
 });
 
 router.get("/finanzen", async (req, res) => {

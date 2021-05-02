@@ -137,16 +137,16 @@ async function updateStock(position, virtual) {
         if (virtual) {
             position.totalReturn = returnValueIfDefined(position.stock.quote * position.qty - position.stock.entryQuote * position.qty)
         }
+        position.totalReturnPercent = percent(position.totalReturn, position.stock.quote * position.qty)
     } else {
         position.stock.missingData = true;
         if (virtual) {
-            position.stock.price = 0
-            position.stock.quote = 0
-            position.stock.quoteDate = 0
-            position.totalReturn = 0
+            position.stock.price = null
+            position.stock.quote = null
+            position.stock.quoteDate = null
+            position.totalReturn = null
         }
     }
-    position.totalReturnPercent = percent(position.totalReturn, position.stock.quote * position.qty)
 }
 
 async function updateStockWhenModifed(position, virtual) {
@@ -155,6 +155,15 @@ async function updateStockWhenModifed(position, virtual) {
 
 async function updateStockCronjob(position, virtual) {
     await updateStock(position, virtual)
+}
+
+function fieldIsAllZero(keyFigures, field) {
+    for (var i = 0; i < keyFigures.length; i++) {
+        if (keyFigures[i][field] != 0) {
+            return false;
+        }
+    }
+    return true;
 }
 
 // parameter: portfolio
@@ -185,23 +194,13 @@ async function updatePortfolio(portfolio) {
         //empty portfolio
         overview.value = 0;
         overview.score = 0
-        overview.perf7d = 0
-        overview.perf1y = 0
+        overview.perf7d = 0;
+        overview.perf1y = 0;
         overview.perf7dPercent = 0
         overview.perf1yPercent = 0
-        portfolio.portfolio.risk = {
-            "countries": {},
-            "segments": {},
-            "currency": {}
-        }
-        portfolio.portfolio.analytics = {
-            "volatility": 0,
-            "standardDeviation": 0,
-            "sharpeRatio": 0,
-            "treynorRatio": 0,
-            "debtEquity": 0,
-            "correlations": {}
-        }
+        portfolio.portfolio.risk = {}
+        portfolio.portfolio.analytics = {}
+        portfolio.portfolio.keyFigures = []
     } else {
         var stockArrayWithPriceInEur = portfolio.portfolio.positions
         //var stockArrayWithPriceInEur = await calculateStockPricesInEur(portfolio) //this is useless now that the prices in the database of the stocks are also in euro
@@ -228,6 +227,8 @@ async function updatePortfolio(portfolio) {
             portfolio.portfolio.risk.countries = portfDiversification.countries
             portfolio.portfolio.risk.currency = portfDiversification.currencies
             portfolio.portfolio.risk.segments = portfDiversification.industries
+        } else {
+            portfolio.portfolio.risk = {}
         }
 
 
@@ -439,15 +440,24 @@ async function updatePortfolio(portfolio) {
                 delete keyFigure.countHowManyValidDPR
                 keyFiguresNotMappedToDate.push(keyFigure)
             }
+            if (fieldIsAllZero(keyFiguresNotMappedToDate, "dividendPayoutRatio")) {
+                keyFiguresNotMappedToDate.forEach((keyFig) => {
+                    keyFig.dividendPayoutRatio = null
+                })
+            }
+            if (fieldIsAllZero(keyFiguresNotMappedToDate, "div")) {
+                keyFiguresNotMappedToDate.forEach((keyFig) => {
+                    keyFig.div = null
+                })
+            }
             portfolio.portfolio.keyFigures = keyFiguresNotMappedToDate
             if (nextDividend && !isNaN(nextDividend.valueOf())) {
                 portfolio.portfolio.nextDividend = nextDividend;
             } else {
                 portfolio.portfolio.nextDividend = 0;
             }
-            //console.log(portfolio.portfolio.keyFigures)
         } else {
-            //console.log(portfolio.id)
+            portfolio.portfolio.keyFigures = []
         }
 
 

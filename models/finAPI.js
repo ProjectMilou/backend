@@ -537,43 +537,13 @@ const newPortfolio = async(portfolioId, userId, security) => {
                 virtual: false,
                 positionCount: 1,
                 value: 0,
-                score: 0,
-                perf7d: 0,
-                perf1y: 0,
-                perf7dPercent: 0,
-                perf1yPercent: 0,
                 modified: Math.floor(Date.now() / 1000),
             },
             positions: await convertSecurity(security),
-            risk: {
-                countries: {},
-                segments: {},
-                currency: {},
-            },
-            keyFigures: [{
-                year: "",
-                pte: 0,
-                ptb: 0,
-                ptg: 0,
-                eps: 0,
-                div: 0,
-                dividendPayoutRatio: 0,
-            }, ],
-            nextDividend: 0,
+            risk: {},
+            keyFigures: [],
             totalReturn: security.profitOrLoss,
-            totalReturnPercent: 0,
-            analytics: {
-                volatility: 0,
-                standardDeviation: 0,
-                sharpeRatio: 0,
-                treynorRatio: 0,
-                debtEquity: 0,
-                correlations: {},
-            },
-            performance: [
-                // cron scheduler time as parameter how often should it work
-                [0],
-            ],
+            totalReturnPercent: 0
         },
     };
 };
