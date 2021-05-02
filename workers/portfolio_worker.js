@@ -9,13 +9,15 @@ const stockDetailedAnalysisModel = require('../models/stockDetailedAnalysis');
 const balanceSheets = require('../data-analytics/dynamic_data/balance-sheets');
 const KeyFigure = require('../models/keyFigure');
 const dividendModel = require("../models/dividend");
+const UserModel = require("../models/user");
+const finAPI = require("../models/finAPI");
 
 
 const fetch = require('node-fetch');
 const { variance } = require('stats-lite');
 
 
-const getExchangeRate = async (from_currency, to_currency) => {
+const getExchangeRate = async(from_currency, to_currency) => {
     let rate = 1;
     if (from_currency != to_currency && from_currency !== undefined) {
         var params = new URLSearchParams({
@@ -43,7 +45,7 @@ const getExchangeRate = async (from_currency, to_currency) => {
     return rate;
 }
 
-const toEur = async (money, currency) => {
+const toEur = async(money, currency) => {
     if (currency == "EUR")
         return money;
     if (money) {
@@ -61,7 +63,7 @@ const percent = (nr1, nr2) => {
         return 0
 }
 
-const searchStock = async (searchString) => {
+const searchStock = async(searchString) => {
     let query = {};
     query["$or"] = [
         { "isin": searchString },
@@ -121,7 +123,7 @@ async function updateStock(position, virtual) {
         position.stock.perf1y = stock.per365d, stock.displayedCurrency
         position.stock.perf7dPercent = percent(position.stock.perf7d, (position.stock.price * position.qty))
         position.stock.perf1yPercent = percent(position.stock.perf1y, (position.stock.price * position.qty))
-        //volatility and debt equity is done in updatePortfolio()
+            //volatility and debt equity is done in updatePortfolio()
         var detailedAnalysis = await stockDetailedAnalysisModel.findOne({ "symbol": stock.symbol })
         if (detailedAnalysis) {
             var score = 50
@@ -203,7 +205,7 @@ async function updatePortfolio(portfolio) {
         portfolio.portfolio.keyFigures = []
     } else {
         var stockArrayWithPriceInEur = portfolio.portfolio.positions
-        //var stockArrayWithPriceInEur = await calculateStockPricesInEur(portfolio) //this is useless now that the prices in the database of the stocks are also in euro
+            //var stockArrayWithPriceInEur = await calculateStockPricesInEur(portfolio) //this is useless now that the prices in the database of the stocks are also in euro
         overview.value = stockArrayWithPriceInEur.map(({ stock: { price: price }, qty: qty }) => returnValueIfDefined(price * qty)).reduce((a, b) => a + b, 0)
 
         if (overview.value) {
@@ -215,7 +217,7 @@ async function updatePortfolio(portfolio) {
         overview.perf1y = stockArrayWithPriceInEur.map(({ stock: { perf1y: performance } }) => returnValueIfDefined(performance)).reduce((a, b) => a + b, 0)
         overview.perf7dPercent = percent(overview.perf7d, overview.value)
         overview.perf1yPercent = percent(overview.perf1y, overview.value)
-        //risk
+            //risk
         var currPortfolio = tofinAPIPortfolio(portfolio)
         var currSymbols = portfolioFetcher.extractSymbolsFromPortfolio(currPortfolio);
         var currCompanyOverviews
@@ -254,7 +256,7 @@ async function updatePortfolio(portfolio) {
             pAnalytics = {}
         pAnalytics.volatility = SDandCorr.portfolioVolatility
         pAnalytics.correlations = SDandCorr.correlations
-        //volatility of positions
+            //volatility of positions
         portfolio.portfolio.positions.forEach(position => {
             position.stock.volatility = returnValueIfDefined(SDandCorr.volatility[position.stock.symbol])
         });
@@ -315,7 +317,7 @@ async function updatePortfolio(portfolio) {
         // keyfigures
         if (currStocksData && currBalanceSheetPerSymbol && portfolio.portfolio.positions) {
             var keyFigures = []
-            //find values
+                //find values
             for (var i = 0; i < portfolio.portfolio.positions.length; i++) {
                 var position = portfolio.portfolio.positions[i]
                 if (!position.stock.missingData) {
@@ -326,8 +328,8 @@ async function updatePortfolio(portfolio) {
                     const toDate = new Date().setFullYear(today.getFullYear() - 1)
                     const fiveYearsAgo = new Date().setFullYear(today.getFullYear() - 5)
                     const result = analytics.calculateKeyFigures(currStocksData, keyFigureData,
-                        currBalanceSheetPerSymbol[position.stock.symbol], fiveYearsAgo, toDate)
-                    //weigh the result
+                            currBalanceSheetPerSymbol[position.stock.symbol], fiveYearsAgo, toDate)
+                        //weigh the result
                     var weight = position.stock.price * position.stock.qty / portfolio.portfolio.overview.value
                     if (result.length > 0) {
                         result.map(({
@@ -344,8 +346,7 @@ async function updatePortfolio(portfolio) {
                                 "PEGrowthRatio": PEGrowthRatio * weight,
                                 "PBRatio": PBRatio * weight
                             }
-                        }
-                        );
+                        });
                     }
                     result.symbol = position.stock.symbol
                     keyFigures.push(result)
@@ -353,7 +354,7 @@ async function updatePortfolio(portfolio) {
             }
 
             var nextDividend
-            // weighted average of keyfigures for stock
+                // weighted average of keyfigures for stock
             var keyFiguresMappedToDate = {}
             var dates = []
             for (var i = 0; i < keyFigures.length; i++) {
@@ -398,7 +399,7 @@ async function updatePortfolio(portfolio) {
                         keyFigure.eps = parseFloat(keyFigures[i][j].EPS)
                         keyFigure.countHowManyValidDivs = 0
                         keyFigure.countHowManyValidDPR = 0
-                        //dividends
+                            //dividends
                         if (dataPointDividend) {
                             var dataPointOfThisYear = dataPointDividend.dataPoints.find((dataPoint) => {
                                 return dataPoint.date.slice(0, 4) == keyFigures[i][j].date.slice(0, 4)
@@ -420,11 +421,11 @@ async function updatePortfolio(portfolio) {
 
             }
 
-            keyFiguresNotMappedToDate = []
-            //change it to the right format
+            let keyFiguresNotMappedToDate = []
+                //change it to the right format
             for (var i = 0; i < dates.length; i++) {
                 const keyFigure = keyFiguresMappedToDate[dates[i]]
-                //average
+                    //average
                 if (keyFigure.countHowManyValidDivs && keyFigure.div) {
                     keyFigure.div /= keyFigure.countHowManyValidDivs;
                 } else {
@@ -484,10 +485,19 @@ async function updatePortfolioCronjob(portfolio) {
 
     // update other values of portfolio
     await updatePortfolio(portfolio)
-    //performance
+        //performance
     var newDataPoint = [Date.now(), portfolio.portfolio.overview.value]
     portfolio.portfolio.performance.push(newDataPoint)
 
+}
+
+async function updateFromFinapiCronjob() {
+    const users = await UserModel.find({});
+    for (let user of users) {
+        await finAPI.updateAllFinApiConnections(user);
+        await finAPI.refreshBankConnections(user);
+        await finAPI.refreshPortfolios(user);
+    }
 }
 
 
@@ -495,3 +505,4 @@ module.exports.updatePortfolioWhenModified = updatePortfolioWhenModified
 module.exports.updatePortfolioCronjob = updatePortfolioCronjob
 module.exports.searchStock = searchStock
 module.exports.toEur = toEur
+module.exports.updateFromFinapiCronjob = updateFromFinapiCronjob

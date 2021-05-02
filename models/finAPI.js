@@ -1,7 +1,6 @@
 const fetch = require("node-fetch");
 const bankConnection = require("../models/bankConnection");
 const stockModel = require("../models/stock");
-// const UserModel = require("../models/user");
 const Portfolio = require("../models/portfolio");
 const mongoose = require("mongoose");
 const portfolioWorkers = require("../workers/portfolio_worker");
@@ -250,7 +249,7 @@ const refreshBankConnections = async(user) => {
                     await updateOrSaveConnections(userId, connections[k]);
                 }
             }
-        } else console.log("error: AUTHORISATION_ERROR");
+        }
     } catch (err) {
         console.log(err);
     }
@@ -430,7 +429,7 @@ const refreshPortfolios = async(user) => {
             for (var k in securities) {
                 await updateOrSavePortfolios(userId, securities[k]);
             }
-        } else console.log("error: NO_SECURITIES_ERROR");
+        }
     } catch (error) {
         console.log(error.message);
     }
@@ -647,17 +646,6 @@ const searchSymbol = async(isin, wkn) => {
     return symbol;
 };
 
-/*
-const refreshCronjob = async() => {
-    const users = await UserModel.find({});
-    for(let user of users){
-        await updateAllFinApiConnections(user);
-        await refreshBankConnections(user);
-        await refreshPortfolios(user);
-    }
-}
- */
-
 module.exports = {
     createFinAPIUser,
     deleteFinAPIUser,
@@ -669,6 +657,5 @@ module.exports = {
     updateAllFinApiConnections,
     refreshBankConnections,
     refreshPortfolios,
-    // refreshCronjob,
     getUserAccessToken,
 };
