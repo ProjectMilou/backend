@@ -183,7 +183,7 @@ router.get(
       // find all data of portfolio
       Portfolio.findOne(
         { userId: req.user.id, id: id },
-        { "portfolio.performance": false, "portfolio.overview._id": false },
+        { "portfolio.performance": false, "portfolio.overview._id": false, "portfolio.keyFigures._id": false, "portfolio.positions._id": false },
         (err, portf) => {
           if (err) {
             handle_database_error(res, err);
