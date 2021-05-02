@@ -28,7 +28,7 @@ module.exports.updateAllStocks = async function () {
     for await (const symbol of rl) {
       // console.log(counter + ' - ' + symbol);
       await getExchangeRates();
-      // await getStockOverview(symbol, api_key_alphavantage);
+      await getStockOverview(symbol, api_key_alphavantage);
       // await updateIsinAndWknWithMockData(symbol);
       await getTimeIntervalPerformance(symbol, api_key_alphavantage);
       await getAnalysis(symbol, api_key_finhub);
@@ -39,7 +39,8 @@ module.exports.updateAllStocks = async function () {
       // await getDetailedAnalysis(symbol, api_key_benzinga); ///////// TODO: BUNA BAK OGUZHAN
       // await getIncomeStatement(symbol, api_key_alphavantage);
       // await getCashFlow(symbol, api_key_alphavantage);
-      let numberOfCalls = 2;
+
+      let numberOfCalls = 3;
       // counter++;
       await sleep(numberOfCalls * 1500);
     }
@@ -128,6 +129,7 @@ async function getStockOverview(symbol, api_key) {
     symbol +
     "&apikey=" +
     api_key;
+
   await fetch(url)
     .then((response) => response.json())
     .then(async (data) => {
@@ -149,7 +151,7 @@ async function getStockOverview(symbol, api_key) {
             industry: data.Industry,
             date: new Date(),
             valuation: data.PERatio,
-            div: data.DividendPerShare,
+            div: (data.DividendPerShare * exchangeRate).toFixed(4), //div: data.DividendPerShare,
             growth: 0,
             intro: data.Description,
             founded: "",
@@ -493,7 +495,7 @@ async function getTimeIntervalPerformance(symbol, api_key) {
         { symbol: symbol },
         {
           $set: {
-            price: Math.floor(lastDayClose * exchangeRate), //await convertToEur(lastDayClose, String(currencyOfStock)), //lastDayClose,
+            price: String((lastDayClose * exchangeRate).toFixed(2)), //await convertToEur(lastDayClose, String(currencyOfStock)), //lastDayClose,
             per1d: per1d,
             per7d: per7d,
             per30d: per30d,
