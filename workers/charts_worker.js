@@ -20,7 +20,12 @@ module.exports.updateAllCharts = async function () {
     // TODO: Add api_keys to AWS Secret Manager
   }
 
-  const fileStream = fs.createReadStream("./public/assets/company_symbols.txt");
+  let fileStream;
+  if(process.env.NODE_ENV == 'staging') {
+    fileStream = fs.createReadStream("./public/assets/company_symbols_staging.txt");
+  } else {
+    fileStream = fs.createReadStream("./public/assets/company_symbols.txt");
+  }
 
   const rl = readline.createInterface({
     input: fileStream,

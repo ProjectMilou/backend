@@ -52,16 +52,29 @@ if (process.env.NODE_ENV != "test") {
   initialize();
 }
 
-cron.schedule(
-  "0 4 * * *",
-  () => {
-    stockWorkers.updateAllStocks();
-    chartWorkers.updateAllCharts();
-  },
-  {
-    timezone: "Europe/Berlin",
-  }
-);
+if(process.env.NODE_ENV == 'staging') {
+  cron.schedule(
+    "0 13 * * *",
+    () => {
+      stockWorkers.updateAllStocks();
+      chartWorkers.updateAllCharts();
+    },
+    {
+      timezone: "Europe/Berlin",
+    }
+  );
+} else {
+  cron.schedule(
+    "0 4 * * *",
+    () => {
+      stockWorkers.updateAllStocks();
+      chartWorkers.updateAllCharts();
+    },
+    {
+      timezone: "Europe/Berlin",
+    }
+  );
+}
 
 // database setup
 

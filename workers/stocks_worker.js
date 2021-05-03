@@ -16,7 +16,12 @@ module.exports.updateAllStocks = async function () {
   let api_key_finhub = process.env.finnhub_key;
   let api_key_benzinga = process.env.benzinga_key;
 
-  const fileStream = fs.createReadStream("./public/assets/company_symbols.txt");
+  let fileStream;
+  if(process.env.NODE_ENV == 'staging') {
+    fileStream = fs.createReadStream("./public/assets/company_symbols_staging.txt");
+  } else {
+    fileStream = fs.createReadStream("./public/assets/company_symbols.txt");
+  }
 
   const rl = readline.createInterface({
     input: fileStream,
