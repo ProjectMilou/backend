@@ -142,12 +142,6 @@ async function updateStock(position, virtual) {
         position.totalReturnPercent = percent(position.totalReturn, position.stock.quote * position.qty)
     } else {
         position.stock.missingData = true;
-        if (virtual) {
-            position.stock.price = null
-            position.stock.quote = null
-            position.stock.quoteDate = null
-            position.totalReturn = null
-        }
     }
 }
 

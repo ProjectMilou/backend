@@ -521,7 +521,7 @@ router.post(
                                     if (err) {
                                         handle_database_error(res, err);
                                     } else {
-                                        console.log("portfolio saved successfully");
+                                        //console.log("portfolio saved successfully");
                                         response.id = portfolio["id"];
                                         res.json(response);
                                     }
