@@ -9,7 +9,9 @@ const StockDetailedAnalysis = require("../models/stockDetailedAnalysis");
 const DataPoint = require("../models/dataPoint");
 const Dividend = require("../models/dividend");
 const BalanceSheet = require("../models/balanceSheet");
+const KeyFigure = require("../models/keyFigure");
 const IncomeStatement = require("../models/incomeStatement");
+const CashFlow = require("../models/cashFlow");
 const fs = require("fs");
 
 const appleStockJson = JSON.parse(
@@ -34,8 +36,19 @@ const appleStockDividendJson = JSON.parse(
   fs.readFileSync("./public/assets/apple_stock_dividend.json", "utf8")
 );
 
+const appleStockKeyFiguresJson = JSON.parse(
+  fs.readFileSync("./public/assets/apple_stock_key_figures.json", "utf8")
+);
+
+const appleStockIncomeStatementJson = JSON.parse(
+  fs.readFileSync("./public/assets/apple_stock_income_statement.json", "utf8")
+);
+
+const appleStockCashFlowJson = JSON.parse(
+  fs.readFileSync("./public/assets/apple_stock_cash_flow.json", "utf8")
+);
+
 beforeAll(async () => {
-  await mongoose.connection.close();
   const url = `mongodb://127.0.0.1/${databaseName}`;
   const mongooseOpts = {
     useUnifiedTopology: true,
@@ -50,6 +63,7 @@ async function removeAllCollections() {
   await StockDetailedAnalysis.deleteMany();
   await Dividend.deleteMany();
   await BalanceSheet.deleteMany();
+  await KeyFigure.deleteMany();
 }
 
 async function dropAllCollections() {
@@ -75,7 +89,6 @@ async function dropAllCollections() {
 
 afterAll(async (done) => {
   await dropAllCollections();
-  // Closes the Mongoose connection
   await mongoose.connection.close();
   done();
 });
@@ -168,7 +181,7 @@ it("gets stocks/search endpoint", async (done) => {
   const response = await request.get("/stocks/search?id=Apple");
 
   expect(response.status).toBe(200);
-  expect(response.body).toStrictEqual({ stocks: [appleStockJson] });
+  expect(response.body).toMatchObject({ stocks: [appleStockJson] });
   done();
 });
 
@@ -238,7 +251,16 @@ it("gets stocks/charts/historic", async (done) => {
   done();
 });
 
-/*
+it("gets stocks/balanceSheet", async done => {
+    const appleStockBalanceSheet = new BalanceSheet(appleStockBalanceSheetJson);
+    await appleStockBalanceSheet.save();
+
+    const response = await request.get("/stocks/balanceSheet?id=AAPL");
+  
+    expect(response.status).toBe(200);
+    expect(response.body).toStrictEqual(appleStockBalanceSheetJson);
+    done();
+});
 
 it("gets stocks/charts/dividend", async done => {
     const appleStockDividend = new Dividend(appleStockDividendJson);
@@ -252,66 +274,35 @@ it("gets stocks/charts/dividend", async done => {
     done();
 });
 
-it("gets stocks/balanceSheet", async done => {
-    const appleStockBalanceSheet = new BalanceSheet(appleStockBalanceSheetJson);
-    await appleStockBalanceSheet.save();
+it("gets stocks/charts/key_figures", async done => {
+  const appleStockKeyFigures = new KeyFigure(appleStockKeyFiguresJson);
+  await appleStockKeyFigures.save();
 
-    const response = await request.get("/stocks/balanceSheet?id=AAPL");
-  
-    expect(response.status).toBe(200);
-    expect(response.body).toStrictEqual({"stocks":[appleStockBalanceSheetJson]});
-    done();
+  const response = await request.get("/stocks/charts/key_figures?id=AAPL");
+
+  expect(response.status).toBe(200);
+  expect(response.body).toStrictEqual(appleStockKeyFiguresJson);
+  done();
 });
 
 it("gets stocks/incomeStatement", async done => {
-    const appleStock = new IncomeStatement(appleStockJson);
-    await appleStock.save();
+  const appleStockIncomeStatement = new IncomeStatement(appleStockIncomeStatementJson);
+  await appleStockIncomeStatement.save();
 
-    const response = await request.get("/stocks/list?mc=medium");
-  
-    expect(response.status).toBe(200);
-    expect(response.body).toStrictEqual({"stocks":[peakStockJson]});
-    done();
+  const response = await request.get("/stocks/incomeStatement?id=AAPL");
+
+  expect(response.status).toBe(200);
+  expect(response.body).toStrictEqual(appleStockIncomeStatementJson);
+  done();
 });
 
 it("gets stocks/cashFlow", async done => {
-    const appleStock = new Stock(appleStockJson);
-    await appleStock.save();
+    const appleStockCashFlow = new CashFlow(appleStockCashFlowJson);
+    await appleStockCashFlow.save();
 
-    const peakStock = new Stock(peakStockJson);
-    await peakStock.save();
-
-    const response = await request.get("/stocks/list?mc=medium");
+    const response = await request.get("/stocks/cashFlow?id=AAPL");
   
     expect(response.status).toBe(200);
-    expect(response.body).toStrictEqual({"stocks":[peakStockJson]});
+    expect(response.body).toStrictEqual(appleStockCashFlowJson);
     done();
 });
-
-it("gets stocks/charts/key_figures", async done => {
-    const appleStock = new Stock(appleStockJson);
-    await appleStock.save();
-
-    const peakStock = new Stock(peakStockJson);
-    await peakStock.save();
-
-    const response = await request.get("/stocks/list?mc=medium");
-  
-    expect(response.status).toBe(200);
-    expect(response.body).toStrictEqual({"stocks":[peakStockJson]});
-    done();
-});
-
-it("gets stocks/finanzen endpoint", async done => {
-    const appleStock = new Stock(appleStockJson);
-    await appleStock.save();
-
-    const peakStock = new Stock(peakStockJson);
-    await peakStock.save();
-
-    const response = await request.get("/stocks/list?mc=medium");
-  
-    expect(response.status).toBe(200);
-    expect(response.body).toStrictEqual({"stocks":[peakStockJson]});
-    done();
-}); */
