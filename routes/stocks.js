@@ -78,7 +78,13 @@ router.get("/list", async (req, res) => {
       }
     }
     if (industry != undefined) {
-      query["industry"] = { $regex: ".*" + industry + ".*", $options: "i" };
+      if (industry.includes(",")) {
+        const industries = industry.split(",");
+        const str = industries.join('|');
+        query["industry"] = { $regex: ".*" + str + ".*", $options: "i" };
+      } else {
+        query["industry"] = { $regex: ".*" + industry + ".*", $options: "i" };
+      }
     }
     if (mc != undefined) {
       if (mc.includes(",")) {
