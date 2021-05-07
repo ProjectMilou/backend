@@ -22,30 +22,6 @@ const excludeFields = {
   address: false,
 };
 
-const listIncludeFields = {
-  symbol: true,
-  analystTargetPrice: true,
-  country: true,
-  currency: true,
-  date: true,
-  industry: true,
-  marketCapitalization: true,
-  name: true,
-  valuation: true,
-  per1d: true,
-  per30d: true,
-  per7d: true,
-  per365d: true,
-  div: true,
-  growth: true,
-  isin: true,
-  picture: true,
-  wkn: true,
-  assetType: true,
-};
-
-// fixme: stocks from database are reformated wrongly
-
 router.get("/list", async (req, res) => {
   let currency = req.query.currency;
   let country = req.query.country;
