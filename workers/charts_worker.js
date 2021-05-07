@@ -69,10 +69,8 @@ async function getDataPoints(symbol, api_key) {
   let url =
     "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED" +
     "&outputsize=full" +
-    "&symbol=" +
-    symbol +
-    "&apikey=" +
-    api_key;
+    "&symbol=" + symbol +
+    "&apikey=" + api_key;
 
   let query = {};
   query["symbol"] = symbol;
@@ -101,7 +99,7 @@ async function getDataPoints(symbol, api_key) {
         });
       });
 
-      let dataPoint = dataPointModel.findOneAndUpdate(
+      dataPointModel.findOneAndUpdate(
         { symbol: symbol },
         {
           $set: {
@@ -124,20 +122,14 @@ async function getDividends(symbol, api_key) {
   let urlOverview =
     "https://www.alphavantage.co/query?" +
     "function=OVERVIEW" +
-    "&symbol=" +
-    symbol +
-    "&apikey=" +
-    api_key;
-  // '&apikey=' + process.env.alpha_vantage_key;
+    "&symbol=" + symbol +
+    "&apikey=" + api_key;
 
   let urlCashFlow =
     "https://www.alphavantage.co/query?" +
     "function=CASH_FLOW" +
-    "&symbol=" +
-    symbol +
-    "&apikey=" +
-    api_key;
-  // '&apikey=' + process.env.alpha_vantage_key;
+    "&symbol=" + symbol +
+    "&apikey=" + api_key;
 
   let dividendDate;
   let quota;
@@ -167,7 +159,7 @@ async function getDividends(symbol, api_key) {
     })
     .catch((err) => console.log(err));
 
-  let dividend = dividendModel.findOneAndUpdate(
+  dividendModel.findOneAndUpdate(
     { symbol: symbol },
     {
       $set: {
@@ -189,11 +181,8 @@ async function getDividends(symbol, api_key) {
 async function getKeyFigures(symbol, api_key) {
   let url =
     "https://www.alphavantage.co/query?function=EARNINGS" +
-    "&symbol=" +
-    symbol +
-    "&apikey=" +
-    api_key;
-  // '&apikey=' + process.env.alpha_vantage_key;
+    "&symbol=" + symbol +
+    "&apikey=" + api_key;
 
   let symbolJson;
   let keyFigures = [];
@@ -206,7 +195,7 @@ async function getKeyFigures(symbol, api_key) {
     })
     .catch((err) => console.log(err));
 
-  let keyFigure = keyFigureModel.findOneAndUpdate(
+  keyFigureModel.findOneAndUpdate(
     { symbol: symbolJson },
     {
       $set: {
