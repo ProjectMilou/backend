@@ -251,30 +251,30 @@ it("gets stocks/charts/historic", async (done) => {
   done();
 });
 
-it("gets stocks/balanceSheet", async done => {
-    const appleStockBalanceSheet = new BalanceSheet(appleStockBalanceSheetJson);
-    await appleStockBalanceSheet.save();
+it("gets stocks/balanceSheet", async (done) => {
+  const appleStockBalanceSheet = new BalanceSheet(appleStockBalanceSheetJson);
+  await appleStockBalanceSheet.save();
 
-    const response = await request.get("/stocks/balanceSheet?id=AAPL");
-  
-    expect(response.status).toBe(200);
-    expect(response.body).toStrictEqual(appleStockBalanceSheetJson);
-    done();
+  const response = await request.get("/stocks/balanceSheet?id=AAPL");
+
+  expect(response.status).toBe(200);
+  expect(response.body).toStrictEqual(appleStockBalanceSheetJson);
+  done();
 });
 
-it("gets stocks/charts/dividend", async done => {
-    const appleStockDividend = new Dividend(appleStockDividendJson);
-    await appleStockDividend.save();
-    
-    const response = await request.get("/stocks/charts/dividend?id=AAPL");
-      
-    expect(response.status).toBe(200);
-    expect(response.body).toStrictEqual(appleStockDividendJson);
-    
-    done();
+it("gets stocks/charts/dividend", async (done) => {
+  const appleStockDividend = new Dividend(appleStockDividendJson);
+  await appleStockDividend.save();
+
+  const response = await request.get("/stocks/charts/dividend?id=AAPL");
+
+  expect(response.status).toBe(200);
+  expect(response.body).toStrictEqual(appleStockDividendJson);
+
+  done();
 });
 
-it("gets stocks/charts/key_figures", async done => {
+it("gets stocks/charts/key_figures", async (done) => {
   const appleStockKeyFigures = new KeyFigure(appleStockKeyFiguresJson);
   await appleStockKeyFigures.save();
 
@@ -285,8 +285,10 @@ it("gets stocks/charts/key_figures", async done => {
   done();
 });
 
-it("gets stocks/incomeStatement", async done => {
-  const appleStockIncomeStatement = new IncomeStatement(appleStockIncomeStatementJson);
+it("gets stocks/incomeStatement", async (done) => {
+  const appleStockIncomeStatement = new IncomeStatement(
+    appleStockIncomeStatementJson
+  );
   await appleStockIncomeStatement.save();
 
   const response = await request.get("/stocks/incomeStatement?id=AAPL");
@@ -296,13 +298,13 @@ it("gets stocks/incomeStatement", async done => {
   done();
 });
 
-it("gets stocks/cashFlow", async done => {
-    const appleStockCashFlow = new CashFlow(appleStockCashFlowJson);
-    await appleStockCashFlow.save();
+it("gets stocks/cashFlow", async (done) => {
+  const appleStockCashFlow = new CashFlow(appleStockCashFlowJson);
+  await appleStockCashFlow.save();
 
-    const response = await request.get("/stocks/cashFlow?id=AAPL");
-  
-    expect(response.status).toBe(200);
-    expect(response.body).toStrictEqual(appleStockCashFlowJson);
-    done();
+  const response = await request.get("/stocks/cashFlow?id=AAPL");
+
+  expect(response.status).toBe(200);
+  expect(response.body).toStrictEqual(appleStockCashFlowJson);
+  done();
 });

@@ -21,36 +21,38 @@ const portfolioSchema = new mongoose.Schema({
   bankAccountId: String,
   portfolio: {
     overview: portfolioOverviewSchema,
-    positions: [{
-      stock: {
-        isin: String,
-        wkn: String,
-        symbol: String,
-        name: String,
-        price: Number,
-        marketValueCurrency: String,
-        displayedCurrency: String,
-        quote: Number,
-        quoteCurrency: String,
-        quoteDate: String,
-        entryQuote: Number,
-        entryQuoteCurrency: String,
-        perf7d: Number,
-        perf1y: Number,
-        perf7dPercent: Number,
-        perf1yPercent: Number,
-        volatility: Number,
-        debtEquity: Number,
-        country: String,
-        industry: String,
-        score: Number,
-        missingData: Boolean
+    positions: [
+      {
+        stock: {
+          isin: String,
+          wkn: String,
+          symbol: String,
+          name: String,
+          price: Number,
+          marketValueCurrency: String,
+          displayedCurrency: String,
+          quote: Number,
+          quoteCurrency: String,
+          quoteDate: String,
+          entryQuote: Number,
+          entryQuoteCurrency: String,
+          perf7d: Number,
+          perf1y: Number,
+          perf7dPercent: Number,
+          perf1yPercent: Number,
+          volatility: Number,
+          debtEquity: Number,
+          country: String,
+          industry: String,
+          score: Number,
+          missingData: Boolean,
+        },
+        qty: Number,
+        quantityNominalType: String,
+        totalReturn: Number, //=profitOrLoss?
+        totalReturnPercent: Number,
       },
-      qty: Number,
-      quantityNominalType: String,
-      totalReturn: Number, //=profitOrLoss?
-      totalReturnPercent: Number
-    }],
+    ],
     risk: {
       countries: {}, //any type can be in here
       segments: {},
@@ -64,8 +66,8 @@ const portfolioSchema = new mongoose.Schema({
         ptg: Number,
         eps: Number,
         div: Number,
-        dividendPayoutRatio: Number
-      }
+        dividendPayoutRatio: Number,
+      },
     ],
     nextDividend: Number,
     totalReturn: Number,

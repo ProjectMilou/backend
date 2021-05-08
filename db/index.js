@@ -6,13 +6,16 @@ mongoose.set("useCreateIndex", true);
 
 module.exports = function (app) {
   let url;
-  if(process.env.NODE_ENV == 'staging') {
-    url = "mongodb+srv://admin:" + process.env.db_admin_pw + "@stagingcluster.q8dhp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+  if (process.env.NODE_ENV == "staging") {
+    url =
+      "mongodb+srv://admin:" +
+      process.env.db_admin_pw +
+      "@stagingcluster.q8dhp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
   } else {
     url =
-    "mongodb+srv://admin:" +
-    process.env.db_admin_pw +
-    "@miloucluster.q8dhp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+      "mongodb+srv://admin:" +
+      process.env.db_admin_pw +
+      "@miloucluster.q8dhp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
   }
   mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
   app.set("mongoose", mongoose);

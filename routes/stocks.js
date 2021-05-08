@@ -56,7 +56,7 @@ router.get("/list", async (req, res) => {
     if (industry != undefined) {
       if (industry.includes(",")) {
         const industries = industry.split(",");
-        const str = industries.join('|');
+        const str = industries.join("|");
         query["industry"] = { $regex: ".*" + str + ".*", $options: "i" };
       } else {
         query["industry"] = { $regex: ".*" + industry + ".*", $options: "i" };
@@ -154,14 +154,13 @@ router.get("/search", async (req, res) => {
     pageNumber = 1;
   }
 
-  res.json(
-    {
-      total : total,
-      limit : limit,
-      numberOfPage : Math.ceil(total / limit),
-      pageNumber : parseInt(pageNumber) + "/" + Math.ceil(total / limit),
-      stocks: stocks
-    });
+  res.json({
+    total: total,
+    limit: limit,
+    numberOfPage: Math.ceil(total / limit),
+    pageNumber: parseInt(pageNumber) + "/" + Math.ceil(total / limit),
+    stocks: stocks,
+  });
 });
 
 router.get("/overview", async (req, res) => {
@@ -277,11 +276,11 @@ router.get("/charts/dividend", async (req, res) => {
   let dataPoints;
 
   dataPoints = await dividendModel.find(
-      { symbol: id },
-      {
-        symbol: false,
-        _id: false,
-      }
+    { symbol: id },
+    {
+      symbol: false,
+      _id: false,
+    }
   );
   dataPoints = dataPoints[0];
 
@@ -296,10 +295,9 @@ router.get("/charts/dividend", async (req, res) => {
     res.json({ symbol: id, dataPoints, date, quota });
   } else {
     try {
-      res.json({error: "STOCK_ID_INVALID"});
+      res.json({ error: "STOCK_ID_INVALID" });
     } catch (e) {}
   }
-
 });
 
 router.get("/news", async (req, res) => {
@@ -321,12 +319,15 @@ router.get("/news", async (req, res) => {
 
   var url =
     "https://newsapi.org/v2/everything?" +
-    "q=" + name +
-    "&from=" + threeDaysAgoString +
+    "q=" +
+    name +
+    "&from=" +
+    threeDaysAgoString +
     "&sortBy=popularity" +
     "&language=en" +
     "&domains=yahoo.com,seekingalpha.com,marketwatch.com,investors.com,bloomberg.com" +
-    "&apiKey=" + process.env.news_api_key;
+    "&apiKey=" +
+    process.env.news_api_key;
 
   await fetch(url)
     .then((response) => response.json())
@@ -370,7 +371,7 @@ router.get("/balanceSheet", async (req, res) => {
     });
   } else {
     try {
-      res.json({error: "STOCK_ID_INVALID"});
+      res.json({ error: "STOCK_ID_INVALID" });
     } catch (e) {}
   }
 });
@@ -394,7 +395,7 @@ router.get("/incomeStatement", async (req, res) => {
     });
   } else {
     try {
-      res.json({error: "STOCK_ID_INVALID"});
+      res.json({ error: "STOCK_ID_INVALID" });
     } catch (e) {}
   }
 });
@@ -418,7 +419,7 @@ router.get("/cashFlow", async (req, res) => {
     });
   } else {
     try {
-      res.json({error: "STOCK_ID_INVALID"});
+      res.json({ error: "STOCK_ID_INVALID" });
     } catch (e) {}
   }
 });
@@ -429,11 +430,11 @@ router.get("/charts/key_figures", async (req, res) => {
   let keyFigures;
 
   keyFigures = await keyFigureModel.find(
-      { symbol: id },
-      {
-        symbol: false,
-        _id: false,
-      }
+    { symbol: id },
+    {
+      symbol: false,
+      _id: false,
+    }
   );
   keyFigures = keyFigures[0];
 
@@ -446,10 +447,9 @@ router.get("/charts/key_figures", async (req, res) => {
     res.json({ symbol: id, keyFigures });
   } else {
     try {
-      res.json({error: "STOCK_ID_INVALID"});
+      res.json({ error: "STOCK_ID_INVALID" });
     } catch (e) {}
   }
-
 });
 
 router.get("/finanzen", async (req, res) => {
