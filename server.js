@@ -52,7 +52,7 @@ if (process.env.NODE_ENV != "test") {
   initialize();
 }
 
-if(process.env.NODE_ENV == 'staging') {
+if (process.env.NODE_ENV == "staging") {
   cron.schedule(
     "0 13 * * *",
     () => {

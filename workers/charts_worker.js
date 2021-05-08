@@ -21,8 +21,10 @@ module.exports.updateAllCharts = async function () {
   }
 
   let fileStream;
-  if(process.env.NODE_ENV == 'staging') {
-    fileStream = fs.createReadStream("./public/assets/company_symbols_staging.txt");
+  if (process.env.NODE_ENV == "staging") {
+    fileStream = fs.createReadStream(
+      "./public/assets/company_symbols_staging.txt"
+    );
   } else {
     fileStream = fs.createReadStream("./public/assets/company_symbols.txt");
   }
@@ -69,8 +71,10 @@ async function getDataPoints(symbol, api_key) {
   let url =
     "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED" +
     "&outputsize=full" +
-    "&symbol=" + symbol +
-    "&apikey=" + api_key;
+    "&symbol=" +
+    symbol +
+    "&apikey=" +
+    api_key;
 
   let query = {};
   query["symbol"] = symbol;
@@ -122,14 +126,18 @@ async function getDividends(symbol, api_key) {
   let urlOverview =
     "https://www.alphavantage.co/query?" +
     "function=OVERVIEW" +
-    "&symbol=" + symbol +
-    "&apikey=" + api_key;
+    "&symbol=" +
+    symbol +
+    "&apikey=" +
+    api_key;
 
   let urlCashFlow =
     "https://www.alphavantage.co/query?" +
     "function=CASH_FLOW" +
-    "&symbol=" + symbol +
-    "&apikey=" + api_key;
+    "&symbol=" +
+    symbol +
+    "&apikey=" +
+    api_key;
 
   let dividendDate;
   let quota;
@@ -181,8 +189,10 @@ async function getDividends(symbol, api_key) {
 async function getKeyFigures(symbol, api_key) {
   let url =
     "https://www.alphavantage.co/query?function=EARNINGS" +
-    "&symbol=" + symbol +
-    "&apikey=" + api_key;
+    "&symbol=" +
+    symbol +
+    "&apikey=" +
+    api_key;
 
   let symbolJson;
   let keyFigures = [];

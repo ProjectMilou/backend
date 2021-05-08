@@ -1,185 +1,185 @@
 {
-    "symbol": "AAPL",
-    "keyFigures": [
+  "symbol": "AAPL",
+  "keyFigures": [
     {
-    "_id": "60733264a98bf22130987104",
-    "fiscalDateEnding": "2020-12-31",
-    "reportedDate": "2021-01-27",
-    "reportedEPS": "1.68",
-    "estimatedEPS": "1.4158",
-    "surprise": "0.2642",
-    "surprisePercentage": "18.6608"
+      "_id": "60733264a98bf22130987104",
+      "fiscalDateEnding": "2020-12-31",
+      "reportedDate": "2021-01-27",
+      "reportedEPS": "1.68",
+      "estimatedEPS": "1.4158",
+      "surprise": "0.2642",
+      "surprisePercentage": "18.6608"
     },
     {
-    "_id": "60733264a98bf22130987105",
-    "fiscalDateEnding": "2020-09-30",
-    "reportedDate": "2020-10-29",
-    "reportedEPS": "0.73",
-    "estimatedEPS": "0.6987",
-    "surprise": "0.0313",
-    "surprisePercentage": "4.4797"
+      "_id": "60733264a98bf22130987105",
+      "fiscalDateEnding": "2020-09-30",
+      "reportedDate": "2020-10-29",
+      "reportedEPS": "0.73",
+      "estimatedEPS": "0.6987",
+      "surprise": "0.0313",
+      "surprisePercentage": "4.4797"
     },
     {
-    "_id": "60733264a98bf22130987106",
-    "fiscalDateEnding": "2020-06-30",
-    "reportedDate": "2020-07-30",
-    "reportedEPS": "0.65",
-    "estimatedEPS": "0.51",
-    "surprise": "0.14",
-    "surprisePercentage": "27.451"
+      "_id": "60733264a98bf22130987106",
+      "fiscalDateEnding": "2020-06-30",
+      "reportedDate": "2020-07-30",
+      "reportedEPS": "0.65",
+      "estimatedEPS": "0.51",
+      "surprise": "0.14",
+      "surprisePercentage": "27.451"
     },
     {
-    "_id": "60733264a98bf22130987107",
-    "fiscalDateEnding": "2020-03-31",
-    "reportedDate": "2020-04-30",
-    "reportedEPS": "0.64",
-    "estimatedEPS": "0.56",
-    "surprise": "0.08",
-    "surprisePercentage": "14.2857"
+      "_id": "60733264a98bf22130987107",
+      "fiscalDateEnding": "2020-03-31",
+      "reportedDate": "2020-04-30",
+      "reportedEPS": "0.64",
+      "estimatedEPS": "0.56",
+      "surprise": "0.08",
+      "surprisePercentage": "14.2857"
     },
     {
-    "_id": "60733264a98bf22130987108",
-    "fiscalDateEnding": "2019-12-31",
-    "reportedDate": "2020-01-28",
-    "reportedEPS": "1.25",
-    "estimatedEPS": "1.14",
-    "surprise": "0.11",
-    "surprisePercentage": "9.6491"
+      "_id": "60733264a98bf22130987108",
+      "fiscalDateEnding": "2019-12-31",
+      "reportedDate": "2020-01-28",
+      "reportedEPS": "1.25",
+      "estimatedEPS": "1.14",
+      "surprise": "0.11",
+      "surprisePercentage": "9.6491"
     },
     {
-    "_id": "60733264a98bf22130987109",
-    "fiscalDateEnding": "2019-09-30",
-    "reportedDate": "2019-10-30",
-    "reportedEPS": "0.76",
-    "estimatedEPS": "0.71",
-    "surprise": "0.05",
-    "surprisePercentage": "7.0423"
+      "_id": "60733264a98bf22130987109",
+      "fiscalDateEnding": "2019-09-30",
+      "reportedDate": "2019-10-30",
+      "reportedEPS": "0.76",
+      "estimatedEPS": "0.71",
+      "surprise": "0.05",
+      "surprisePercentage": "7.0423"
     },
     {
-    "_id": "60733264a98bf2213098710a",
-    "fiscalDateEnding": "2019-06-30",
-    "reportedDate": "2019-07-30",
-    "reportedEPS": "0.55",
-    "estimatedEPS": "0.53",
-    "surprise": "0.02",
-    "surprisePercentage": "3.7736"
+      "_id": "60733264a98bf2213098710a",
+      "fiscalDateEnding": "2019-06-30",
+      "reportedDate": "2019-07-30",
+      "reportedEPS": "0.55",
+      "estimatedEPS": "0.53",
+      "surprise": "0.02",
+      "surprisePercentage": "3.7736"
     },
     {
-    "_id": "60733264a98bf2213098710b",
-    "fiscalDateEnding": "2019-03-31",
-    "reportedDate": "2019-04-30",
-    "reportedEPS": "0.62",
-    "estimatedEPS": "0.59",
-    "surprise": "0.03",
-    "surprisePercentage": "5.0847"
+      "_id": "60733264a98bf2213098710b",
+      "fiscalDateEnding": "2019-03-31",
+      "reportedDate": "2019-04-30",
+      "reportedEPS": "0.62",
+      "estimatedEPS": "0.59",
+      "surprise": "0.03",
+      "surprisePercentage": "5.0847"
     },
     {
-    "_id": "60733264a98bf2213098710c",
-    "fiscalDateEnding": "2018-12-31",
-    "reportedDate": "2019-01-29",
-    "reportedEPS": "1.05",
-    "estimatedEPS": "1.04",
-    "surprise": "0.01",
-    "surprisePercentage": "0.9615"
+      "_id": "60733264a98bf2213098710c",
+      "fiscalDateEnding": "2018-12-31",
+      "reportedDate": "2019-01-29",
+      "reportedEPS": "1.05",
+      "estimatedEPS": "1.04",
+      "surprise": "0.01",
+      "surprisePercentage": "0.9615"
     },
     {
-    "_id": "60733264a98bf2213098710d",
-    "fiscalDateEnding": "2018-09-30",
-    "reportedDate": "2018-11-01",
-    "reportedEPS": "0.73",
-    "estimatedEPS": "0.7",
-    "surprise": "0.03",
-    "surprisePercentage": "4.2857"
+      "_id": "60733264a98bf2213098710d",
+      "fiscalDateEnding": "2018-09-30",
+      "reportedDate": "2018-11-01",
+      "reportedEPS": "0.73",
+      "estimatedEPS": "0.7",
+      "surprise": "0.03",
+      "surprisePercentage": "4.2857"
     },
     {
-    "_id": "60733264a98bf2213098710e",
-    "fiscalDateEnding": "2018-06-30",
-    "reportedDate": "2018-07-31",
-    "reportedEPS": "0.585",
-    "estimatedEPS": "0.545",
-    "surprise": "0.04",
-    "surprisePercentage": "7.3394"
+      "_id": "60733264a98bf2213098710e",
+      "fiscalDateEnding": "2018-06-30",
+      "reportedDate": "2018-07-31",
+      "reportedEPS": "0.585",
+      "estimatedEPS": "0.545",
+      "surprise": "0.04",
+      "surprisePercentage": "7.3394"
     },
     {
-    "_id": "60733264a98bf2213098710f",
-    "fiscalDateEnding": "2018-03-31",
-    "reportedDate": "2018-05-01",
-    "reportedEPS": "0.6825",
-    "estimatedEPS": "0.6725",
-    "surprise": "0.01",
-    "surprisePercentage": "1.487"
+      "_id": "60733264a98bf2213098710f",
+      "fiscalDateEnding": "2018-03-31",
+      "reportedDate": "2018-05-01",
+      "reportedEPS": "0.6825",
+      "estimatedEPS": "0.6725",
+      "surprise": "0.01",
+      "surprisePercentage": "1.487"
     },
     {
-    "_id": "60733264a98bf22130987110",
-    "fiscalDateEnding": "2017-12-31",
-    "reportedDate": "2018-02-01",
-    "reportedEPS": "0.9725",
-    "estimatedEPS": "0.965",
-    "surprise": "0.0075",
-    "surprisePercentage": "0.7772"
+      "_id": "60733264a98bf22130987110",
+      "fiscalDateEnding": "2017-12-31",
+      "reportedDate": "2018-02-01",
+      "reportedEPS": "0.9725",
+      "estimatedEPS": "0.965",
+      "surprise": "0.0075",
+      "surprisePercentage": "0.7772"
     },
     {
-    "_id": "60733264a98bf22130987111",
-    "fiscalDateEnding": "2017-09-30",
-    "reportedDate": "2017-11-02",
-    "reportedEPS": "0.5175",
-    "estimatedEPS": "0.4675",
-    "surprise": "0.05",
-    "surprisePercentage": "10.6952"
+      "_id": "60733264a98bf22130987111",
+      "fiscalDateEnding": "2017-09-30",
+      "reportedDate": "2017-11-02",
+      "reportedEPS": "0.5175",
+      "estimatedEPS": "0.4675",
+      "surprise": "0.05",
+      "surprisePercentage": "10.6952"
     },
     {
-    "_id": "60733264a98bf22130987112",
-    "fiscalDateEnding": "2017-06-30",
-    "reportedDate": "2017-08-01",
-    "reportedEPS": "0.4175",
-    "estimatedEPS": "0.3925",
-    "surprise": "0.025",
-    "surprisePercentage": "6.3694"
+      "_id": "60733264a98bf22130987112",
+      "fiscalDateEnding": "2017-06-30",
+      "reportedDate": "2017-08-01",
+      "reportedEPS": "0.4175",
+      "estimatedEPS": "0.3925",
+      "surprise": "0.025",
+      "surprisePercentage": "6.3694"
     },
     {
-    "_id": "60733264a98bf22130987113",
-    "fiscalDateEnding": "2017-03-31",
-    "reportedDate": "2017-05-02",
-    "reportedEPS": "0.525",
-    "estimatedEPS": "0.505",
-    "surprise": "0.02",
-    "surprisePercentage": "3.9604"
+      "_id": "60733264a98bf22130987113",
+      "fiscalDateEnding": "2017-03-31",
+      "reportedDate": "2017-05-02",
+      "reportedEPS": "0.525",
+      "estimatedEPS": "0.505",
+      "surprise": "0.02",
+      "surprisePercentage": "3.9604"
     },
     {
-    "_id": "60733264a98bf22130987114",
-    "fiscalDateEnding": "2016-12-31",
-    "reportedDate": "2017-01-31",
-    "reportedEPS": "0.84",
-    "estimatedEPS": "0.8025",
-    "surprise": "0.0375",
-    "surprisePercentage": "4.6729"
+      "_id": "60733264a98bf22130987114",
+      "fiscalDateEnding": "2016-12-31",
+      "reportedDate": "2017-01-31",
+      "reportedEPS": "0.84",
+      "estimatedEPS": "0.8025",
+      "surprise": "0.0375",
+      "surprisePercentage": "4.6729"
     },
     {
-    "_id": "60733264a98bf22130987115",
-    "fiscalDateEnding": "2016-09-30",
-    "reportedDate": "2016-10-25",
-    "reportedEPS": "0.4175",
-    "estimatedEPS": "0.415",
-    "surprise": "0.0025",
-    "surprisePercentage": "0.6024"
+      "_id": "60733264a98bf22130987115",
+      "fiscalDateEnding": "2016-09-30",
+      "reportedDate": "2016-10-25",
+      "reportedEPS": "0.4175",
+      "estimatedEPS": "0.415",
+      "surprise": "0.0025",
+      "surprisePercentage": "0.6024"
     },
     {
-    "_id": "60733264a98bf22130987116",
-    "fiscalDateEnding": "2016-06-30",
-    "reportedDate": "2016-07-26",
-    "reportedEPS": "0.355",
-    "estimatedEPS": "0.345",
-    "surprise": "0.01",
-    "surprisePercentage": "2.8986"
+      "_id": "60733264a98bf22130987116",
+      "fiscalDateEnding": "2016-06-30",
+      "reportedDate": "2016-07-26",
+      "reportedEPS": "0.355",
+      "estimatedEPS": "0.345",
+      "surprise": "0.01",
+      "surprisePercentage": "2.8986"
     },
     {
-    "_id": "60733264a98bf22130987117",
-    "fiscalDateEnding": "2016-03-31",
-    "reportedDate": "2016-04-26",
-    "reportedEPS": "0.475",
-    "estimatedEPS": "0.5",
-    "surprise": "-0.025",
-    "surprisePercentage": "-5"
+      "_id": "60733264a98bf22130987117",
+      "fiscalDateEnding": "2016-03-31",
+      "reportedDate": "2016-04-26",
+      "reportedEPS": "0.475",
+      "estimatedEPS": "0.5",
+      "surprise": "-0.025",
+      "surprisePercentage": "-5"
     }
-    ]
+  ]
 }
