@@ -4,11 +4,9 @@ const passport = require("passport");
 const genToken = require("../auth/auth");
 const UserModel = require("../models/user");
 const UserTokenModel = require("../models/userToken");
-const { hash, encrypt, decrypt } = require("../encryption/encryption");
+const { hash } = require("../encryption/encryption");
 const finAPI = require("../models/finAPI");
 const confirmation = require("../auth/confirmation");
-const { refreshPortfolios } = require("./portfolio");
-const { refreshBankConnections } = require("./portfolio");
 const router = express.Router();
 
 // logout not required, frontend will delete token for logout.
@@ -141,7 +139,6 @@ router.get("/confirm/:id/:token", async (req, res) => {
 
   const confirmed = await confirmation.endConfirmationProcess(id, token);
 
-  // todo: frontend needs to add some "wow great, you are confirmed" banner
   if (confirmed) res.redirect("https://milou.io/profile");
   else
     res
@@ -199,7 +196,7 @@ router.get("/confirm/:id/:token", async (req, res) => {
  *                  lastName: Homer
  *                  firstName: Simpson
  *                  confirmed: true
- *              token: eyJhbGciOi.I4MDQyYyIsImlhdCI6MTYx4fQ.kBdmHLKaAn8
+ *              token: adsfuahf.asdfadsfag.asdfafsfd
  *
  *     401:
  *       description: Password is not correct or email is not registered.
@@ -216,7 +213,6 @@ router.post("/login", async (req, res, next) => {
     try {
       if (err || !user) {
         return res.status(400).json({
-          // todo: should be specified if wrong pwd or wrong mail ???
           message: info.message,
         });
       }
@@ -269,8 +265,8 @@ router.post("/login", async (req, res, next) => {
  *                      type: boolean
  *              example:
  *                  email: test@getmilou.de
- *                  lastName: Testus
- *                  firstName: Maximus
+ *                  lastName: Longus
+ *                  firstName: Schlongus
  *                  confirmed: true
  *       '401':
  *         description: Unauthorized. Token not valid.
@@ -284,7 +280,7 @@ router.get(
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
     // http://www.passportjs.org/docs/username-password/
-    // request just contains an JWT token in its header, that will be checked by passport automaticaly. If unathorized, 401 will be sent back.
+    // request just contains an JWT token in its header, that will be checked by passport automatically. If unauthorized, 401 will be sent back.
     try {
       res.json({
         email: req.user.email,
@@ -294,7 +290,7 @@ router.get(
       });
     } catch (err) {
       console.log(err);
-      res.json("error occured");
+      res.json("error occurred");
     }
   }
 );
@@ -375,7 +371,7 @@ router.put(
       });
     } catch (err) {
       console.log(err);
-      res.json("error occured");
+      res.json("error occurred");
     }
   }
 );
@@ -457,7 +453,7 @@ router.post("/reset/forgot", async (req, res) => {
  *              type: string
  *      response:
  *          200:
- *              description: todo! Redirect to frontend
+ *              description: confirms a user for an upcoming password change (link will be in email, that is sent to user)
  *          404:
  *              description: User not found or Token invalid or Token expired.
  *              schema:
@@ -584,8 +580,6 @@ router.put("/reset/change/:id/:token", async (req, res) => {
  *                  description:
  *                      OK. Matched banks are shown.
  */
-// todo filter!
-// todo add schema, add example for 200 response!
 router.get("/bank/search/:searchString", async (req, res) => {
   const searchString = req.params.searchString;
   const location = req.body.location;
@@ -629,7 +623,6 @@ router.post(
   "/bank/connections/add/:bankId",
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
-    // todo should be redirected?
 
     const bankId = req.params.bankId;
     const user = req.user;
@@ -721,7 +714,6 @@ router.get(
  *            - bearerAuth: []
  */
 // delete bankConnection by id
-// todo delete all connected portfolios from our database as well
 router.delete(
   "/bank/connections/:id",
   passport.authenticate("jwt", { session: false }),
@@ -743,7 +735,6 @@ router.delete(
  *          summary:
  *              Delete all of a users bank-connections.
  *          description:
- *              <h2> (securities not deleted from our database yet! todo)</h2>
  *              Specify a user by JWT. <br>
  *              All of the users currently registered bank-connections will be deleted from finAPI <br>
  *              and our database.
@@ -756,7 +747,6 @@ router.delete(
  *
  */
 // delete all bankConnections
-// todo delete all connected portfolios from our database as well
 router.delete(
   "/bank/connections",
   passport.authenticate("jwt", { session: false }),
@@ -798,21 +788,16 @@ router.delete(
     // implement the following authorization: http://www.passportjs.org/docs/username-password/
     // JWT token in header as bearer token
 
-    // todo: delete portfolios
-
     try {
       const user = await UserModel.findOne({ _id: req.user.id });
       await UserModel.deleteOne({ _id: req.user.id });
       await UserTokenModel.deleteMany({ email: user.email });
-
-      // todo uncomment when last testing has begun
       await finAPI.deleteFinAPIUser(user);
-      // todo delete virtual portfolios!
 
       res.json("successfully deleted user").status(200);
     } catch (err) {
       console.log(err);
-      res.json("error occured");
+      res.json("error occurred");
     }
   }
 );

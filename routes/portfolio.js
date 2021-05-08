@@ -12,7 +12,7 @@ router.use(express.urlencoded({ extended: true })); // for parsing application/x
 const passport = require("passport");
 
 const handle_database_error = (res, err) => {
-  var response = {};
+  let response = {};
   response.error = "DATABASE_ERROR";
   response.message = "" + err;
   console.log(err);
@@ -28,7 +28,7 @@ cron.schedule("00 02 * * *", async () => {
     if (err) {
       console.log(err);
     } else {
-      for (var j = 0; j < portf.length; j++) {
+      for (let j = 0; j < portf.length; j++) {
         try {
           await portfolioWorkers.updatePortfolioCronjob(portf[j]);
           portf[j].save();
@@ -72,8 +72,8 @@ const emptyPortfolio = (portfolioId, userId, name) => {
 };
 
 const newStock = async (symbol, qty) => {
-  var stockArray = await portfolioWorkers.searchStock(symbol);
-  var stock = stockArray[0];
+  let stockArray = await portfolioWorkers.searchStock(symbol);
+  let stock = stockArray[0];
   if (!stock) {
     stock = {
       isin: "?",
@@ -99,7 +99,7 @@ const newStock = async (symbol, qty) => {
       score: 0,
     };
   }
-  var result = {
+  return {
     stock: {
       isin: stock.isin,
       wkn: stock.wkn,
@@ -125,12 +125,11 @@ const newStock = async (symbol, qty) => {
     totalReturn: 0,
     totalReturnPercent: 0,
   };
-  return result;
 };
 
 // can it be cast to mongoose.ObjectId?
 const is_valid_id = (id) => {
-  return id.length == 24;
+  return id.length === 24;
 };
 
 const is_valid_qty = (qty) => {
@@ -142,7 +141,7 @@ router.get(
   "/list",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    var response = { portfolios: [] };
+    let response = { portfolios: [] };
 
     Portfolio.find(
       { userId: req.user.id },
@@ -165,8 +164,8 @@ router.get(
   "/details/:id",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    var id = req.params.id;
-    var response = {};
+    let id = req.params.id;
+    let response = {};
     if (is_valid_id(id)) {
       // find all data of portfolio
       Portfolio.findOne(
@@ -201,8 +200,8 @@ router.get(
   "/performance/:id",
   passport.authenticate("jwt", { session: false }),
   function (req, res) {
-    var id = req.params.id;
-    var response = {};
+    let id = req.params.id;
+    let response = {};
     if (is_valid_id(id)) {
       // find all data of portfolio
       Portfolio.findOne({ userId: req.user.id, id: id }, (err, portf) => {
@@ -234,10 +233,10 @@ router.post(
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
     // request: {"name" : name}
-    var name = req.body.name;
-    var response = {};
+    let name = req.body.name;
+    let response = {};
     if (name) {
-      var portfolioId = new mongoose.Types.ObjectId();
+      let portfolioId = new mongoose.Types.ObjectId();
       // check if the name already exists
       Portfolio.findOne({
         userId: req.user.id,
@@ -249,7 +248,7 @@ router.post(
           response.error = "PORTFOLIO_NAME_DUPLICATE";
           res.status(400).json(response);
         } else {
-          var portfolio = new Portfolio(
+          let portfolio = new Portfolio(
             emptyPortfolio(portfolioId, req.user.id, name)
           );
           // save new portfolio in database
@@ -275,8 +274,8 @@ router.delete(
   "/:id",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    var id = req.params.id;
-    var response = {};
+    let id = req.params.id;
+    let response = {};
     if (is_valid_id(id)) {
       //delete from database
       Portfolio.findOneAndDelete(
@@ -305,9 +304,9 @@ router.put(
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
     // request: {"name" : name}
-    var id = req.params.id;
-    var name = req.body.name;
-    var response = {};
+    let id = req.params.id;
+    let name = req.body.name;
+    let response = {};
     if (is_valid_id(id)) {
       if (name) {
         //check if the name already exists
@@ -353,10 +352,10 @@ router.put(
 // returns true if the positionId is either the name, the isin, the wkn or the symbol of the position
 const idBelongsToThisPosition = (positionId, position) => {
   return (
-    positionId == position.stock.isin ||
-    positionId == position.stock.wkn ||
-    positionId == position.stock.name ||
-    positionId == position.stock.symbol
+    positionId === position.stock.isin ||
+    positionId === position.stock.wkn ||
+    positionId === position.stock.name ||
+    positionId === position.stock.symbol
   );
 };
 
@@ -376,18 +375,18 @@ const findPortfolioId = (modification) => {
 // The position which is changed is the one which has isin, wkn, symbol or name equal to positionId
 //
 const modifyPortfolio = async (portfolio, positionId, qty) => {
-  var validPosition = true;
+  let validPosition = true;
   // modify portfolio
-  var positions = portfolio.portfolio.positions;
+  let positions = portfolio.portfolio.positions;
   // find the right position, if already present in portfolio
-  var pos = positions.find((position) => {
+  let pos = positions.find((position) => {
     return idBelongsToThisPosition(positionId, position);
   });
   if (pos) {
     // if present
-    if (qty == 0) {
+    if (qty === 0) {
       // delete position from portfolio
-      for (var i = 0; i < positions.length; i++) {
+      for (let i = 0; i < positions.length; i++) {
         if (idBelongsToThisPosition(positionId, positions[i])) {
           positions.splice(i, 1);
         }
@@ -396,10 +395,10 @@ const modifyPortfolio = async (portfolio, positionId, qty) => {
       // update position of portfolio
       pos.qty = qty;
     }
-  } else if (qty != 0) {
+  } else if (qty !== 0) {
     // add new stock/position to portfolio
-    var stock = await newStock(positionId, qty);
-    if (stock.stock.country == "?") {
+    let stock = await newStock(positionId, qty);
+    if (stock.stock.country === "?") {
       validPosition = false;
     } else {
       positions.push(stock);
@@ -418,8 +417,8 @@ router.put(
     // request: {"modifications":
     //                  [{"isin": "string", -> could also be symbol, wkn or name
     //                  "qty": 0}]}
-    var id = req.params.id;
-    var response = {};
+    let id = req.params.id;
+    let response = {};
     if (is_valid_id(id)) {
       // find Portfolio
       await Portfolio.findOne(
@@ -431,10 +430,10 @@ router.put(
             response.error = "PORTFOLIO_ID_INVALID";
             res.status(404).json(response);
           } else if (portfolio.portfolio.overview.virtual) {
-            var success = true;
-            for (var j = 0; j < req.body.modifications.length; j++) {
-              var portfolioId = findPortfolioId(req.body.modifications[j]);
-              var qty = req.body.modifications[j].qty;
+            let success = true;
+            for (let j = 0; j < req.body.modifications.length; j++) {
+              let portfolioId = findPortfolioId(req.body.modifications[j]);
+              let qty = req.body.modifications[j].qty;
               if (is_valid_qty(qty)) {
                 success = await modifyPortfolio(portfolio, portfolioId, qty);
                 if (!success) {
@@ -490,11 +489,11 @@ router.post(
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
     // request: {"name" : name}
-    var id = req.params.id;
-    var name = req.body.name;
-    var response = {};
+    let id = req.params.id;
+    let name = req.body.name;
+    let response = {};
     if (name) {
-      var portfolioId = new mongoose.Types.ObjectId(); // id of new portfolio
+      let portfolioId = new mongoose.Types.ObjectId(); // id of new portfolio
       // check if name already exists
       Portfolio.findOne({
         userId: req.user.id,
@@ -513,7 +512,7 @@ router.post(
               handle_database_error(res, err);
             } else if (portf) {
               // change id of portfolio
-              var newPortf = duplicate_portfolio(portf, portfolioId, name);
+              let newPortf = duplicate_portfolio(portf, portfolioId, name);
 
               newPortf.save(function (err, portfolio) {
                 if (err) {
@@ -543,9 +542,9 @@ router.get(
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
     // get portfolioId, name, virtual, qty of stock
-    var isin = req.params.isin;
+    let isin = req.params.isin;
 
-    var response = {};
+    let response = {};
     //? = %3F
     Portfolio.find(
       { userId: req.user.id },
@@ -562,22 +561,21 @@ router.get(
                 positions: arrayStocks,
               },
             }) => {
-              var positionsWithCurrentISIN = arrayStocks.filter((position) => {
+              let positionsWithCurrentISIN = arrayStocks.filter((position) => {
                 return idBelongsToThisPosition(isin, position);
               }); // the resulting array should have length 1
-              var qty;
-              if (positionsWithCurrentISIN.length == 0) {
+              let qty;
+              if (positionsWithCurrentISIN.length === 0) {
                 qty = 0;
               } else {
                 qty = positionsWithCurrentISIN[0].qty;
               }
-              var result = {
+              return {
                 id: pfId,
                 name: pfName,
                 virtual: pfVirtual,
                 qty: qty,
               };
-              return result;
             }
           );
           res.json(response);
@@ -600,17 +598,17 @@ router.put(
     //     }
     // ]
     // }
-    var isin = req.params.isin;
+    let isin = req.params.isin;
 
-    var response = {};
-    var modifications = req.body.modifications;
-    if (modifications.length == 0) {
+    let response = {};
+    let modifications = req.body.modifications;
+    if (modifications.length === 0) {
       res.json(response);
     }
 
-    for (var j = 0; j < modifications.length; j++) {
-      var id = modifications[j].id;
-      var qty = modifications[j].qty;
+    for (let j = 0; j < modifications.length; j++) {
+      let id = modifications[j].id;
+      let qty = modifications[j].qty;
       if (is_valid_id(id)) {
         // find Portfolio
         Portfolio.findOne(
@@ -622,9 +620,9 @@ router.put(
               response.error = "PORTFOLIO_ID_INVALID";
               if (!res.headersSent) res.status(404).json(response);
             } else if (portfolio.portfolio.overview.virtual) {
-              var success = true;
+              let success = true;
 
-              var portfolioId = isin;
+              let portfolioId = isin;
               if (is_valid_qty(qty)) {
                 success = await modifyPortfolio(portfolio, portfolioId, qty);
                 if (!success) {
@@ -651,7 +649,7 @@ router.put(
         );
       } else {
         response.error = "PORTFOLIO_ID_INVALID";
-        if (j == 0) res.status(404).json(response);
+        if (j === 0) res.status(404).json(response);
       }
     }
   }

@@ -10,7 +10,6 @@ const KeyFigure = require("../models/keyFigure");
 const IncomeStatement = require("../models/incomeStatement");
 
 const router = express.Router();
-// TODO: Refactor http status codes
 
 router.get("/backtest/:id", async (req, res) => {
   let response = { error: "", success: {} };

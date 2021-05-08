@@ -37,7 +37,7 @@ router.get("/list", async (req, res) => {
     res.json({ stocks: stocks });
   } else {
     let query = {};
-    if (currency != undefined) {
+    if (currency !== undefined) {
       if (currency.includes(",")) {
         const currencies = currency.split(",");
         query["currency"] = { $in: currencies };
@@ -45,7 +45,7 @@ router.get("/list", async (req, res) => {
         query["currency"] = currency;
       }
     }
-    if (country != undefined) {
+    if (country !== undefined) {
       if (country.includes(",")) {
         const countries = country.split(",");
         query["country"] = { $in: countries };
@@ -53,7 +53,7 @@ router.get("/list", async (req, res) => {
         query["country"] = country;
       }
     }
-    if (industry != undefined) {
+    if (industry !== undefined) {
       if (industry.includes(",")) {
         const industries = industry.split(",");
         const str = industries.join("|");
@@ -62,7 +62,7 @@ router.get("/list", async (req, res) => {
         query["industry"] = { $regex: ".*" + industry + ".*", $options: "i" };
       }
     }
-    if (mc != undefined) {
+    if (mc !== undefined) {
       if (mc.includes(",")) {
         // TODO: fix below
         const mc_values = mc.split(",");

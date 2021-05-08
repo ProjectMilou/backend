@@ -17,7 +17,7 @@ module.exports.updateAllCharts = async function () {
     api_key_alphavantage = process.env.alpha_vantage_key;
     api_key_finhub = process.env.finnhub_key;
   } else {
-    // TODO: Add api_keys to AWS Secret Manager
+
   }
 
   let fileStream;

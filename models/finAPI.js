@@ -91,7 +91,6 @@ const deleteFinAPIUser = async (user) => {
 
   await deleteAllBankConnections(user);
   await refreshPortfolios(user);
-  //TODO TEST
 };
 
 const searchBanks = async (searchString, location) => {

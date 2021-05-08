@@ -77,7 +77,7 @@ async function dropAllCollections() {
       // Safe to ignore.
       if (error.message === "ns not found") return;
 
-      // This error happens when you use it.todo.
+      // This error happens when you use it.
       // Safe to ignore.
       if (error.message.includes("a background operation is currently running"))
         return;
